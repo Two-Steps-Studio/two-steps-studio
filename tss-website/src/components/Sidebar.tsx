@@ -140,7 +140,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
   // Definicja sekcji z fallback dla wszystkich tłumaczeń
   const defaultSections = [
     { id: "home", type: "single", href: "/", label: t.nav.home || "Strona główna", icon: Home, ariaCurrent: getAriaCurrent("/") },
-    { id: "profile", type: "single", href: "/profil", label: t.nav.profile || "Profil", icon: User, ariaCurrent: getAriaCurrent("/profil") },
+    { id: "profile", type: "single", href: "/profile", label: t.nav.profile || "Profil", icon: User, ariaCurrent: getAriaCurrent("/profile") },
     ...(categoryVisibility.games ? [{
       id: "games", type: "expandable", href: "/games", label: t.nav.games || "Games", icon: Gamepad, items: [
         { href: "/games/loucher-gier", label: t.nav.Loucher || "Loucher Gier", icon: Gamepad },
@@ -149,14 +149,14 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
     ] : []),
     ...(categoryVisibility.records ? [{
       id: "records", type: "expandable", href: "/records", label: t.nav.records || "Records", icon: Music2, items: [
-        { href: "/records/podcasty", label: "Podcasty", icon: Book },
-        { href: "/records/beaty", label: "Beaty", icon: Mic2 },
+        { href: "/records/podcasts", label: "Podcasty", icon: Book },
+        { href: "/records/beats", label: "Beaty", icon: Mic2 },
       ]}
     ] : []),
     ...(categoryVisibility.dev ? [{
       id: "dev", type: "single", href: "/dev", label: t.nav.dev || "Dev", icon: Code, items: []}
     ] : []),
-    { id: "notifications", type: "single", href: "/powiadomienia", label: t.nav.notifications || "Powiadomienia", icon: Bell, ariaCurrent: getAriaCurrent("/ankiety/rating") },
+    { id: "notifications", type: "single", href: "/notifications", label: t.nav.notifications || "Powiadomienia", icon: Bell, ariaCurrent: getAriaCurrent("/ankiety/rating") },
   ];
 
   const sections = useMemo(() => defaultSections, [t, categoryVisibility, pathname]);

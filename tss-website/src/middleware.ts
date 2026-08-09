@@ -198,7 +198,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected routes
-  const protectedRoutes = ["/profil", "/ustawienia", "/powiadomienia"];
+  const protectedRoutes = ["/profile", "/ustawienia", "/notifications"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
@@ -278,7 +278,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Auth routes (redirect to profile if already logged in)
-  const authRoutes = ["/login", "/rejestracja"];
+  const authRoutes = ["/login", "/registration"];
   const isAuthRoute = authRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
@@ -289,7 +289,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL("/profil", request.url));
+    return NextResponse.redirect(new URL("/profile", request.url));
   }
 
   return response;

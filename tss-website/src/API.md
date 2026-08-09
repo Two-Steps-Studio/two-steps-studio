@@ -50,9 +50,9 @@ Most endpoints require authentication:
 ### Middleware Protection
 
 Protected routes are enforced by middleware:
-- `/profil` - User profile page
+- `/profile` - User profile page
 - `/ustawienia` - Settings page
-- `/powiadomienia` - Notifications page
+- `/notifications` - Notifications page
 
 ## Endpoints
 
@@ -116,13 +116,13 @@ Logout and invalidate session.
 
 ### User Profile
 
-#### GET /api/profile/:userId
+#### GET /api/profilee/:userId
 
 Get user profile information.
 
 **Request:**
 ```typescript
-const response = await fetch(`/api/profile/${userId}`);
+const response = await fetch(`/api/profilee/${userId}`);
 const profile = await response.json();
 ```
 
@@ -146,7 +146,7 @@ const profile = await response.json();
 }
 ```
 
-#### PUT /api/profile/:userId
+#### PUT /api/profilee/:userId
 
 Update user profile.
 
@@ -405,7 +405,7 @@ const result = await response.json();
 
 **Request:**
 ```typescript
-const response = await fetch(`/api/profile/${userId}`, {
+const response = await fetch(`/api/profilee/${userId}`, {
   headers: {
     'Authorization': `Bearer ${sessionToken}`
   }
@@ -503,7 +503,7 @@ Current version: **v1**
 
 Future versions will be prefixed with version numbers:
 - `/api/v2/shop`
-- `/api/v2/profile`
+- `/api/v2/profilee`
 
 ## Deprecation Policy
 
@@ -536,7 +536,7 @@ curl -X POST "http://localhost:3000/api/shop/buy" \
 import fetch from 'node-fetch';
 
 const testProfile = async (token: string) => {
-  const response = await fetch('http://localhost:3000/api/profile/me', {
+  const response = await fetch('http://localhost:3000/api/profilee/me', {
     headers: {
       'Authorization': `Bearer ${token}`
     }

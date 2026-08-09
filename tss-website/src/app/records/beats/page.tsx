@@ -103,7 +103,7 @@ export default function BeatyPage() {
 
   const fetchBeats = async () => {
     try {
-      const res = await fetch("/api/beaty");
+      const res = await fetch("/api/beats");
       const data = await res.json();
       setBeats(data || []);
     } catch (error) {
@@ -183,8 +183,8 @@ export default function BeatyPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
           { name: "Records", href: "/records" },
-          { name: "Podcasty", href: "/records/podcasty" },
-          { name: "Muzyka", href: "/records/muzyka"}
+          { name: "Podcasty", href: "/records/podcasts" },
+          { name: "Muzyka", href: "/records/music"}
         ].map((item, i) => (
             <a
                 key={i}

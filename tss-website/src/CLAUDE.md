@@ -131,8 +131,8 @@ Themes are CSS custom properties applied via `.theme-*` classes.
 
 ### Protected Routes
 The middleware (`src/middleware.ts`) protects:
-- `/profil`, `/ustawienia`, `/powiadomienia` - require auth
-- `/login`, `/rejestracja` - redirect to profile if already authenticated
+- `/profile`, `/ustawienia`, `/notifications` - require auth
+- `/login`, `/registration` - redirect to profile if already authenticated
 
 ### Discord Bot Architecture
 - **Level System**: XP from messages (+2) and voice chat (+3/min)

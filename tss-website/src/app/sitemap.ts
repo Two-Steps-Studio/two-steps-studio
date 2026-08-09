@@ -38,19 +38,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/profil`,
+      url: `${baseUrl}/profile`,
       lastModified: today,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/kontakt`,
+      url: `${baseUrl}/contact`,
       lastModified: today,
       changeFrequency: 'monthly' as const,
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/rekrutacja`,
+      url: `${baseUrl}/recruitment`,
       lastModified: today,
       changeFrequency: 'monthly' as const,
       priority: 0.5,

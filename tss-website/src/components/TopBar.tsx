@@ -171,7 +171,7 @@ export function TopBar() {
                   <LanguageSelect showImport={false} />
               )}
 
-              <Link href="/powiadomienia">
+              <Link href="/notifications">
                 <Button variant="ghost" size="icon" aria-label="Powiadomienia" className="rounded-2xl w-11 h-11 relative bg-[var(--bg)] border border-[var(--border-color)] transition-all hover:scale-105 active:scale-95 cursor-pointer">
                   <Bell size={20} />
                   {unread > 0 ? (
@@ -207,7 +207,7 @@ export function TopBar() {
                           </span>
                         </div>
 
-                  <Link href="/profil">
+                  <Link href="/profile">
                     <motion.div
                         whileHover={{ scale: 1.05, borderColor: "var(--color-general)" }}
                         whileTap={{ scale: 0.95 }}

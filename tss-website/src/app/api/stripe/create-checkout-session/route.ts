@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/beaty?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/beaty?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/beats?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/beats?canceled=true`,
       metadata: {
         beat_id: beatId,
         tier: tier,

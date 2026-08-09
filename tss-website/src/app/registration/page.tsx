@@ -67,7 +67,7 @@ export default function RegisterPage() {
         router.push("/login");
       } else {
         toast.success(t.auth.registerSuccess || "Registration successful!");
-        router.push("/profil");
+        router.push("/profile");
         router.refresh();
       }
     } catch (err) {
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 className="mt-1 h-4 w-4 rounded border-zinc-400 text-[var(--color-general)] focus:ring-[var(--color-general)]"
               />
               <Label htmlFor="terms" className="text-xs text-zinc-400 font-[family-name:var(--font-outfit)] leading-tight cursor-pointer">
-                Akceptuję <a href="/regulamin" target="_blank" className="text-[var(--color-general)] hover:underline">regulamin</a> i politykę prywatności
+                Akceptuję <a href="/terms" target="_blank" className="text-[var(--color-general)] hover:underline">regulamin</a> i politykę prywatności
               </Label>
             </div>
             <Button

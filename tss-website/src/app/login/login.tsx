@@ -51,7 +51,7 @@ export default function LoginPage() {
         } else {
           toast.success(t.auth.loginSuccess);
           // Force hard refresh to ensure session is fully loaded
-          window.location.href = "/profil";
+          window.location.href = "/profile";
         }
       }
     } catch (err: any) {
@@ -76,7 +76,7 @@ export default function LoginPage() {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: `${window.location.origin}/profil`,
+            redirectTo: `${window.location.origin}/profile`,
           },
         });
         console.log("Google login result:", { data, error });
@@ -186,7 +186,7 @@ export default function LoginPage() {
                   setLoading(true);
                   await supabase.auth.signInWithOAuth({
                     provider: "discord",
-                    options: { redirectTo: `${window.location.origin}/profil` }
+                    options: { redirectTo: `${window.location.origin}/profile` }
                   });
                   setLoading(false);
                 }
@@ -202,7 +202,7 @@ export default function LoginPage() {
           <div className="text-center text-sm">
             <p className="text-zinc-500">
               {t.auth.noAccount}{" "}
-              <Link href="/rejestracja" className="text-[var(--text)] hover:text-[var(--color-general)] font-black hover:underline transition-colors">
+              <Link href="/registration" className="text-[var(--text)] hover:text-[var(--color-general)] font-black hover:underline transition-colors">
                 {t.auth.registerLink}
               </Link>
             </p>

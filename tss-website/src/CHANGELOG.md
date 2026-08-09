@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Website (tss-website)
 - Added Next.js 15 App Router
 - Added 5 color themes (General/Ocean, Games, Records, Dev, E-Sport)
-- Added protected routes (`/profil`, `/ustawienia`, `/powiadomienia`)
+- Added protected routes (`/profile`, `/ustawienia`, `/notifications`)
 - Added shop system with categories
 - Added news feed
 - Added profile customization
@@ -92,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added Endpoints
 - `GET /api/shop` - Shop inventory
 - `GET /api/news` - News feed
-- `GET /api/profile/:userId` - User profile
+- `GET /api/profilee/:userId` - User profile
 - `POST /api/shop/buy` - Purchase item
 - `POST /api/admin/exec` - Admin command
 - `GET /api/admin/stats` - Server statistics

@@ -6,12 +6,12 @@ import { useMemo } from "react";
 // Mapa ścieżek do etykiet i ikon w Bottom Navigation
 export const BOTTOM_NAV_ITEMS = {
   home: { label: "Home", href: "/" },
-  profile: { label: "Profil", href: "/profil" },
+  profile: { label: "Profil", href: "/profile" },
   games: { label: "Gry", href: "/games" },
   esport: { label: "E-sport", href: "/e-sport" },
   records: { label: "Rekordy", href: "/records" },
   dev: { label: "Dev", href: "/dev" },
-  notifications: { label: "Powiadomienia", href: "/powiadomienia" },
+  notifications: { label: "Powiadomienia", href: "/notifications" },
 };
 
 export function useBottomNav() {

@@ -71,9 +71,9 @@ export default function PodcastyPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
           { name: "Records", href: "/records" },
-          { name: "Beaty", href: "/records/beaty" },
-          { name: "Muzyka", href: "/records/muzyka"},
-          { name: "Podcasty", href: "/records/podcasty"}  
+          { name: "Beaty", href: "/records/beats" },
+          { name: "Muzyka", href: "/records/music"},
+          { name: "Podcasty", href: "/records/podcasts"}  
         ].map((item, i) => (
             <a
                 key={i}
@@ -224,7 +224,7 @@ export default function PodcastyPage() {
                   </div>
                 </div>
 
-                <Link href={`/records/podcasty/${podcast.id}`} className="flex-1">
+                <Link href={`/records/podcasts/${podcast.id}`} className="flex-1">
                   <Button
                     variant="outline"
                     className="w-full border-[var(--color-records)]/30 text-[var(--color-records)] hover:bg-[var(--color-records)]/10 rounded-xl"

@@ -15,15 +15,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Music, Mic2, Calendar } from "lucide-react";
 
-// Mark this as a server component
-export const dynamic = 'force-dynamic';
+// Mark this as server component with ISR
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function RecordsPage() {
+  console.log('[BUILD] RecordsPage starting at', new Date().toISOString());
   let supabase: any = null;
   let createClientError: Error | null = null;
 
   try {
     supabase = await createClient();
+    console.log('[BUILD] Supabase client created at', new Date().toISOString());
   } catch (err) {
     createClientError = err as Error;
     console.error('[RECORDS] Failed to create Supabase client:', createClientError.message);
@@ -35,6 +37,7 @@ export default async function RecordsPage() {
   }
 
   const { data: records, error } = await supabase.from("records").select("*").order("upload_date", { ascending: false });
+  console.log('[BUILD] Records fetched:', records?.length || 0, 'records at', new Date().toISOString());
 
   if (error) {
     console.error('[RECORDS] Error fetching data:', error.message);
@@ -63,9 +66,9 @@ export default async function RecordsPage() {
         {/* Quick Navigation */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             {[
-                { name: "Beaty", href: "/records/beaty" },
-                { name: "Podscasty", href: "/records/podcasty" },
-                { name: "Muzyka", href: "/records/muzyka" },
+                { name: "Beaty", href: "/records/beats" },
+                { name: "Podscasty", href: "/records/podcasts" },
+                { name: "Muzyka", href: "/records/music" },
             ].map((item, i) => (
                 <a
                     key={i}

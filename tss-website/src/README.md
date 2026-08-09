@@ -93,7 +93,7 @@ node index.js
 
 ### Website Features
 - **Authentication**: Supabase Auth with secure session management
-- **Protected Routes**: `/profil`, `/ustawienia`, `/powiadomienia` require authentication
+- **Protected Routes**: `/profile`, `/ustawienia`, `/notifications` require authentication
 - **Theme System**: 5 color themes (Ocean, Games, Records, Dev, E-Sport)
 - **RPG Mini-game**: Mining, fishing, dungeon crawling, equipment crafting
 - **Economy System**: Coin-based economy with PLN conversion

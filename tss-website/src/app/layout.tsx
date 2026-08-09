@@ -10,6 +10,7 @@ import { Providers } from "@/components/Providers";
 import AdminConsole from "@/components/AdminConsole";
 import { TopBar } from "@/components/TopBar";
 import { MobileHeader } from "@/components/MobileHeader";
+import { BottomNavigation } from "@/components/BottomNavigation";
 import PWAController from "@/components/PWAController";
 import { PageTransition } from "@/components/PageTransition";
 import { NoiseOverlay } from "@/components/ui/noise-overlay";
@@ -67,6 +68,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('[BUILD] RootLayout rendering at', new Date().toISOString());
   return (
     <html lang="pl" suppressHydrationWarning className={`${spaceGrotesk.variable} ${outfit.variable}`}>
       <head>
@@ -102,10 +104,10 @@ export default function RootLayout({
               <SidebarLayout />
             </SidebarProvider>
             <PresencePing />
-            <MobileHeader mobileOnly />
+            <MobileHeader />
             <PWAController />
             <div className="flex-1 lg:ml-[240px] lg:border-l lg:border-zinc-700/30 flex flex-col pt-[60px] transition-[margin] duration-300">
-              <TopBar suppressHydrationWarning={true} />
+              <TopBar suppressHydrationWarning={true} className="hidden lg:flex" />
               <main className="p-4 md:p-6 lg:p-8 pt-8 md:pt-12 pb-20 lg:pb-0 max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
                 <ErrorBoundary>
                   <PageTransition>
@@ -115,6 +117,7 @@ export default function RootLayout({
               </main>
               <Footer />
             </div>
+            <BottomNavigation />
             <AdminConsole />
           </LanguageProvider>
         </Providers>

@@ -151,7 +151,7 @@ export default function RegulaminPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => router.push("/rejestracja")}
+              onClick={() => router.push("/registration")}
               className={`h-12 rounded-2xl font-bold transition-colors ${!darkMode ? 'border-neutral-300 hover:border-neutral-400' : 'border-white/10 hover:border-white/20'}`}
             >
               Powrót do rejestracji

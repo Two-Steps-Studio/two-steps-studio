@@ -54,7 +54,7 @@ export default function RekrutacjaPage() {
       const { error } = await window.supabase?.auth.signInWithOAuth({
         provider: "discord",
         options: {
-          redirectTo: `${window.location.origin}/rejestracja`,
+          redirectTo: `${window.location.origin}/registration`,
         },
       });
 
@@ -157,7 +157,7 @@ export default function RekrutacjaPage() {
 
           <div className={`text-center text-xs pt-4 border-t transition-colors ${!darkMode ? 'text-neutral-500 border-neutral-200' : 'text-neutral-400 border-white/5'}`}>
             <p>
-              Potrzebujesz pomocy? <Link href="/kontakt" className="text-[var(--color-general)] hover:underline">Kontakt</Link>
+              Potrzebujesz pomocy? <Link href="/contact" className="text-[var(--color-general)] hover:underline">Kontakt</Link>
             </p>
           </div>
         </CardContent>

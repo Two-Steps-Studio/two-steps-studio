@@ -15,12 +15,12 @@ import { cn } from "../lib/utils";
 
 const BOTTOM_NAV_ITEMS = {
   home: { label: "Strona główna", href: "/" },
-  profile: { label: "Profil", href: "/profil" },
+  profile: { label: "Profil", href: "/profile" },
   games: { label: "Games", href: "/games" },
   esport: { label: "E-sport", href: "/e-sport" },
   records: { label: "Records", href: "/records" },
   dev: { label: "Dev", href: "/dev" },
-  notifications: { label: "Powiadomienia", href: "/powiadomienia" },
+  notifications: { label: "Powiadomienia", href: "/notifications" },
 };
 
 export function BottomNavigation() {
@@ -66,12 +66,11 @@ export function BottomNavigation() {
 
     switch (href) {
       case "/":              return <Home {...props} />;
-      case "/profil":        return <User {...props} />;
+      case "/profile":       return <User {...props} />;
       case "/games":         return <Gamepad2 {...props} />;
-      case "/e-sport":       return <Zap {...props} />;
       case "/records":       return <Music2 {...props} />;
       case "/dev":           return <Zap {...props} />;
-      case "/powiadomienia": return <MessageSquare {...props} />;
+      case "/notifications": return <MessageSquare {...props} />;
       default:               return null;
     }
   };
@@ -79,13 +78,13 @@ export function BottomNavigation() {
   return (
       <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-[var(--border-color)]">
         <div className="mx-auto max-w-[1400px] px-4">
-          <ul className="flex items-center justify-center gap-0.15 h-16">
+          <ul className="flex items-center justify-around h-16">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
 
               return (
-                  <li key={key} className="flex-1 max-w-[80px]">
+                  <li key={key} className="flex-1">
                     <Link
                         href={item.href}
                         className={cn(
@@ -95,8 +94,8 @@ export function BottomNavigation() {
                     >
                       {getIcon(item.href)}
                       <span className="text-[8px] font-bold text-[var(--text)] text-center leading-none">
-                    {item.label}
-                  </span>
+                        {item.label}
+                      </span>
                     </Link>
                   </li>
               );

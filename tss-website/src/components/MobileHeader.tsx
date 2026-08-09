@@ -113,7 +113,7 @@ export function MobileHeader() {
             </AnimatePresence>
           </Button>
 
-          <Link href="/powiadomienia">
+          <Link href="/notifications">
             <Button
               variant="ghost"
               size="icon"
@@ -128,7 +128,7 @@ export function MobileHeader() {
             </Button>
           </Link>
 
-          <Link href="/profil">
+          <Link href="/profile">
             <Button variant="ghost" size="icon" aria-label="Profil" className="rounded-xl w-10 h-10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
               <Avatar className="w-8 h-8 border border-[var(--border-color)]">
                 {avatarUrl ? (
