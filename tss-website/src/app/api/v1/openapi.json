@@ -1,0 +1,720 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TSS API",
+    "description": "Universal API for Two Steps Studio - enables external AI agents, applications, and integrations to access TSS data securely.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Two Steps Studio",
+      "url": "https://twostepsstudio.com"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.twostepsstudio.com/api/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "API key authentication using Bearer token format: Authorization: Bearer tss_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Project ID"
+          },
+          "owner_id": {
+            "type": "string",
+            "description": "Owner user ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Project description"
+          },
+          "description_markdown": {
+            "type": "string",
+            "nullable": true,
+            "description": "Project description in markdown format"
+          },
+          "color": {
+            "type": "string",
+            "description": "Project color hex code"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "archived"],
+            "description": "Project status"
+          },
+          "project_type": {
+            "type": "string",
+            "enum": ["general", "web_application", "mobile_application", "desktop_application", "game", "api", "library", "plugin", "other"],
+            "description": "Project type"
+          },
+          "planned_end_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Planned end date"
+          },
+          "is_archived": {
+            "type": "boolean",
+            "description": "Whether project is archived"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last update timestamp"
+          },
+          "user_role": {
+            "type": "string",
+            "enum": ["owner", "admin", "developer", "tester", "viewer"],
+            "description": "User's role in this project"
+          },
+          "user_permissions": {
+            "type": "object",
+            "description": "User's permissions in this project",
+            "properties": {
+              "view_project": { "type": "boolean" },
+              "edit_project": { "type": "boolean" },
+              "manage_tasks": { "type": "boolean" },
+              "manage_roadmap": { "type": "boolean" },
+              "manage_files": { "type": "boolean" },
+              "manage_description": { "type": "boolean" },
+              "manage_technologies": { "type": "boolean" },
+              "manage_members": { "type": "boolean" },
+              "delete_project": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Task ID"
+          },
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Task description"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["todo", "in_progress", "testing", "completed"],
+            "description": "Task status"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Task priority"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Task tags"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Task due date"
+          },
+          "progress_percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Task progress percentage"
+          },
+          "assignee_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Assignee name"
+          },
+          "estimated_hours": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated hours"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "details": {
+                "type": "object",
+                "description": "Additional error details"
+              }
+            }
+          }
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {}
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "description": "Current page number"
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Items per page"
+              },
+              "total": {
+                "type": "integer",
+                "description": "Total number of items"
+              },
+              "hasMore": {
+                "type": "boolean",
+                "description": "Whether there are more pages"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/projects": {
+      "get": {
+        "summary": "List projects",
+        "description": "Get all projects accessible to the API key owner. Returns projects where the user is owner or member.",
+        "operationId": "listProjects",
+        "tags": ["Projects"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page (default: 50, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "description": "Include archived projects (default: false)",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until retry is allowed",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scopes": ["projects:read"]
+      },
+      "post": {
+        "summary": "Create project",
+        "description": "Create a new project. The user must be within their project limit.",
+        "operationId": "createProject",
+        "tags": ["Projects"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Project name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Project description"
+                  },
+                  "description_markdown": {
+                    "type": "string",
+                    "description": "Project description in markdown format"
+                  },
+                  "color": {
+                    "type": "string",
+                    "description": "Project color hex code (default: #ffcb2f)"
+                  },
+                  "project_type": {
+                    "type": "string",
+                    "enum": ["general", "web_application", "mobile_application", "desktop_application", "game", "api", "library", "plugin", "other"],
+                    "description": "Project type (default: general)"
+                  },
+                  "planned_end_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Planned end date"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid input or project limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until retry is allowed",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scopes": ["projects:write"]
+      }
+    },
+    "/tasks": {
+      "get": {
+        "summary": "List tasks",
+        "description": "Get tasks for a specific project. User must have access to the project.",
+        "operationId": "listTasks",
+        "tags": ["Tasks"],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "description": "Project ID to filter tasks",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page (default: 50, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by task status",
+            "schema": {
+              "type": "string",
+              "enum": ["todo", "in_progress", "testing", "completed"]
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "description": "Filter by task priority",
+            "schema": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing projectId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient scope or project access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until retry is allowed",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scopes": ["tasks:read"]
+      },
+      "post": {
+        "summary": "Create task",
+        "description": "Create a new task in a project. User must have write access to the project.",
+        "operationId": "createTask",
+        "tags": ["Tasks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["project_id", "title"],
+                "properties": {
+                  "project_id": {
+                    "type": "integer",
+                    "description": "Project ID"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Task title"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Task description"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["todo", "in_progress", "testing", "completed"],
+                    "description": "Task status (default: todo)"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "description": "Task priority (default: medium)"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Task tags"
+                  },
+                  "due_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Task due date"
+                  },
+                  "assignee_name": {
+                    "type": "string",
+                    "description": "Assignee name"
+                  },
+                  "estimated_hours": {
+                    "type": "number",
+                    "description": "Estimated hours"
+                  },
+                  "progress_percent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Task progress percentage (default: 0)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient scope or project permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until retry is allowed",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scopes": ["tasks:write"]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Projects",
+      "description": "Project management endpoints"
+    },
+    {
+      "name": "Tasks",
+      "description": "Task management endpoints"
+    }
+  ]
+}
