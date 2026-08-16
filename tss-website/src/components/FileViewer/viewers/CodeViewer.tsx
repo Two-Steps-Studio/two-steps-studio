@@ -7,9 +7,7 @@ import {
   vs,
   oneDark, 
   oneLight,
-  dracula,
-  githubDark,
-  githubLight
+  dracula
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Copy, Search, WrapText, Settings, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,12 +58,10 @@ const THEMES = {
     "VS Code Dark": vscDarkPlus,
     "One Dark": oneDark,
     "Dracula": dracula,
-    "GitHub Dark": githubDark,
   },
   light: {
     "VS Code Light": vs,
     "One Light": oneLight,
-    "GitHub Light": githubLight,
   }
 };
 
