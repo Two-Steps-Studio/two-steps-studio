@@ -1,228 +1,594 @@
-# Two Steps Studio (TSS)
+# Two Steps Studio
 
-Monorepo containing a Next.js 15 web application with Electron desktop wrapper and a Discord.js bot for community engagement.
+**Two Steps Studio (TSS)** is a monorepo containing the web, desktop, and community infrastructure used by Two Steps Studio.
 
-## Projects Overview
+The repository currently includes:
 
-### tss-website
-A modern web application with:
-- **Next.js 15** with App Router
-- **React 19** with Tailwind CSS v4
-- **Electron** desktop wrapper
-- **Supabase** authentication and database
-- **RPG game features** (mining, fishing, dungeon crawling)
+* A **Next.js 15** web application
+* An **Electron** desktop application
+* A **Discord.js** community bot
+* **Supabase** authentication and database infrastructure
+* RPG, economy, profile, and community features
 
-### tss-dc-bot
-A Discord.js bot providing:
-- **XP/Leveling system** (messages +2 XP, voice chat +3 XP/min)
-- **Economy system** with coins and PLN balance
-- **Auto-roles** based on user level
-- **Fishing game** with gear upgrades
-- **Events management** for e-sport competitions
-- **Profile cards** generated with Canvas
+> **Status:** Active development
 
-## Quick Start
+---
 
-### Prerequisites
-- Node.js 18+ 
-- npm or pnpm
-- Git
-- Discord Bot token (for bot project)
-- Supabase project setup
+## Table of Contents
 
-### Installation
+* [Projects](#projects)
+* [Tech Stack](#tech-stack)
+* [Getting Started](#getting-started)
+* [Environment Variables](#environment-variables)
+* [Development](#development)
+* [Project Structure](#project-structure)
+* [Features](#features)
+* [Security](#security)
+* [Documentation](#documentation)
+* [Contributing](#contributing)
+* [Support](#support)
+* [License](#license)
+* [Acknowledgments](#acknowledgments)
 
-#### 1. Clone the repository
+---
+
+# Projects
+
+## `tss-website`
+
+The main TSS web and desktop application.
+
+### Built with
+
+* **Next.js 15**
+* **React 19**
+* **TypeScript**
+* **Tailwind CSS v4**
+* **Electron**
+* **Supabase**
+* **Stripe**
+
+The application uses the Next.js App Router and can be deployed as a web application or packaged as a Windows desktop application through Electron.
+
+### Main functionality
+
+* Authentication and user accounts
+* User profiles
+* Protected routes
+* Theme system
+* RPG systems
+* Mining
+* Fishing
+* Dungeon crawling
+* Equipment and crafting
+* Economy
+* PWA functionality
+* Desktop application
+
+---
+
+## `tss-dc-bot`
+
+The TSS Discord bot responsible for community functionality and interactive systems.
+
+### Built with
+
+* **Discord.js 14**
+* **JavaScript**
+* **Supabase**
+* **@napi-rs/canvas**
+
+### Main functionality
+
+* XP and leveling
+* Voice activity rewards
+* Automatic roles
+* Economy
+* Shop and inventory
+* Banking
+* Fishing
+* RPG systems
+* E-sport events
+* Profile card generation
+
+---
+
+# Tech Stack
+
+## Website
+
+| Technology      | Purpose                   |
+| --------------- | ------------------------- |
+| Next.js 15      | Web framework             |
+| React 19        | UI                        |
+| TypeScript      | Application language      |
+| Tailwind CSS v4 | Styling                   |
+| Supabase        | Database & authentication |
+| PostgreSQL      | Database                  |
+| Stripe          | Payments                  |
+| Electron        | Desktop application       |
+| PWA             | Progressive Web App       |
+
+## Discord Bot
+
+| Technology      | Purpose              |
+| --------------- | -------------------- |
+| Discord.js 14   | Discord API          |
+| JavaScript      | Application language |
+| Supabase        | Database             |
+| @napi-rs/canvas | Image generation     |
+
+---
+
+# Getting Started
+
+## Prerequisites
+
+Install the following before starting development:
+
+* **Node.js 18 or newer**
+* **npm or pnpm**
+* **Git**
+* A configured **Supabase project**
+* A **Discord application and bot token** if working on the bot
+* A **Stripe account** if working on payment functionality
+
+---
+
+# Installation
+
+## 1. Clone the repository
+
 ```bash
-git clone https://github.com/Kenikusss/tss
+git clone https://github.com/Kenikusss/tss.git
 cd tss
 ```
 
-#### 2. Setup Website (tss-website)
+---
+
+## 2. Install the Website
+
 ```bash
 cd tss-website
 npm install
-
-# Create .env file
-echo "NEXT_PUBLIC_SUPABASE_URL=your_supabase_url" > .env
-echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key" >> .env
 ```
 
-#### 3. Setup Discord Bot (tss-dc-bot)
+Create a `.env.local` file and add the required environment variables.
+
+---
+
+## 3. Install the Discord Bot
+
+From the repository root:
+
 ```bash
 cd ../tss-dc-bot
 npm install
-
-# Create .env file
-echo "SUPABASE_URL=your_supabase_url" > .env
-echo "SUPABASE_SERVICE_ROLE_KEY=your_service_role_key" >> .env
-echo "DISCORD_TOKEN=your_discord_bot_token" >> .env
-echo "CLIENT_ID=your_discord_client_id" >> .env
-echo "GUILD_ID=your_guild_id" >> .env
 ```
 
-### Development Commands
+Create a `.env` file and configure the required bot variables.
 
-#### Website
-```bash
-# Web development
-npm run dev
+---
 
-# Build for production
-npm run build
+# Environment Variables
 
-# Run linting
-npm run lint
+Environment variables contain secrets and configuration values required by the applications.
 
-# Desktop app development
-npm run electron:dev
+**Never commit `.env`, `.env.local`, API keys, tokens, or other secrets to Git.**
 
-# Build desktop app for Windows
-npm run electron:build:win
-```
+---
 
-#### Discord Bot
-```bash
-# Start the bot
-npm start
-# or
-node index.js
-```
+## Website
 
-## Features
+Example `.env.local`:
 
-### Website Features
-- **Authentication**: Supabase Auth with secure session management
-- **Protected Routes**: `/profil`, `/ustawienia`, `/powiadomienia` require authentication
-- **Theme System**: 5 color themes (Ocean, Games, Records, Dev, E-Sport)
-- **RPG Mini-game**: Mining, fishing, dungeon crawling, equipment crafting
-- **Economy System**: Coin-based economy with PLN conversion
-- **Profile System**: User profiles with level progression
-- **PWA Support**: Progressive Web Application capabilities
-
-### Discord Bot Features
-- **Level System**: XP tracking with level-based role assignment
-- **Voice Rewards**: Automatic XP and coin accumulation in voice channels
-- **Shop System**: Buy decorative items and special roles
-- **Bank System**: Deposit/withdraw coins with transaction logging
-- **Event System**: Create and join e-sport events
-- **Profile Cards**: Beautiful canvas-generated profile images
-- **Fishing Game**: AFK fishing with gear progression
-
-## Project Structure
-
-```
-tss/
-├── tss-website/          # Next.js 15 + Electron app
-│   ├── src/
-│   │   ├── app/         # Next.js App Router pages
-│   │   ├── components/  # React components
-│   │   ├── lib/         # Utilities (Supabase client, hooks)
-│   │   └── hooks/       # Custom React hooks
-│   ├── electron/        # Electron main process
-│   └── next.config.ts   # Next.js config
-│
-└── tss-dc-bot/          # Discord.js bot
-    ├── index.js         # Main bot entry
-    ├── profileGenerator.js  # Canvas profile cards
-    ├── shop.js          # Shop and inventory logic
-    ├── events/          # Event management
-    ├── fishing/         # Fishing game
-    └── rpg/             # RPG mechanics
-```
-
-## Configuration
-
-### Environment Variables
-
-#### Website (.env)
 ```env
-# Supabase Configuration
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Authentication
 AUTH_SECRET=your_auth_secret
 
-# Stripe (for payments)
-STRIPE_SECRET_KEY=your_stripe_key
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
+# Stripe
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 ```
 
-#### Discord Bot (.env)
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
-DISCORD_TOKEN=your_bot_token
-CLIENT_ID=your_client_id
-GUILD_ID=your_guild_id
-```
-
-## Security
-
-The project follows security best practices:
-
-- **Secure headers** with proper CSP
-- **Rate limiting** on API endpoints
-- **Secure file uploads** (private buckets)
-- **Environment variables** with proper prefixes
-- **Input sanitization** on user inputs
-- **Session management** with secure cookies
-
-See [SECURITY.md](./SECURITY.md) for more details.
-
-## Contributing
-
-We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on:
-
-- Code style and standards
-- Pull request process
-- Testing requirements
-- Issue reporting
-
-## Tech Stack
-
-### Website
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **State**: React Context + Server State
-- **Database**: Supabase (PostgreSQL)
-- **Payments**: Stripe
-- **Desktop**: Electron
-
-### Bot
-- **Library**: Discord.js 14
-- **Language**: JavaScript
-- **Image Processing**: @napi-rs/canvas
-- **Database**: Supabase
-
-## License
-
-MIT License - see [LICENSE](./LICENSE) file for details.
-
-## Support
-
-- **Discord Server**: Join our community for support
-- **GitHub Issues**: Report bugs and feature requests
-
-## Acknowledgments
-
-- [Supabase](https://supabase.com/) for database and auth
-- [Discord.js](https://discord.js.org/) for bot library
-- [Next.js](https://nextjs.org/) for framework
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [Electron](https://www.electronjs.org/) for desktop wrapper
+Additional variables may be required depending on the features enabled in the application.
 
 ---
 
-**Note**: This project is in active development. For the latest updates, see the [CHANGELOG.md](./CHANGELOG.md) file.
+## Discord Bot
 
-## Troubleshooting
+Example `.env`:
 
-Common issues and solutions are documented in [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-For additional help:
-- Check the logs in `tss-website/.next/` and `tss-dc-bot/` directories
-- Review the API documentation in [API.md](./API.md)
-- See the roadmap in [ROADMAP.md](./ROADMAP.md) for upcoming features
+DISCORD_TOKEN=your_discord_bot_token
+CLIENT_ID=your_discord_client_id
+GUILD_ID=your_guild_id
+```
+
+The Supabase service-role key must remain **server-side only** and must never be exposed to browsers or client-side code.
+
+---
+
+# Development
+
+## Website
+
+Navigate to:
+
+```bash
+cd tss-website
+```
+
+### Development server
+
+```bash
+npm run dev
+```
+
+The Next.js development server will start using the project's configured development port.
+
+### Production build
+
+```bash
+npm run build
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+### Electron development
+
+```bash
+npm run electron:dev
+```
+
+### Windows desktop build
+
+```bash
+npm run electron:build:win
+```
+
+---
+
+## Discord Bot
+
+Navigate to:
+
+```bash
+cd tss-dc-bot
+```
+
+Start the bot:
+
+```bash
+npm start
+```
+
+Alternatively:
+
+```bash
+node index.js
+```
+
+---
+
+# Project Structure
+
+```text
+tss/
+│
+├── tss-website/
+│   ├── src/
+│   │   ├── app/                 # Next.js App Router
+│   │   ├── components/          # React components
+│   │   ├── hooks/               # Custom React hooks
+│   │   └── lib/                 # Shared utilities and services
+│   │
+│   ├── electron/                # Electron main process
+│   ├── public/                  # Static assets
+│   ├── next.config.ts           # Next.js configuration
+│   └── package.json
+│
+├── tss-dc-bot/
+│   ├── index.js                 # Bot entry point
+│   ├── profileGenerator.js      # Profile card generation
+│   ├── shop.js                  # Shop and inventory
+│   ├── events/                  # Event system
+│   ├── fishing/                 # Fishing system
+│   ├── rpg/                     # RPG systems
+│   └── package.json
+│
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CHANGELOG.md
+├── TROUBLESHOOTING.md
+├── API.md
+├── ROADMAP.md
+├── LICENSE
+└── README.md
+```
+
+The structure may change as the project evolves.
+
+---
+
+# Features
+
+## Web Application
+
+### Authentication
+
+User authentication is handled through **Supabase Auth**.
+
+Protected areas currently include:
+
+```text
+/profil
+/ustawienia
+/powiadomienia
+```
+
+Access to protected resources should always be enforced server-side where appropriate.
+
+---
+
+### Theme System
+
+The application includes multiple visual themes for different areas of TSS:
+
+* Ocean
+* Games
+* Records
+* Development
+* E-Sport
+
+---
+
+### RPG Systems
+
+The website contains several RPG-style systems, including:
+
+* Mining
+* Fishing
+* Dungeon crawling
+* Equipment
+* Crafting
+* Progression
+
+---
+
+### Economy
+
+The application includes an in-game economy based around coins and other balance systems.
+
+---
+
+### Profiles
+
+Users can have profiles containing information such as:
+
+* Level
+* Progression
+* Economy data
+* RPG statistics
+* Community information
+
+---
+
+### PWA
+
+The website includes Progressive Web App functionality where supported.
+
+---
+
+# Discord Bot Features
+
+## Leveling
+
+Users can gain XP through activity, including:
+
+* Messages
+* Voice channel activity
+
+Level progression can unlock additional Discord roles.
+
+---
+
+## Economy
+
+The bot provides an economy system including:
+
+* Coins
+* Balances
+* Shop
+* Inventory
+* Banking
+* Transactions
+
+---
+
+## Fishing
+
+The Discord bot includes an AFK-oriented fishing system with equipment progression.
+
+---
+
+## Events
+
+The bot supports community events, including functionality for e-sport competitions.
+
+---
+
+## Profile Cards
+
+User profile cards can be generated dynamically using `@napi-rs/canvas`.
+
+---
+
+# Security
+
+Security is a core requirement of the project.
+
+Current security practices include:
+
+* Secure HTTP headers
+* Content Security Policy where applicable
+* API rate limiting
+* Protected file storage
+* Environment-based secrets
+* Input validation and sanitization
+* Secure session handling
+* Supabase Row Level Security
+* Server-side handling of privileged credentials
+
+### Important
+
+Never expose:
+
+* `SUPABASE_SERVICE_ROLE_KEY`
+* Discord bot tokens
+* Stripe secret keys
+* Stripe webhook secrets
+* Authentication secrets
+* Private API keys
+* Production credentials
+
+If you accidentally expose a secret, revoke and rotate it immediately.
+
+For additional information, see [SECURITY.md](./SECURITY.md).
+
+---
+
+# Documentation
+
+Additional project documentation is available in the repository:
+
+| Document                                   | Description                    |
+| ------------------------------------------ | ------------------------------ |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)       | Contribution guidelines        |
+| [SECURITY.md](./SECURITY.md)               | Security policies              |
+| [API.md](./API.md)                         | API documentation              |
+| [ROADMAP.md](./ROADMAP.md)                 | Planned features and direction |
+| [CHANGELOG.md](./CHANGELOG.md)             | Project changes                |
+| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common problems and solutions  |
+| [LICENSE](./LICENSE)                       | Project license                |
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Before making changes, please read:
+
+[CONTRIBUTING.md](./CONTRIBUTING.md)
+
+It contains information about:
+
+* Development setup
+* Branch naming
+* Commit conventions
+* Code style
+* Testing
+* Pull requests
+* Issue reporting
+* Security
+
+---
+
+# Support
+
+If you need help with the project:
+
+### GitHub
+
+Use GitHub Issues for:
+
+* Bug reports
+* Feature requests
+* Technical problems
+
+### Discord
+
+Join the Two Steps Studio community for:
+
+* General questions
+* Development discussions
+* Real-time help
+* Community discussions
+
+---
+
+# License
+
+This project is licensed under the **MIT License**.
+
+See [LICENSE](./LICENSE) for the complete license text.
+
+---
+
+# Acknowledgments
+
+Two Steps Studio uses and builds upon several open-source technologies.
+
+Special thanks to:
+
+* [Supabase](https://supabase.com/) — database and authentication
+* [Discord.js](https://discord.js.org/) — Discord API library
+* [Next.js](https://nextjs.org/) — web framework
+* [React](https://react.dev/) — UI library
+* [Tailwind CSS](https://tailwindcss.com/) — styling framework
+* [Electron](https://www.electronjs.org/) — desktop application framework
+
+---
+
+# Troubleshooting
+
+If you encounter a problem:
+
+1. Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
+2. Check the terminal output and application logs.
+3. Verify your environment variables.
+4. Make sure dependencies are installed.
+5. Check [API.md](./API.md) if the issue involves an API.
+6. Check [ROADMAP.md](./ROADMAP.md) if the functionality is planned but not yet implemented.
+7. Search existing GitHub Issues.
+8. Ask the community for help if necessary.
+
+For Next.js-related issues, development artifacts may be available in:
+
+```text
+tss-website/.next/
+```
+
+Bot logs are available through the process running the Discord bot.
+
+---
+
+# Development Status
+
+Two Steps Studio is under active development.
+
+Features, architecture, dependencies, and project structure may change over time.
+
+For the latest changes, see:
+
+[CHANGELOG.md](./CHANGELOG.md)
+
+For planned work, see:
+
+[ROADMAP.md](./ROADMAP.md)
+
+---
+
+**Two Steps Studio - Create. Build. Inspire.**

@@ -630,5 +630,4 @@ If you're still experiencing issues:
 
 ---
 
-**Last Updated**: 2026-03-13  
-**Version**: 1.0.0  
+**Two Steps Studio - Create. Build. Inspire.**

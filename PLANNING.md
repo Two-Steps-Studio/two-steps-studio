@@ -473,5 +473,4 @@ This GSD milestone focuses on:
 
 ---
 
-*Last updated: 2026-05-06*  
-*GSD Autonomous Milestone*
+**Two Steps Studio - Create. Build. Inspire.**
