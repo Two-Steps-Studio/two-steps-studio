@@ -33,8 +33,6 @@
     "electron:build:linux": "npm run build && electron-builder --linux",
     "electron:release": "npm run build && electron-builder --publish always",
     "electron:release:win": "npm run build && electron-builder --win --publish always",
-    "generate-icons": "node scripts/generate-icons.js",
-    "postinstall": "node -e \"const fs=require('fs');if(fs.existsSync('scripts/generate-icons.js')){require('child_process').execSync('npm run generate-icons',{stdio:'inherit'})}\"",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
