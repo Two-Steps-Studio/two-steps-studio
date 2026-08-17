@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { TaskStatus, TaskPriority } from "@/lib/types/dev-types";
-import { KanbanBoard } from "@/components/dev/kanban-board";
+import { KanbanBoard } from "@/components/DEV/kanban-board";
 import type { DevTask } from "@/lib/types/dev-types";
 
 export default function DevTasks() {
