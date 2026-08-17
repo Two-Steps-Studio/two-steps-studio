@@ -186,11 +186,19 @@ TEMP/
 # =====================================================
 # LOCK FILES
 # =====================================================
+#
+# Lockfiles are COMMITTED on purpose. Ignoring them means every clone
+# and every CI build re-resolves dependencies, so the tree that ships
+# is not the tree that was tested — which is how the autumn-js/next@16
+# peer conflict reached production unnoticed.
+#
+# tss-website/package-lock.json was already tracked (gitignore does not
+# apply to tracked files), so only guidon/ was actually affected.
+#
+# Deterministic installs are also a hard requirement for self-hosting
+# Guidon — see TODO.md §13 (migrations/deploy) and §15 (upgrades).
 
-# npm
-package-lock.json
-
-# yarn
+# yarn — not used in this repo; kept ignored to avoid stray lockfiles
 yarn.lock
 yarn-error.log
 
