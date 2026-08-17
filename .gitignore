@@ -224,8 +224,16 @@ coverage/
 # =====================================================
 # DOCS
 # =====================================================
+#
+# `docs/` was ignored wholesale, which silently discarded every document
+# written into it. TODO.md §26 requires exactly the opposite — self-hosting,
+# configuration, upgrade, backup and architecture guides all live in docs/
+# and must ship with the repository.
+#
+# Only generated output is ignored now.
 
-docs/
+docs/**/_generated/
+docs/**/*.tmp.md
 
 # =====================================================
 # DATABASE
