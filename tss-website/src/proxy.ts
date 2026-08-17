@@ -94,7 +94,7 @@ function handleBotRequest(request: NextRequest, botType: string): NextResponse {
       { status: 403 }
     );
   }
-
+  
   // Allow basic user agents with "bot" in name (Googlebot, Bingbot, etc.)
   if (/googlebot|bingbot|baidu|yandex/i.test(botType)) {
     return NextResponse.next();
@@ -113,7 +113,7 @@ const securityLog = (endpoint: string, action: string, user?: string, ip?: strin
   console.log(logEntry);
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const ip = getClientIp(request);
 
   // Add secure headers
