@@ -186,9 +186,7 @@ export function TopBar() {
             </div>
 
             <div className="w-px h-8 bg-[var(--border-color)] mx-1" />
-
-
-
+            
                   {/* Balans PLN */}
                   <div className="hidden md:flex flex-col items-end mr-2">
                     <span className="text-xs text-muted-foreground font-medium">Saldo:</span>
@@ -196,6 +194,8 @@ export function TopBar() {
                       {plnBalance} zł
                     </span>
                   </div>
+
+            <div className="w-px h-8 bg-[var(--border-color)] mx-1" />
             
                   {!loading && user ? (
                       <div className="flex items-center gap-1">

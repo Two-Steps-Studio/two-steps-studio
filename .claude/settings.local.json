@@ -60,7 +60,10 @@
       "Bash(@echo off *)",
       "Bash(findstr /i \"build dev electron\")",
       "Bash(Select-Object -First 60)",
-      "Bash(findstr /i \"/api/\")"
+      "Bash(findstr /i \"/api/\")",
+      "Bash(/graphify . *)",
+      "Bash(uv tool *)",
+      "Bash(python *)"
     ]
   },
   "enabledMcpjsonServers": [
