@@ -3,20 +3,16 @@
 import { useDevProject } from "@/contexts/dev-project-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  CheckSquare, 
-  Clock, 
-  AlertCircle, 
-  FolderKanban, 
-  Map, 
-  FileText, 
+import {
+  CheckSquare,
+  AlertCircle,
+  FolderKanban,
+  Map,
+  FileText,
   Cpu,
-  ArrowRight,
   Loader2,
   Lock
 } from "lucide-react";
-import Link from "next/link";
 import { DevMembersPanel, DevActivityLogs } from "@/components/DEV";
 
 export function DevPageClient() {
@@ -48,7 +44,7 @@ export function DevPageClient() {
           <Lock className="h-12 w-12 text-[var(--color-dev)] mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Brak dostępu do żadnego projektu.</h2>
           <p className="text-muted-foreground mb-4">
-            Nie masz dostępu do żadnego projektu deweloperskiego. <a href="/dev/projects" className="text-[var(--color-dev)]"> Stwórz swój </a> lub dołącz do istniejącego po przez zaproszenie.
+            Nie masz dostępu do żadnego projektu deweloperskiego. Zarządzanie projektami przeniosło się do Guidona — poproś administratora o dostęp.
           </p>
         </div>
       </div>
@@ -62,13 +58,8 @@ export function DevPageClient() {
           <FolderKanban className="h-12 w-12 text-[var(--color-dev)] mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Brak aktywnego projektu</h2>
           <p className="text-muted-foreground mb-4">
-            Nie masz jeszcze żadnego projektu. Utwórz pierwszy projekt, aby rozpocząć pracę.
+            Nie masz jeszcze żadnego projektu. Zarządzanie projektami przeniosło się do Guidona.
           </p>
-          <Link href="/dev/projects">
-            <Button className="rounded-2xl">
-              Przejdź do projektów
-            </Button>
-          </Link>
         </div>
       </div>
     );
@@ -148,57 +139,6 @@ export function DevPageClient() {
             </p>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
-        <Link href="/dev/tasks">
-          <Card className="rounded-2xl border-[var(--border-color)] hover:border-[var(--color-dev)]/50 transition-colors cursor-pointer bg-[var(--card-bg)] text-[var(--text)]" >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckSquare className="h-5 w-5 text-[var(--color-dev)]" />
-                Zarządzaj zadaniami
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Przeglądaj i zarządzaj zadaniami projektu
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dev/roadmap">
-          <Card className="rounded-2xl border-[var(--border-color)] hover:border-[var(--color-dev)]/50 transition-colors cursor-pointer bg-[var(--card-bg)] text-[var(--text)]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Map className="h-5 w-5 text-[var(--color-dev)]" />
-                Roadmap
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Przeglądaj fazy rozwoju projektu
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dev/files">
-          <Card className="rounded-2xl border-[var(--border-color)] hover:border-[var(--color-dev)]/50 transition-colors cursor-pointer bg-[var(--card-bg)] text-[var(--text)]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-[var(--color-dev)]" />
-                Pliki
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Zarządzaj dokumentacją projektu
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
       </div>
 
       {/* Members and Activity */}

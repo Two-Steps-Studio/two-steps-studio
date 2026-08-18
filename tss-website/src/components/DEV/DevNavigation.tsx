@@ -5,23 +5,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  FolderKanban,
-  CheckSquare,
-  Map,
-  FileText,
-  Cpu,
-  NotebookText,
   Users
 } from "lucide-react";
 
+// Project/task/roadmap/files/description/technology management moved to
+// Guidon (a separate app in this monorepo) — those pages and their DEV/
+// components were removed rather than left as broken links.
 const navItems = [
   { href: "/dev", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dev/projects", label: "Projects", icon: FolderKanban },
-  { href: "/dev/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/dev/roadmap", label: "Roadmap", icon: Map },
-  { href: "/dev/files", label: "Files", icon: FileText },
-  { href: "/dev/description", label: "Description", icon: NotebookText },
-  { href: "/dev/technology", label: "Technologies", icon: Cpu },
   { href: "/dev/recruitment", label: "Recruitment", icon: Users },
 ];
 
