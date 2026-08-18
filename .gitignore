@@ -259,3 +259,9 @@ assets/discord/*.svg
 # =====================================================
 *storybook.log
 storybook-static
+
+# guidon/src/app/admin/logs/ is an admin-panel route (TODO.md §25), not a
+# log directory — it only collides with the bare "logs/" rule above because
+# that rule matches any directory named "logs" anywhere in the tree.
+!guidon/src/app/admin/logs/
+!guidon/src/app/admin/logs/**
