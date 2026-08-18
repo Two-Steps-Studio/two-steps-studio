@@ -10,7 +10,8 @@ import {
   Map,
   FileText,
   Cpu,
-  NotebookText
+  NotebookText,
+  Users
 } from "lucide-react";
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/dev/files", label: "Files", icon: FileText },
   { href: "/dev/description", label: "Description", icon: NotebookText },
   { href: "/dev/technology", label: "Technologies", icon: Cpu },
+  { href: "/dev/recruitment", label: "Recruitment", icon: Users },
 ];
 
 export function DevNavigation() {
