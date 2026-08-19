@@ -22,11 +22,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get Discord webhook URL from environment variable
-    const discordWebhookUrl = process.env.DISCORD_RECRUITMENT_WEBHOOK_URL;
+    // Sent as the actual Discord bot (Bot token + channel message), not an
+    // incoming webhook — same server, same channel, but the message now
+    // comes from the bot's own account instead of a generic webhook persona.
+    const discordToken = process.env.DISCORD_TOKEN;
+    const channelId = process.env.DISCORD_RECRUITMENT_CHANNEL_ID;
 
-    if (!discordWebhookUrl) {
-      console.error("DISCORD_RECRUITMENT_WEBHOOK_URL environment variable is not set");
+    if (!discordToken || !channelId) {
+      console.error("DISCORD_TOKEN or DISCORD_RECRUITMENT_CHANNEL_ID environment variable is not set");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
@@ -81,19 +84,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Send to Discord webhook
-    const discordResponse = await fetch(discordWebhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        embeds: [embed],
-      }),
-    });
+    // Send via the Discord bot's REST API instead of an incoming webhook.
+    const discordResponse = await fetch(
+      `https://discord.com/api/v10/channels/${channelId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bot ${discordToken}`,
+        },
+        body: JSON.stringify({
+          embeds: [embed],
+        }),
+      }
+    );
 
     if (!discordResponse.ok) {
-      console.error("Discord webhook failed:", await discordResponse.text());
+      console.error("Discord bot message failed:", await discordResponse.text());
       return NextResponse.json(
         { error: "Failed to send notification" },
         { status: 500 }
