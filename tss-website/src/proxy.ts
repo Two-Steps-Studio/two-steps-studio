@@ -10,18 +10,17 @@ function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const record = rateLimitStore.get(ip);
 
-  if (!record || now < record.resetTime) {
-    if (record && record.count >= MAX_REQUESTS) {
-      return false;
-    }
+  // No record yet, or the previous window expired: start a fresh window.
+  if (!record || now >= record.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + WINDOW_MS });
     return true;
   }
 
-  if (record && record.count >= MAX_REQUESTS) {
+  if (record.count >= MAX_REQUESTS) {
     return false;
   }
 
-  rateLimitStore.set(ip, { count: record.count + 1, resetTime: record.resetTime });
+  record.count += 1;
   return true;
 }
 
@@ -36,7 +35,19 @@ function getClientIp(request: NextRequest): string {
       return ip;
     }
   }
-  return request.socket?.remoteAddress || "unknown";
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) {
+    const ip = realIp.trim();
+    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^::1$|^localhost$/;
+    if (ipRegex.test(ip)) {
+      return ip;
+    }
+  }
+
+  // Edge runtime's NextRequest has no underlying socket to fall back to —
+  // without a forwarding header from the proxy in front of it, there is no
+  // real client IP available here.
+  return "unknown";
 }
 
 // --- Bot Detection & Protection ---

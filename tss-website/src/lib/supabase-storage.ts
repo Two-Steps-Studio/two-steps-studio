@@ -1,5 +1,12 @@
 import { createClient, createServiceClient } from "@/lib/supabase-server";
-import { STORAGE_BUCKETS, ALLOWED_DEV_FILE_EXTENSIONS, FILE_SIZE_LIMITS } from "./storage-constants";
+import {
+  STORAGE_BUCKETS,
+  ALLOWED_DEV_FILE_EXTENSIONS,
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_AUDIO_TYPES,
+  ALLOWED_VIDEO_TYPES,
+  FILE_SIZE_LIMITS,
+} from "./storage-constants";
 
 // Re-export for convenience
 export { ALLOWED_DEV_FILE_EXTENSIONS, FILE_SIZE_LIMITS };
