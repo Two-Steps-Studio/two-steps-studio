@@ -125,7 +125,7 @@ async function createProfileCard(userData) {
     // Załaduj monetę (coin)
     let coinImage = null;
     try {
-        coinImage = await loadImage(path.join(ASSETS_DIR, 'Coin_TSS.png'));
+        coinImage = await loadImage(path.join(ASSETS_DIR, 'Coin TSS.png'));
     } catch (e) {
         console.warn('[PROFILE] Coin image not found:', e.message);
     }
@@ -138,7 +138,11 @@ async function createProfileCard(userData) {
     }
 
     // Załaduj tło
-    let backgroundPath = path.join(BACKGROUND_DIR, 'default.png');
+    // There is no 'default.png' among assets/discord/backgrounds/ — fall
+    // back to the studio brand background instead of a file that never
+    // existed (every user without a chosen background was silently getting
+    // loadImage's fallback flat fill, not an actual background image).
+    let backgroundPath = path.join(BACKGROUND_DIR, 'Two Steps Studio.png');
     if (userData.background && availableBackgrounds.includes(userData.background)) {
         const ext = ['.png', '.jpg', '.jpeg', '.gif'].find(e =>
             fs.existsSync(path.join(BACKGROUND_DIR, userData.background + e))

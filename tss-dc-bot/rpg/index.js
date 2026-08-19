@@ -8,11 +8,26 @@ const {
 } = require('discord.js');
 
 // Importuj pliki konfiguracyjne
-const WORKER_JOBS = require('./jobs');
+const WORKER_JOBS = require('./workers');
 const LEVEL_STATS = require('./level_stats');
 const BASE_STATS = require('./base_stats');
-const EQUIPMENT_SLOTS = require('./slots');
-const STARTER_ITEMS = require('./items');
+// Slot list for the equipment display (index.js:178) — there was never a
+// './slots' module; the 7 slot ids below are the same set already used
+// throughout equipment.js's `type` field and base_stats.js's
+// `starterEquipment` keys.
+const EQUIPMENT_SLOTS = [
+    { id: 'weapon', label: 'Broń' },
+    { id: 'helmet', label: 'Hełm' },
+    { id: 'chest', label: 'Zbroja' },
+    { id: 'pants', label: 'Spodnie' },
+    { id: 'boots', label: 'Buty' },
+    { id: 'shield', label: 'Tarcza' },
+    { id: 'ring', label: 'Pierścień' },
+];
+// There was never a './items' module either; equipment.js's `starter` tier
+// has the matching starter-item shape (see also base_stats.js's
+// `starterEquipment`, which duplicates the same 7 items without ids).
+const STARTER_ITEMS = require('./equipment').starter;
 const SHOP_ITEMS = require('./shop');
 const RESOURCES = require('./resources');
 const ENEMIES = require('./enemies');
@@ -178,7 +193,10 @@ async function handleEquipment(interaction, supabase, profile) {
     for (const slot of EQUIPMENT_SLOTS) {
         const item = equipment[slot.id];
         if (item) {
-            const itemData = STARTER_ITEMS[slot.id]?.find(i => i.name === item) || item;
+            // STARTER_ITEMS[slot.id] is a single item object (see comment at
+            // the top of this file), not an array to search — fall back to
+            // the raw stored value the same way a failed lookup already did.
+            const itemData = STARTER_ITEMS[slot.id] || item;
             embed.addFields({
                 name: `${slot.label}: ${itemData.emoji} ${itemData.name}`,
                 value: itemData.atk ? `${itemData.atk} ATK` : itemData.def ? `${itemData.def} DEF` : itemData.hp ? `${itemData.hp} HP` : itemData.name,
@@ -357,11 +375,16 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
     };
 
     const tier = difficultyMap[interaction.customId] || 'easy';
-    const enemyList = Object.values(ENEMIES).filter(e => e.tier === tier);
-    const enemy = enemyList[Math.floor(Math.random() * enemyList.length)];
+    const stats = calculateStats(profile);
 
     // WybĂłr bosy dla trudnego poziomu
     if (tier === 'hard' || tier === 'rare') {
+        // Scoped to this branch only — used below for its .coins as the
+        // boss-fight loot roll (was previously colliding with the `enemy`
+        // declared further down for the normal-fight branch).
+        const enemyList = Object.values(ENEMIES).filter(e => e.tier === tier);
+        const enemy = enemyList[Math.floor(Math.random() * enemyList.length)];
+
         const bossList = Object.values(BOSSES);
         const boss = bossList[Math.floor(Math.random() * bossList.length)];
 
@@ -426,7 +449,6 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
     }
 
     // Normalna walka dla zwykĹ‚ych przeciwnikĂłw
-    const enemyName = ENEMIES[interaction.customId.replace('dungeon_', '')];
     const enemy = ENEMIES[interaction.customId.replace('dungeon_', '')];
 
     if (!enemy) {

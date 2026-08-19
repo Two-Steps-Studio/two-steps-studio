@@ -16,12 +16,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "SUPABASE_URL": "https://zkwkfhdyqwotijjhsegj.supabase.co",
-    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inprd2tmaGR5cXdvdGlqamhzZWdqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAzMDI0NywiZXhwIjoyMDg5NjA2MjQ3fQ.ynOwG7n0zw_aLPieQWNRqcRSurpoxt1Dk8QjbuskCF4",
-    "DISCORD_TOKEN": "MTQ4NDI1MzA0NDQyMTAzODI2MQ.G8Dplv.XwoUlfq1Aj9qGI-Ry8Ucr_axRqEKmWt87ipreI",
-    "CLIENT_ID": "1484253044421038261",
-    "GUILD_ID": "1360909069753516042"
-  }
+  ]
 }

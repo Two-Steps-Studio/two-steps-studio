@@ -14,7 +14,10 @@ const SHOP_ITEMS = [
         price: 1500,
         description: 'VIP',
         type: 'role',
-        roleId: 1448013683526467756,
+        // Discord snowflakes exceed Number.MAX_SAFE_INTEGER — as bare number
+        // literals these silently lost precision, so every role grant below
+        // was attempted with a corrupted, non-existent id. Must stay strings.
+        roleId: '1448013683526467756',
     },
     {
         name: 'SVIP',
@@ -22,7 +25,7 @@ const SHOP_ITEMS = [
         price: 3000,
         description: 'SVIP',
         type: 'role',
-        roleId: 1448017195790635099,
+        roleId: '1448017195790635099',
     },
     {
         name: 'MVIP',
@@ -30,7 +33,7 @@ const SHOP_ITEMS = [
         price: 6000,
         description: 'MVIP',
         type: 'role',
-        roleId: 1448017207501000908,
+        roleId: '1448017207501000908',
     },
     {
         name: 'X2',
@@ -38,7 +41,7 @@ const SHOP_ITEMS = [
         price: 6000,
         description: 'X2',
         type: 'role',
-        roleId: 1362307366372114582,
+        roleId: '1362307366372114582',
     },
     {
         name: 'X3',
@@ -46,7 +49,7 @@ const SHOP_ITEMS = [
         price: 10000,
         description: 'X3',
         type: 'role',
-        roleId: 1362307473804886168,
+        roleId: '1362307473804886168',
     },
 ];
 
@@ -116,7 +119,7 @@ function buildShopComponents(page, money) {
 // ── Handler komendy /sklep ───────────────────────────────────
 // UWAGA: index.js już wywołuje deferReply() przed tą funkcją,
 // więc tutaj używamy tylko editReply()
-async function handleShop(interaction, supabase, profile, COIN_EMOJI) {
+async function handleShop(interaction, supabase, profile) {
     const money = profile?.money || 0;
     const embed = buildShopEmbed(0, money);
     const components = buildShopComponents(0, money);
@@ -175,13 +178,22 @@ async function handleShopInteraction(interaction, supabase) {
         const newMoney = money - item.price;
         await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
 
+        let roleGranted = true;
         if (item.type === 'role' && item.roleId) {
             try {
                 const member = await interaction.guild.members.fetch(userId);
                 await member.roles.add(item.roleId);
             } catch (e) {
+                roleGranted = false;
                 console.error('[SHOP] Błąd nadawania roli:', e);
             }
+        }
+
+        if (!roleGranted) {
+            return interaction.reply({
+                content: `⚠️ Pobrano **${item.price.toLocaleString('pl-PL')} ${COIN}**, ale nie udało się nadać roli **${item.label}**. Napisz do administracji, żeby to poprawić.`,
+                flags: 1 << 6,
+            });
         }
 
         return interaction.reply({

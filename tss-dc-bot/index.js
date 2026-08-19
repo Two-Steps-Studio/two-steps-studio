@@ -1,5 +1,18 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, AttachmentBuilder, REST, Routes, SlashCommandBuilder, EmbedBuilder, Collection } = require('discord.js');
+const {
+    Client,
+    GatewayIntentBits,
+    AttachmentBuilder,
+    REST,
+    Routes,
+    SlashCommandBuilder,
+    EmbedBuilder,
+    Collection,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder,
+    StringSelectMenuBuilder,
+} = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
 const { createProfileCard, availableBackgrounds, refreshBackgrounds } = require('./profileGenerator');
 const { handleFishing, handleFishInventory, handleFishTop } = require('./fishing/fishing');
@@ -105,13 +118,6 @@ const voiceSessions = new Collection();
 const cooldowns = new Map();
 let messagesTodayCount = 0;
 let lastDay = new Date().getDate();
-
-// Fix: Initialize lastDay once on startup, not constantly
-client.once('ready', () => {
-    lastDay = new Date().getDate();
-    messagesTodayCount = 0;
-    console.log('[BOT] Bot jest gotowy. Reset zlicznika wiadomości.');
-});
 
 function getLevelFromXP(xp) {
     if (!xp || xp < 100) return 0;
@@ -593,6 +599,7 @@ client.on('interactionCreate', async interaction => {
             return;
         }
         if (interaction.customId === 'city_shop' || interaction.customId.startsWith('shop_') || interaction.customId === 'city_heal' || interaction.customId === 'city_forge' || interaction.customId === 'city_bank') {
+            const profile = await getRpgProfile(interaction.user.id, supabase);
             await handleCityButton(interaction, supabase, profile);
             return;
         }
@@ -1097,7 +1104,6 @@ client.on('interactionCreate', async interaction => {
                 }
                 const newMoney = profile.money - healCost;
                 await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
-                await supabase.from('profiles').update({ xp: profile.rpg?.hp }).eq('id', profile.id);
                 return interaction.reply({
                     content: `🏥 **Szpital**\n\n✅ Wyleczono! HP: ${profile.rpg?.hp || 120} → 100\n💰 Koszt: ${healCost} ${COIN}\n💵 Pozostało: ${newMoney} ${COIN}`,
                     ephemeral: true,

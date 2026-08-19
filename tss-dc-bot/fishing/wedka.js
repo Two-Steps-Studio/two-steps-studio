@@ -151,11 +151,11 @@ async function handleGearInteraction(interaction, supabase) {
         const next = getNextUpgrade(gearObj, key);
 
         if (!next) {
-            return await interaction.editReply({ content: '✅ Ten sprzęt jest już na maksymalnym poziomie!', ephemeral: true });
+            return await interaction.reply({ content: '✅ Ten sprzęt jest już na maksymalnym poziomie!', ephemeral: true });
         }
         if (money < next.price) {
             const brakuje = (next.price - money).toLocaleString('pl-PL');
-            return await interaction.editReply({ content: `❌ Brakuje Ci **${brakuje} ${COIN}**!`, ephemeral: true });
+            return await interaction.reply({ content: `❌ Brakuje Ci **${brakuje} ${COIN}**!`, ephemeral: true });
         }
 
         const newMoney  = money - next.price;

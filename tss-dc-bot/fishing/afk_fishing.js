@@ -1,7 +1,7 @@
 // fishing/afk_fishing.js – AFK wędkowanie przy jeziorze
 // Mniej opłacalne niż ręczne (~40% mniej kasy, ~30% mniej XP)
 
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { FISH, RARITY_STYLES, TRASH_CHANCE } = require('./fish.config');
 const { getGearStats } = require('./gear.config');
 const { fetchGearRow, rowToGearObj } = require('./wedka');
