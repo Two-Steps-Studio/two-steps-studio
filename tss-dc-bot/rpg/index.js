@@ -272,25 +272,22 @@ async function handleMine(interaction, supabase, profile) {
 
     const resource = RESOURCES[dropType];
 
-    // Zapisz surowiec
-    await supabase.from('profiles').update({
-        ore: (profile.ore || []).concat([{ id: `ore_${Date.now()}_${i}`, ...resource }]),
-    }).eq('id', profile.id);
-
     const xpGain = Math.floor((resource.baseValue || 10) / 2);
-    const newMoney = (profile.money || 0) + (resource.baseValue || 10);
+    const moneyGain = resource.baseValue || 10;
     const newXp = (profile.xp || 0) + xpGain;
     const newLevel = getLevelFromXp(newXp);
+    const oreItem = { id: `ore_${Date.now()}_7`, ...resource };
 
-    await supabase.from('profiles').update({
-        money: newMoney,
-        xp: newXp,
-        level: newLevel,
-        updated_at: new Date().toISOString(),
-    }).eq('id', profile.id);
+    const { data: mineData } = await supabase.rpc('apply_mine_reward', {
+        p_user_id: profile.id,
+        p_money_delta: moneyGain,
+        p_xp_delta: xpGain,
+        p_new_level: newLevel,
+        p_ore_item: oreItem,
+    });
 
     return interaction.editReply({
-        content: `🔨 **Kopalnia** - ${i}/7 klików wykonanych!\n\n📦 Drop: **${resource.name}** ${resource.emoji}\n💰 Wartość: +${resource.baseValue} ${COIN}\n✨ XP: +${xpGain}\n📈 Level: ${profile.level} → ${newLevel}`,
+        content: `🔨 **Kopalnia** - 7/7 klików wykonanych!\n\n📦 Drop: **${resource.name}** ${resource.emoji}\n💰 Wartość: +${resource.baseValue} ${COIN}\n✨ XP: +${xpGain}\n📈 Level: ${profile.level} → ${newLevel}`,
     });
 }
 
@@ -308,17 +305,17 @@ async function handleStaw(interaction, supabase, profile) {
     const fishName = fish.name === 'Zwykła ryba' ? `${fish.name} ${Math.floor(Math.random() * 10) + 1}cm` : fish.name;
 
     const xpGain = Math.floor(fish.value / 5);
-    const newMoney = (profile.money || 0) + fish.value;
     const newXp = (profile.xp || 0) + xpGain;
     const newLevel = getLevelFromXp(newXp);
+    const fishItem = { id: `fish_${Date.now()}`, name: fishName, value: fish.value, type: 'fish' };
 
-    await supabase.from('profiles').update({
-        fish: (profile.fish || []).concat([{ id: `fish_${Date.now()}`, name: fishName, value: fish.value, type: 'fish' }]),
-        money: newMoney,
-        xp: newXp,
-        level: newLevel,
-        updated_at: new Date().toISOString(),
-    }).eq('id', profile.id);
+    await supabase.rpc('apply_staw_reward', {
+        p_user_id: profile.id,
+        p_money_delta: fish.value,
+        p_xp_delta: xpGain,
+        p_new_level: newLevel,
+        p_fish_item: fishItem,
+    });
 
     return interaction.reply({
         content: `🎣 **Staw**\n\n🐟 Złowiłeś: **${fishName}**\n💰 Sprzedaż: +${fish.value} ${COIN}\n✨ XP: +${xpGain}\n📈 Level: ${profile.level} → ${newLevel}`,
@@ -417,9 +414,8 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
 
         if (newHp <= 0) {
             const lostMoney = Math.floor(Math.random() * 50 + 20);
-            const newMoney = (profile.money || 0) - lostMoney;
 
-            await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
+            await supabase.rpc('increment_profile_money', { p_user_id: profile.id, p_delta: -lostMoney });
 
             return interaction.editReply({
                 content: `💀 **PRZEGRANA z ${boss.name}!**\n\n👹 ${boss.name} (${boss.emoji}) zabił Cię!\n⚔️ Otrzymałeś: ${combatReceived} HP\n💸 Straciłeś: ${lostMoney} ${COIN}`,
@@ -477,9 +473,8 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
 
     if (newHp <= 0) {
         const lostMoney = Math.floor(Math.random() * 30 + 10);
-        const newMoney = (profile.money || 0) - lostMoney;
 
-        await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
+        await supabase.rpc('increment_profile_money', { p_user_id: profile.id, p_delta: -lostMoney });
 
         return interaction.editReply({
             content: `💀 **PRZEGRANA!**\n\n👹 ${enemy.name} Cię zabił!\n⚔️ Otrzymałeś: ${combatReceived} HP\n💸 Straciłeś: ${lostMoney} ${COIN}`,
@@ -596,8 +591,17 @@ async function handleCityHeal(interaction, supabase, profile) {
         });
     }
 
-    const newMoney = money - healCost;
-    await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
+    const { data: cityHealData, error: cityHealError } = await supabase.rpc('increment_profile_money', {
+        p_user_id: profile.id,
+        p_delta: -healCost,
+    });
+    if (cityHealError || !cityHealData?.length) {
+        return interaction.reply({
+            content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${healCost} ${COIN}**.\n`,
+            ephemeral: true,
+        });
+    }
+    const newMoney = cityHealData[0].money;
 
     return interaction.reply({
         content: `🏥 **Szpital**\n\n✅ Wyleczono! HP: ${stats.hp} → 100\n💰 Koszt: ${healCost} ${COIN}\n💵 Pozostało: ${newMoney} ${COIN}`,

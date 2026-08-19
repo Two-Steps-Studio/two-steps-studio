@@ -526,8 +526,14 @@ client.on('interactionCreate', async interaction => {
                 if (profile.money < healCost) {
                     return interaction.reply({ content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${healCost} ${COIN}**`, ephemeral: true });
                 }
-                const newMoney = profile.money - healCost;
-                await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
+                const { data: healData, error: healError } = await supabase.rpc('increment_profile_money', {
+                    p_user_id: profile.id,
+                    p_delta: -healCost,
+                });
+                if (healError || !healData?.length) {
+                    return interaction.reply({ content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${healCost} ${COIN}**`, ephemeral: true });
+                }
+                const newMoney = healData[0].money;
                 return interaction.reply({
                     content: `🏥 **Szpital**\n\n✅ Wyleczono! HP: ${profile.rpg?.hp || 120} → 100\n💰 Koszt: ${healCost} ${COIN}\n💵 Pozostało: ${newMoney} ${COIN}`,
                     ephemeral: true,
@@ -772,10 +778,14 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply({ content: `❌ Masz tylko **${currentMoney}** ${COIN} w portfelu.`, ephemeral: true });
             }
 
-            const newMoney = currentMoney - amount;
-            const newBank = (profile.bank ?? 0) + amount;
-
-            await supabase.from('profiles').update({ money: newMoney, bank: newBank }).eq('id', profile.id);
+            const { data: depositData, error: depositError } = await supabase.rpc('deposit_to_bank', {
+                p_user_id: profile.id,
+                p_amount: amount,
+            });
+            if (depositError || !depositData?.length) {
+                return await interaction.editReply({ content: `❌ Masz tylko **${currentMoney}** ${COIN} w portfelu.`, ephemeral: true });
+            }
+            const { money: newMoney, bank: newBank } = depositData[0];
 
             await interaction.editReply({
                 content: `✅ Wpłaciłeś **${amount}** ${COIN} do banku!\n💵 Portfel: **${newMoney}** ${COIN}\n🏦 Bank: **${newBank}** ${COIN}`,
@@ -796,10 +806,14 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply({ content: `❌ Masz tylko **${currentBank}** ${COIN} w banku.`, ephemeral: true });
             }
 
-            const newBank = currentBank - amount;
-            const newMoney = (profile.money ?? 0) + amount;
-
-            await supabase.from('profiles').update({ money: newMoney, bank: newBank }).eq('id', profile.id);
+            const { data: withdrawData, error: withdrawError } = await supabase.rpc('withdraw_from_bank', {
+                p_user_id: profile.id,
+                p_amount: amount,
+            });
+            if (withdrawError || !withdrawData?.length) {
+                return await interaction.editReply({ content: `❌ Masz tylko **${currentBank}** ${COIN} w banku.`, ephemeral: true });
+            }
+            const { money: newMoney, bank: newBank } = withdrawData[0];
 
             await interaction.editReply({
                 content: `✅ Wypłaciłeś **${amount}** ${COIN} z banku!\n💵 Portfel: **${newMoney}** ${COIN}\n🏦 Bank: **${newBank}** ${COIN}`,
@@ -838,11 +852,24 @@ client.on('interactionCreate', async interaction => {
             }
 
             // Wykonaj przelew
-            const newSenderMoney = currentMoney - amount;
-            const newTargetMoney = (targetProfile.money ?? 0) + amount;
-
-            await supabase.from('profiles').update({ money: newSenderMoney }).eq('id', profile.id);
-            await supabase.from('profiles').update({ money: newTargetMoney }).eq('id', targetProfile.id);
+            const { data: payData, error: payError } = await supabase.rpc('pay_transfer', {
+                p_sender_id: profile.id,
+                p_recipient_id: targetProfile.id,
+                p_amount: amount,
+            });
+            if (payError) {
+                if (payError.message?.includes('INSUFFICIENT_FUNDS')) {
+                    return await interaction.editReply({
+                        content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${amount}** ${COIN}, a masz **${currentMoney}** ${COIN}.`,
+                        ephemeral: true
+                    });
+                }
+                if (payError.message?.includes('RECIPIENT_NOT_FOUND')) {
+                    return await interaction.editReply({ content: `❌ Nie znaleziono profilu dla: ${targetUser.username}`, ephemeral: true });
+                }
+                throw payError;
+            }
+            const { sender_money: newSenderMoney, recipient_money: newTargetMoney } = payData[0];
 
             const embed = new EmbedBuilder()
                 .setTitle('💸 Przelew monet')
@@ -896,10 +923,11 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply(`⏳ Jesteś zmęczony! Odpocznij jeszcze **${minsLeft} min**.`);
             }
             const earnings = Math.floor(Math.random() * 80) + 20;
-            await supabase.from('profiles').update({
-                money:     (profile.money || 0) + earnings,
-                last_work: new Date().toISOString(),
-            }).eq('id', profile.id);
+            const { error: workError } = await supabase.rpc('apply_work_reward', {
+                p_user_id: profile.id,
+                p_earnings: earnings,
+            });
+            if (workError) console.error('[DB ERROR] apply_work_reward failed:', workError.message);
             await interaction.editReply(`⛏️ Zapracowałeś ciężko w Studiu i otrzymałeś **${earnings} ${COIN}!**`);
             break;
         }
@@ -1103,8 +1131,14 @@ client.on('interactionCreate', async interaction => {
                         ephemeral: true,
                     });
                 }
-                const newMoney = profile.money - healCost;
-                await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
+                const { data: healData, error: healError } = await supabase.rpc('increment_profile_money', {
+                    p_user_id: profile.id,
+                    p_delta: -healCost,
+                });
+                if (healError || !healData?.length) {
+                    return interaction.reply({ content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${healCost} ${COIN}**`, ephemeral: true });
+                }
+                const newMoney = healData[0].money;
                 return interaction.reply({
                     content: `🏥 **Szpital**\n\n✅ Wyleczono! HP: ${profile.rpg?.hp || 120} → 100\n💰 Koszt: ${healCost} ${COIN}\n💵 Pozostało: ${newMoney} ${COIN}`,
                     ephemeral: true,
@@ -1274,13 +1308,14 @@ client.on('messageCreate', async (message) => {
         if (!profile) return;
 
         const currentLevel = profile.level ?? 0;
-        const newXp        = (profile.xp ?? 0) + MESSAGE_XP_REWARD;
-        const newMoney     = (profile.money ?? 0) + MESSAGE_MONEY_REWARD;
-        const newLevel     = getLevelFromXP(newXp);
+        const newLevel     = getLevelFromXP((profile.xp ?? 0) + MESSAGE_XP_REWARD);
 
-        const { error: updateError } = await supabase.from('profiles').update({
-            xp: newXp, money: newMoney, level: newLevel, updated_at: new Date().toISOString(),
-        }).eq('id', profile.id);
+        const { error: updateError } = await supabase.rpc('apply_xp_money_reward', {
+            p_user_id: profile.id,
+            p_xp_delta: MESSAGE_XP_REWARD,
+            p_money_delta: MESSAGE_MONEY_REWARD,
+            p_new_level: newLevel,
+        });
 
         if (updateError) {
             console.error('[DB ERROR] Failed to update profile:', updateError.message);
@@ -1320,13 +1355,14 @@ async function syncVoiceRewards(userId, minutes, member, username) {
     try {
         const profile      = await getProfile(userId, username);
         const currentLevel = profile.level ?? 0;
-        const newXp        = (profile.xp    || 0) + minutes * 3;
-        const newMoney     = (profile.money || 0) + minutes * 2;
-        const newLevel     = getLevelFromXP(newXp);
+        const newLevel     = getLevelFromXP((profile.xp || 0) + minutes * 3);
 
-        await supabase.from('profiles').update({
-            xp: newXp, money: newMoney, level: newLevel, updated_at: new Date().toISOString(),
-        }).eq('id', profile.id);
+        await supabase.rpc('apply_xp_money_reward', {
+            p_user_id: profile.id,
+            p_xp_delta: minutes * 3,
+            p_money_delta: minutes * 2,
+            p_new_level: newLevel,
+        });
 
         if (newLevel > currentLevel && member) {
             await syncLevelRole(member, newLevel);

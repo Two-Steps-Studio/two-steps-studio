@@ -177,8 +177,17 @@ async function handleShopInteraction(interaction, supabase) {
             });
         }
 
-        const newMoney = money - item.price;
-        await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
+        const { data: purchaseData, error: purchaseError } = await supabase.rpc('increment_profile_money', {
+            p_user_id: profile.id,
+            p_delta: -item.price,
+        });
+        if (purchaseError || !purchaseData?.length) {
+            return interaction.reply({
+                content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${item.price.toLocaleString('pl-PL')} ${COIN}**, masz **${money} ${COIN}**.`,
+                flags: 1 << 6,
+            });
+        }
+        const newMoney = purchaseData[0].money;
 
         let roleGranted = true;
         if (item.type === 'role' && item.roleId) {

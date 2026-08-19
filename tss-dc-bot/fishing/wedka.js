@@ -158,14 +158,22 @@ async function handleGearInteraction(interaction, supabase) {
             return await interaction.reply({ content: `❌ Brakuje Ci **${brakuje} ${COIN}**!`, ephemeral: true });
         }
 
-        const newMoney  = money - next.price;
         const newLevel  = next.level;
         const newGearObj = { ...gearObj, [key]: newLevel };
 
-        await Promise.all([
-            supabase.from('profiles').update({ money: newMoney }).eq('id', userId),
-            supabase.from('fishing_gear').upsert({ user_id: userId, [key]: newLevel }),
-        ]);
+        const { data: upgradeData, error: upgradeError } = await supabase.rpc('purchase_gear_upgrade', {
+            p_user_id: userId,
+            p_gear_key: key,
+            p_price: next.price,
+            p_new_level: newLevel,
+        });
+        if (upgradeError) {
+            const msg = upgradeError.message?.includes('INSUFFICIENT_FUNDS')
+                ? `❌ Brakuje Ci **${(next.price - money).toLocaleString('pl-PL')} ${COIN}**!`
+                : '❌ Wystąpił błąd podczas ulepszania sprzętu.';
+            return await interaction.reply({ content: msg, ephemeral: true });
+        }
+        const newMoney = upgradeData[0].money;
 
         return interaction.update({
             embeds:     [buildGearEmbed(newGearObj, newMoney)],

@@ -92,17 +92,15 @@ async function afkCatch(userId, supabase, gearStats) {
     const value   = isTrash ? 0 : calcValueAfk(fish, weight, valueBonus);
     const xpGain  = isTrash ? 1 : Math.round((fish.xp || 5) * AFK_XP_PENALTY);
 
-    const newMoney = Math.max(0, (profile.money || 0) - baitCost + value);
-    const newXp    = (profile.xp || 0) + xpGain;
-    const newLevel = getLevelFromXP(newXp);
+    const newLevel = getLevelFromXP((profile.xp || 0) + xpGain);
     const netGain  = value - baitCost;
 
-    await supabase.from('profiles').update({
-        money:      newMoney,
-        xp:         newXp,
-        level:      newLevel,
-        updated_at: new Date().toISOString(),
-    }).eq('id', userId);
+    await supabase.rpc('apply_xp_money_reward', {
+        p_user_id: userId,
+        p_xp_delta: xpGain,
+        p_money_delta: netGain,
+        p_new_level: newLevel,
+    });
 
     if (!isTrash) {
         await supabase.from('fishing_catches').insert({

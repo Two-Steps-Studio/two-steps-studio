@@ -105,17 +105,16 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
     const style   = RARITY_STYLES[fish.rarity];
     const isTrash = fish.rarity === 'trash';
 
-    const newMoney = Math.max(0, (profile.money || 0) - BAIT_COST + value);
-    const newXp    = (profile.xp || 0) + xpGain;
-    const newLevel = getLevelFromXP(newXp);
+    const newLevel = getLevelFromXP((profile.xp || 0) + xpGain);
 
     // 7. Zapisz do DB
-    await supabase.from('profiles').update({
-        money:      newMoney,
-        xp:         newXp,
-        level:      newLevel,
-        updated_at: new Date().toISOString(),
-    }).eq('id', profile.id);
+    const { data: fishRewardData } = await supabase.rpc('apply_xp_money_reward', {
+        p_user_id: profile.id,
+        p_xp_delta: xpGain,
+        p_money_delta: value - BAIT_COST,
+        p_new_level: newLevel,
+    });
+    const newMoney = fishRewardData?.[0]?.money ?? Math.max(0, (profile.money || 0) - BAIT_COST + value);
 
     if (!isTrash) {
         try {
