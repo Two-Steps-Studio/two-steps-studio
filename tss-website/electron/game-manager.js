@@ -136,42 +136,104 @@ async function localFileMatches(filePath, expectedSha256) {
   }
 }
 
+const MAX_ATTEMPTS = 4;
+
+/** A 4xx (other than 408/429) means the URL itself is wrong — retrying won't help. */
+function isRetryable(error) {
+  if (error?.name === 'AbortError') return false;
+  if (error?.permanent) return true; // hash mismatch: could be a truncated transfer
+  if (typeof error?.status === 'number') {
+    return error.status === 408 || error.status === 429 || error.status >= 500;
+  }
+  return true; // network-level failure (socket reset, DNS, timeout)
+}
+
 /**
  * Download one file from a signed URL to destPath, hashing as it streams
  * (single pass — no separate re-read for verification). Throws if the
  * final hash doesn't match expectedSha256 (temp file is cleaned up).
+ *
+ * Retries transient failures with exponential backoff so a brief network
+ * drop doesn't abandon a multi-GB install. `onBytes` receives deltas and
+ * is rolled back on a failed attempt, so progress can't drift upward as
+ * partial reads are discarded and re-fetched.
  */
 async function downloadAndVerify(signedUrl, destPath, expectedSha256, signal, onBytes) {
   fs.mkdirSync(path.dirname(destPath), { recursive: true });
   const tempPath = destPath + '.tmp';
+  let lastError;
 
-  const response = await fetch(signedUrl, { signal });
-  if (!response.ok || !response.body) {
-    throw new Error(`Pobieranie nie powiodło się (HTTP ${response.status})`);
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    let attemptBytes = 0;
+    try {
+      const response = await fetch(signedUrl, { signal });
+      if (!response.ok || !response.body) {
+        const err = new Error(`Pobieranie nie powiodło się (HTTP ${response.status})`);
+        err.status = response.status;
+        throw err;
+      }
+
+      const hash = crypto.createHash('sha256');
+      const nodeStream = Readable.fromWeb(response.body);
+      nodeStream.on('data', (chunk) => {
+        hash.update(chunk);
+        attemptBytes += chunk.length;
+        onBytes?.(chunk.length);
+      });
+
+      await pipeline(nodeStream, fs.createWriteStream(tempPath));
+
+      const actualSha256 = hash.digest('hex');
+      if (actualSha256 !== expectedSha256) {
+        const err = new Error(`Suma kontrolna pliku się nie zgadza: ${path.basename(destPath)}`);
+        err.permanent = true;
+        throw err;
+      }
+
+      fs.renameSync(tempPath, destPath);
+      return;
+    } catch (error) {
+      try { fs.unlinkSync(tempPath); } catch {}
+      onBytes?.(-attemptBytes); // discard this attempt's progress
+      lastError = error;
+
+      if (signal?.aborted || !isRetryable(error) || attempt === MAX_ATTEMPTS) throw error;
+
+      const backoffMs = 500 * 2 ** (attempt - 1); // 0.5s, 1s, 2s
+      log('WARN', `Retry ${attempt}/${MAX_ATTEMPTS - 1} for ${path.basename(destPath)}`, error.message);
+      await new Promise((resolve) => setTimeout(resolve, backoffMs));
+    }
   }
 
-  const hash = crypto.createHash('sha256');
-  const nodeStream = Readable.fromWeb(response.body);
-  nodeStream.on('data', (chunk) => {
-    hash.update(chunk);
-    onBytes?.(chunk.length);
-  });
+  throw lastError;
+}
 
-  const writeStream = fs.createWriteStream(tempPath);
+/**
+ * Refuse to start a sync that cannot possibly fit, rather than filling the
+ * disk and failing partway through. Best-effort: fs.statfs isn't available
+ * on every platform/filesystem, so an error here is not treated as fatal.
+ */
+async function assertEnoughDiskSpace(installDir, bytesNeeded) {
   try {
-    await pipeline(nodeStream, writeStream);
+    // statfs needs an existing path — walk up to the nearest one.
+    let probe = path.resolve(installDir);
+    while (!fs.existsSync(probe)) {
+      const parent = path.dirname(probe);
+      if (parent === probe) break;
+      probe = parent;
+    }
+    const stats = await fs.promises.statfs(probe);
+    const freeBytes = stats.bavail * stats.bsize;
+    const withHeadroom = bytesNeeded * 1.1; // temp file + filesystem overhead
+    if (freeBytes < withHeadroom) {
+      const needGb = (withHeadroom / 1024 ** 3).toFixed(2);
+      const freeGb = (freeBytes / 1024 ** 3).toFixed(2);
+      throw new Error(`Za mało miejsca na dysku: potrzeba ~${needGb} GB, dostępne ${freeGb} GB`);
+    }
   } catch (error) {
-    try { fs.unlinkSync(tempPath); } catch {}
-    throw error;
+    if (error.message?.startsWith('Za mało miejsca')) throw error;
+    log('WARN', 'Disk space check unavailable, continuing', error.message);
   }
-
-  const actualSha256 = hash.digest('hex');
-  if (actualSha256 !== expectedSha256) {
-    try { fs.unlinkSync(tempPath); } catch {}
-    throw new Error(`Suma kontrolna pliku się nie zgadza: ${path.basename(destPath)}`);
-  }
-
-  fs.renameSync(tempPath, destPath);
 }
 
 // ---------------------------------------------------------------------------
@@ -204,33 +266,48 @@ async function syncEngine(loadSessionFn, sendEvent, payload) {
     let bytesDone = 0;
     let lastEmit = 0;
 
-    const emitProgress = (phase, currentFile) => {
+    // fileIndex is passed in rather than derived with files.indexOf(): this
+    // runs on every chunk of every file, so a lookup here would make the
+    // whole sync O(files x chunks).
+    const emitProgress = (phase, currentFile, fileIndex, force = false) => {
       const now = Date.now();
-      if (now - lastEmit < 200 && bytesDone < bytesTotal) return; // throttle IPC
+      if (!force && now - lastEmit < 200) return; // throttle IPC
       lastEmit = now;
       sendEvent('game-sync-progress', {
-        gameId, phase, fileIndex: files.indexOf(currentFile) + 1, fileCount: files.length,
+        gameId, phase, fileIndex: fileIndex + 1, fileCount: files.length,
         currentFile: currentFile?.path, bytesDone, bytesTotal,
       });
     };
 
-    for (const file of files) {
+    // Only the files actually missing/changed need to fit on disk.
+    let bytesToFetch = 0;
+    const needsFetch = new Array(files.length);
+    for (let i = 0; i < files.length; i++) {
       if (controller.signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      const destPath = resolveSafeJoin(installDir, files[i].path);
+      const upToDate = mode !== 'install' && (await localFileMatches(destPath, files[i].sha256));
+      needsFetch[i] = !upToDate;
+      if (upToDate) {
+        bytesDone += files[i].size;
+      } else {
+        bytesToFetch += files[i].size;
+      }
+      emitProgress('verifying', files[i], i);
+    }
 
+    await assertEnoughDiskSpace(installDir, bytesToFetch);
+
+    for (let i = 0; i < files.length; i++) {
+      if (controller.signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      if (!needsFetch[i]) continue;
+
+      const file = files[i];
       const destPath = resolveSafeJoin(installDir, file.path);
 
-      if (mode !== 'install' && (await localFileMatches(destPath, file.sha256))) {
-        bytesDone += file.size;
-        emitProgress('verifying', file);
-        continue;
-      }
-
-      emitProgress('downloading', file);
-      let fileBytesDone = 0;
+      emitProgress('downloading', file, i, true);
       await downloadAndVerify(file.signedUrl, destPath, file.sha256, controller.signal, (n) => {
-        fileBytesDone += n;
         bytesDone += n;
-        emitProgress('downloading', file);
+        emitProgress('downloading', file, i);
       });
     }
 
