@@ -35,6 +35,15 @@
   --sidebar-bg: rgba(255, 255, 255, 0.9);
   --card-bg: #ffffff;
   --border-color: rgba(0, 0, 0, 0.08);
+  /* Semantic surface/text tokens that follow the .dark/.light class rather
+     than prefers-color-scheme (Tailwind's `dark:` variant is media-based in
+     this project, so it can disagree with the user's chosen theme). */
+  --text-muted: rgba(0, 0, 0, 0.66);
+  --surface: rgba(0, 0, 0, 0.04);
+  --surface-hover: rgba(0, 0, 0, 0.07);
+  /* Teal accent darkened for use as *text* on light backgrounds — the raw
+     --color-general (#1bbdbd) only reaches ~2:1 against a light surface. */
+  --color-general-accessible: #0a6a6a;
   --selection-bg: var(--color-general);
   --selection-text: #ffffff;
   --transition-speed: 0.4s;
@@ -49,6 +58,10 @@
   --sidebar-bg: rgba(0, 0, 0, 0.9);
   --card-bg: #020202;
   --border-color: rgba(255, 255, 255, 0.1);
+  --text-muted: rgba(255, 255, 255, 0.66);
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.09);
+  --color-general-accessible: #1bbdbd;
   --selection-bg: var(--color-general);
 }
 
