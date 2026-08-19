@@ -5,7 +5,9 @@ import { Moon, Sun, Bell, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useSectionTheme } from "@/hooks/use-section-theme";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -26,6 +28,9 @@ export function MobileHeader() {
     };
   }, [theme]);
   const { toggle } = useSidebar();
+  // Same source the sidebar uses, so both swap to the section's own logo
+  // (Games / Records / DEV / E-Sport / main) as the user moves around.
+  const { logo, color: sectionColor } = useSectionTheme();
   const { user, loading } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
@@ -83,12 +88,25 @@ export function MobileHeader() {
           </button>
           <Link
             href="/"
-            className="flex items-center gap-2"
+            aria-label="Two Steps Studio — strona główna"
+            style={{ "--section-color": sectionColor } as React.CSSProperties}
+            className="group relative flex items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
           >
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-general)] flex items-center justify-center shrink-0">
-              <span className="text-white font-black text-xs">TSS</span>
-            </div>
-            <span className="hidden whitespace-nowrap font-black text-[var(--text)] sm:inline">TWO STEPS</span>
+            {/* Glow picks up the current section's colour, so the accent
+                shifts along with the logo itself. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[var(--section-color)] opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-30"
+            />
+            <Image
+              key={logo}
+              src={logo}
+              alt="Two Steps Studio"
+              width={64}
+              height={64}
+              priority
+              className="w-16 h-16 shrink-0 object-contain transition-opacity duration-300"
+            />
           </Link>
         </div>
 

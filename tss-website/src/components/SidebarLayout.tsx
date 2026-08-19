@@ -18,7 +18,15 @@ export function SidebarLayout() {
   const sidebarOpen = isDesktop || isOpen;
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-[240px] lg:w-[240px]">
+    // Sidebar renders null when closed, but this wrapper stayed put: a
+    // 240px-wide, full-height, z-50 box sitting above the mobile header
+    // (z-40), swallowing taps on the header's logo and hamburger. Disable
+    // hit-testing while it has nothing to show.
+    <div
+      className={`fixed inset-y-0 left-0 z-50 w-[240px] lg:w-[240px] ${
+        sidebarOpen ? "" : "pointer-events-none"
+      }`}
+    >
       <Sidebar isOpen={sidebarOpen} suppressHydrationWarning={true} />
     </div>
   );
