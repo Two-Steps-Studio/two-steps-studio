@@ -54,7 +54,9 @@ const SHOP_ITEMS = [
 ];
 
 const ITEMS_PER_PAGE = 10;
-const COIN = '<:Coin_TSS:1486049517072814270>';
+// Matches the coin emoji used everywhere else in the bot (index.js,
+// fishing/*, wedka.js) — this file was the only one on a different id.
+const COIN = '<:CoinTSS:1486049846132605042>';
 
 // ── Budowanie embed sklepu ───────────────────────────────────
 function buildShopEmbed(page, money) {

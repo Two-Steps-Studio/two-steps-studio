@@ -631,6 +631,7 @@ client.on('interactionCreate', async interaction => {
     const roles   = interaction.member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
     const profile = await getProfile(interaction.user.id, interaction.user.username, roles);
 
+    await handleCommandWithErrors(interaction, async () => {
     switch (interaction.commandName) {
 
         case 'profilowe': {
@@ -1234,6 +1235,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
     }
+    });
 });
 
 // Wrapper do obsługi błędów komend

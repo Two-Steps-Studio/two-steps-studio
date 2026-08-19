@@ -35,12 +35,12 @@ const BOSSES = require('./bosses');
 const INVENTORY_SIZE = require('./inventory_size').getSize;
 const getLevelFromXp = require('./level_stats').getLevelFromXp;
 const getXpForLevel = require('./level_stats').getXpForLevel;
-const COIN = 'đź’°';
+const COIN = '💰';
 
-// â”€â”€ NAMA Gry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── NAMA Gry ────────────────────────────────────────────────────────────
 const GAME_NAME = 'Two Steps Valley';
 
-// â”€â”€ PROFIL RAG (getProfile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── PROFIL RAG (getProfile) ────────────────────────────────────────────
 async function getRpgProfile(userId, supabase) {
     const { data: profile } = await supabase
         .from('profiles')
@@ -84,7 +84,7 @@ async function getRpgProfile(userId, supabase) {
         };
     }
 
-    // SprawdĹş czy kolumna rpg istnieje
+    // Sprawdź czy kolumna rpg istnieje
     if (!profile.rpg) {
         const rpg = {
             hp: BASE_STATS.hp,
@@ -118,7 +118,7 @@ async function getRpgProfile(userId, supabase) {
     return profile;
 }
 
-// â”€â”€ Dynamiczne statystyki (equip + level + base) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Dynamiczne statystyki (equip + level + base) ───────────────────────
 function calculateStats(rpgProfile) {
     if (!rpgProfile.rpg) return null;
 
@@ -135,7 +135,7 @@ function calculateStats(rpgProfile) {
     let luck = BASE_STATS.luck; // LUCK doesn't scale with level
     let mana = BASE_STATS.mana + levelStats.mana;
 
-    // Sumuj ze sprzÄ™tu
+    // Sumuj ze sprzętu
     // Weapon adds ATK
     if (rpg.equipment?.weapon && rpg.equipment.weapon.atk) {
         atk += rpg.equipment.weapon.atk;
@@ -169,25 +169,25 @@ function calculateStats(rpgProfile) {
     };
 }
 
-// â”€â”€ EKWIPUNEK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── EKWIPUNEK ──────────────────────────────────────────────────────────
 async function handleEquipment(interaction, supabase, profile) {
     const stats = calculateStats(profile);
-    if (!stats) return interaction.reply({ content: 'âťŚ BĹ‚Ä…d pobierania statystyk.', ephemeral: true });
+    if (!stats) return interaction.reply({ content: '❌ Błąd pobierania statystyk.', ephemeral: true });
 
     const { rpg } = profile;
     const equipment = rpg.equipment || {};
 
     const embed = new EmbedBuilder()
-        .setTitle(`đź›ˇď¸Ź Ekwipunek: ${profile.username} (Lvl ${profile.level})`)
+        .setTitle(`🛡️ Ekwipunek: ${profile.username} (Lvl ${profile.level})`)
         .setColor('#1bbdbd')
         .setDescription(
-            `đź“Š **MOC POSTACI:** ${stats.power}\n\n` +
-            `đź©¸ HP: **${stats.hp}**\n` +
-            `âš”ď¸Ź ATK: **${stats.atk}**\n` +
-            `đź›ˇď¸Ź DEF: **${stats.def}**\n` +
-            `đźŽŻ CRIT: **${stats.crit}%**\n` +
-            `đźŤ€ LUCK: **${stats.luck}**\n` +
-            `đź’§ MANA: **${stats.mana}**`
+            `📊 **MOC POSTACI:** ${stats.power}\n\n` +
+            `🩸 HP: **${stats.hp}**\n` +
+            `⚔️ ATK: **${stats.atk}**\n` +
+            `🛡️ DEF: **${stats.def}**\n` +
+            `🎯 CRIT: **${stats.crit}%**\n` +
+            `🍀 LUCK: **${stats.luck}**\n` +
+            `💧 MANA: **${stats.mana}**`
         );
 
     for (const slot of EQUIPMENT_SLOTS) {
@@ -203,7 +203,7 @@ async function handleEquipment(interaction, supabase, profile) {
             });
         } else {
             embed.addFields({
-                name: `${slot.label}: đźź°`,
+                name: `${slot.label}: 🟰`,
                 value: 'Pusto',
             });
         }
@@ -212,7 +212,7 @@ async function handleEquipment(interaction, supabase, profile) {
     await interaction.reply({ embeds: [embed] });
 }
 
-// â”€â”€ INWENTARZ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── INWENTARZ ──────────────────────────────────────────────────────────
 async function handleInventory(interaction, supabase, profile) {
     const { rpg } = profile;
     const stats = calculateStats(profile);
@@ -229,30 +229,30 @@ async function handleInventory(interaction, supabase, profile) {
 
     if (items.length === 0) {
         return interaction.reply({
-            content: `đźŽ’ **Inwentarz pusty**.\n\nPojemnoĹ›Ä‡: ${INVENTORY_SIZE} slotĂłw\nZajÄ™te: 0/${INVENTORY_SIZE}`,
+            content: `🎒 **Inwentarz pusty**.\n\nPojemność: ${INVENTORY_SIZE} slotów\nZajęte: 0/${INVENTORY_SIZE}`,
             ephemeral: true,
         });
     }
 
     const embed = new EmbedBuilder()
-        .setTitle(`đźŽ’ Inwentarz: ${profile.username}`)
+        .setTitle(`🎒 Inwentarz: ${profile.username}`)
         .setColor('#1bbdbd')
         .setDescription(
-            `**ZajÄ™te: ${items.length}/${INVENTORY_SIZE} slotĂłw**\n\n` +
-            items.slice(0, 10).map(i => `${i.emoji || 'â€˘'} **${i.name}**`).join('\n') +
-            (items.length > 10 ? `\n...i jeszcze ${items.length - 10} przedmiotĂłw` : '')
+            `**Zajęte: ${items.length}/${INVENTORY_SIZE} slotów**\n\n` +
+            items.slice(0, 10).map(i => `${i.emoji || '•'} **${i.name}**`).join('\n') +
+            (items.length > 10 ? `\n...i jeszcze ${items.length - 10} przedmiotów` : '')
         );
 
     await interaction.reply({ embeds: [embed] });
 }
 
-// â”€â”€ KOPALNIA (Mining) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── KOPALNIA (Mining) ──────────────────────────────────────────────────
 async function handleMine(interaction, supabase, profile) {
     const userId = interaction.user.id;
     const { rpg } = profile;
     const stats = calculateStats(profile);
 
-    // 7 klikĂłw mechanika
+    // 7 klików mechanika
     for (let i = 1; i <= 7; i++) {
         await new Promise(r => setTimeout(r, 300));
     }
@@ -290,22 +290,22 @@ async function handleMine(interaction, supabase, profile) {
     }).eq('id', profile.id);
 
     return interaction.editReply({
-        content: `đź”¨ **Kopalnia** - ${i}/7 klikĂłw wykonanych!\n\nđź“¦ Drop: **${resource.name}** ${resource.emoji}\nđź’° WartoĹ›Ä‡: +${resource.baseValue} ${COIN}\nâś¨ XP: +${xpGain}\nđź“ Level: ${profile.level} â†’ ${newLevel}`,
+        content: `🔨 **Kopalnia** - ${i}/7 klików wykonanych!\n\n📦 Drop: **${resource.name}** ${resource.emoji}\n💰 Wartość: +${resource.baseValue} ${COIN}\n✨ XP: +${xpGain}\n📈 Level: ${profile.level} → ${newLevel}`,
     });
 }
 
-// â”€â”€ STAW (Fishing) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── STAW (Fishing) ─────────────────────────────────────────────────────
 async function handleStaw(interaction, supabase, profile) {
     // Prosty fishing mechanic
     const fishNames = [
-        { name: 'ZwykĹ‚a ryba', emoji: 'đźź', value: 10 },
-        { name: 'Srebrna ryba', emoji: 'đźĄ', value: 30 },
-        { name: 'ZĹ‚ota ryba', emoji: 'đźź', value: 100 },
-        { name: 'Ryba magika', emoji: 'đź”®', value: 200 },
+        { name: 'Zwykła ryba', emoji: '🐟', value: 10 },
+        { name: 'Srebrna ryba', emoji: '🥈', value: 30 },
+        { name: 'Złota ryba', emoji: '🐟', value: 100 },
+        { name: 'Ryba magika', emoji: '🔮', value: 200 },
     ];
 
     const fish = fishNames[Math.floor(Math.random() * fishNames.length)];
-    const fishName = fish.name === 'ZwykĹ‚a ryba' ? `${fish.name} ${Math.floor(Math.random() * 10) + 1}cm` : fish.name;
+    const fishName = fish.name === 'Zwykła ryba' ? `${fish.name} ${Math.floor(Math.random() * 10) + 1}cm` : fish.name;
 
     const xpGain = Math.floor(fish.value / 5);
     const newMoney = (profile.money || 0) + fish.value;
@@ -321,16 +321,16 @@ async function handleStaw(interaction, supabase, profile) {
     }).eq('id', profile.id);
 
     return interaction.reply({
-        content: `đźŽŁ **Staw**\n\nđźź ZĹ‚owiĹ‚eĹ›: **${fishName}**\nđź’° SprzedaĹĽ: +${fish.value} ${COIN}\nâś¨ XP: +${xpGain}\nđź“ Level: ${profile.level} â†’ ${newLevel}`,
+        content: `🎣 **Staw**\n\n🐟 Złowiłeś: **${fishName}**\n💰 Sprzedaż: +${fish.value} ${COIN}\n✨ XP: +${xpGain}\n📈 Level: ${profile.level} → ${newLevel}`,
     });
 }
 
-// â”€â”€ DUNGEON (WybĂłr poziomu) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── DUNGEON (Wybór poziomu) ────────────────────────────────────────────
 async function handleDungeon(interaction, supabase, profile) {
     const { rpg, level } = profile;
     const stats = calculateStats(profile);
 
-    const difficulty = ['Ĺ‚atwy', 'Ĺ›redni', 'trudny', 'niemoĹĽliwy'];
+    const difficulty = ['łatwy', 'średni', 'trudny', 'niemożliwy'];
     const enemyList = [];
 
     for (const [key, enemy] of Object.entries(ENEMIES)) {
@@ -340,21 +340,21 @@ async function handleDungeon(interaction, supabase, profile) {
     }
 
     const embed = new EmbedBuilder()
-        .setTitle('đźŹ° Wybierz poziom Dungeon')
+        .setTitle('🏰 Wybierz poziom Dungeon')
         .setColor('#dc3545')
         .setDescription(
-            '**DostÄ™pne poziomy:**\n\n' +
-            `đźź˘ **Ĺatwy** - ${difficulty[0].toUpperCase()} (Wilki, PajÄ…ki)\n` +
-            `đźźˇ **Ĺšredni** - ${difficulty[1].toUpperCase()} (Zombi, Szkielety)\n` +
-            `đź”´ **Trudny** - ${difficulty[2].toUpperCase()} (Orkowie, Golemy)\n` +
-            `âš« **NiemoĹĽliwy** - ${difficulty[3].toUpperCase()} (Cieniostwory, Nekromanci)`
+            '**Dostępne poziomy:**\n\n' +
+            `🟢 **Łatwy** - ${difficulty[0].toUpperCase()} (Wilki, Pająki)\n` +
+            `🟡 **Średni** - ${difficulty[1].toUpperCase()} (Zombi, Szkielety)\n` +
+            `🔴 **Trudny** - ${difficulty[2].toUpperCase()} (Orkowie, Golemy)\n` +
+            `⚫ **Niemożliwy** - ${difficulty[3].toUpperCase()} (Cieniostwory, Nekromanci)`
         );
 
     const btns = [
-        new ButtonBuilder().setCustomId('dungeon_easy').setLabel('đźź˘ Ĺatwy').setStyle(ButtonStyle.Primary).setEmoji('đźź˘'),
-        new ButtonBuilder().setCustomId('dungeon_medium').setLabel('đźźˇ Ĺšredni').setStyle(ButtonStyle.Success).setEmoji('đźźˇ'),
-        new ButtonBuilder().setCustomId('dungeon_hard').setLabel('đź”´ Trudny').setStyle(ButtonStyle.Danger).setEmoji('đź”´'),
-        new ButtonBuilder().setCustomId('dungeon_impossible').setLabel('âš« NiemoĹĽliwy').setStyle(ButtonStyle.Secondary).setEmoji('âš«'),
+        new ButtonBuilder().setCustomId('dungeon_easy').setLabel('🟢 Łatwy').setStyle(ButtonStyle.Primary).setEmoji('🟢'),
+        new ButtonBuilder().setCustomId('dungeon_medium').setLabel('🟡 Średni').setStyle(ButtonStyle.Success).setEmoji('🟡'),
+        new ButtonBuilder().setCustomId('dungeon_hard').setLabel('🔴 Trudny').setStyle(ButtonStyle.Danger).setEmoji('🔴'),
+        new ButtonBuilder().setCustomId('dungeon_impossible').setLabel('⚫ Niemożliwy').setStyle(ButtonStyle.Secondary).setEmoji('⚫'),
     ];
 
     const components = [
@@ -365,7 +365,7 @@ async function handleDungeon(interaction, supabase, profile) {
     await interaction.reply({ embeds: [embed], components });
 }
 
-// â”€â”€ OBSĹUGA DUNGEON BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── OBSŁUGA DUNGEON BUTTONS ───────────────────────────────────────────
 async function handleDungeonButton(interaction, supabase, profile, difficulty) {
     const difficultyMap = {
         'dungeon_easy': 'easy',
@@ -377,7 +377,7 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
     const tier = difficultyMap[interaction.customId] || 'easy';
     const stats = calculateStats(profile);
 
-    // WybĂłr bosy dla trudnego poziomu
+    // Wybór bosy dla trudnego poziomu
     if (tier === 'hard' || tier === 'rare') {
         // Scoped to this branch only — used below for its .coins as the
         // boss-fight loot roll (was previously colliding with the `enemy`
@@ -388,10 +388,10 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
         const bossList = Object.values(BOSSES);
         const boss = bossList[Math.floor(Math.random() * bossList.length)];
 
-        // JeĹ›li gracz ma za maĹ‚o poziomu
+        // Jeśli gracz ma za mało poziomu
         if (profile.level < boss.level) {
             return interaction.reply({
-                content: `âťŚ Ten boss wymaga poziomu **${boss.level}**! Masz tylko poziom **${profile.level}**.\n\nSprĂłbuj innego poziomu!`,
+                content: `❌ Ten boss wymaga poziomu **${boss.level}**! Masz tylko poziom **${profile.level}**.\n\nSpróbuj innego poziomu!`,
                 ephemeral: true,
             });
         }
@@ -422,11 +422,11 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
             await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
 
             return interaction.editReply({
-                content: `đź’€ **PRZEGRANA z ${boss.name}!**\n\nđź‘ą ${boss.name} (${boss.emoji}) zabiĹ‚ CiÄ™!\nâš”ď¸Ź OtrzymaĹ‚eĹ›: ${combatReceived} HP\nđź’¸ StraciĹ‚eĹ›: ${lostMoney} ${COIN}`,
+                content: `💀 **PRZEGRANA z ${boss.name}!**\n\n👹 ${boss.name} (${boss.emoji}) zabił Cię!\n⚔️ Otrzymałeś: ${combatReceived} HP\n💸 Straciłeś: ${lostMoney} ${COIN}`,
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('đź’€ Pokonany przez ' + boss.name)
-                        .setDescription(`âš”ď¸Ź ObraĹĽenia: ${combatReceived} HP`)
+                        .setTitle('💀 Pokonany przez ' + boss.name)
+                        .setDescription(`⚔️ Obrażenia: ${combatReceived} HP`)
                         .setColor('#dc3545'),
                 ],
             });
@@ -438,22 +438,22 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
         const newLevel = getLevelFromXp((profile.xp || 0) + xp);
 
         return interaction.editReply({
-            content: `đźŽ‰ **WYGRANA z ${boss.name}!**\n\nđź‘ą PokonaĹ‚eĹ›: **${boss.name}** (${boss.emoji})\nđź’° Zdobycz: ${coins} ${COIN}\nâś¨ XP: +${xp}\nđź“ Level: ${profile.level} â†’ ${newLevel}`,
+            content: `🎉 **WYGRANA z ${boss.name}!**\n\n👹 Pokonałeś: **${boss.name}** (${boss.emoji})\n💰 Zdobycz: ${coins} ${COIN}\n✨ XP: +${xp}\n📈 Level: ${profile.level} → ${newLevel}`,
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('đźŽ‰ Wygrana walka!')
-                    .setDescription(`đź’° ${coins} ${COIN} | âś¨ ${xp} XP`)
+                    .setTitle('🎉 Wygrana walka!')
+                    .setDescription(`💰 ${coins} ${COIN} | ✨ ${xp} XP`)
                     .setColor('#22FF00'),
             ],
         });
     }
 
-    // Normalna walka dla zwykĹ‚ych przeciwnikĂłw
+    // Normalna walka dla zwykłych przeciwników
     const enemy = ENEMIES[interaction.customId.replace('dungeon_', '')];
 
     if (!enemy) {
         return interaction.reply({
-            content: 'âťŚ Nieznany poziom dungeonu.',
+            content: '❌ Nieznany poziom dungeonu.',
             ephemeral: true,
         });
     }
@@ -482,11 +482,11 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
         await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
 
         return interaction.editReply({
-            content: `đź’€ **PRZEGRANA!**\n\nđź‘ą ${enemy.name} CiÄ™ zabiĹ‚!\nâš”ď¸Ź OtrzymaĹ‚eĹ›: ${combatReceived} HP\nđź’¸ StraciĹ‚eĹ›: ${lostMoney} ${COIN}`,
+            content: `💀 **PRZEGRANA!**\n\n👹 ${enemy.name} Cię zabił!\n⚔️ Otrzymałeś: ${combatReceived} HP\n💸 Straciłeś: ${lostMoney} ${COIN}`,
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('đź’€ Pokonany przez ' + enemy.name)
-                    .setDescription(`âš”ď¸Ź ObraĹĽenia: ${combatReceived} HP`)
+                    .setTitle('💀 Pokonany przez ' + enemy.name)
+                    .setDescription(`⚔️ Obrażenia: ${combatReceived} HP`)
                     .setColor('#dc3545'),
             ],
         });
@@ -498,33 +498,33 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
     const newLevel = getLevelFromXp((profile.xp || 0) + xp);
 
     return interaction.editReply({
-        content: `đźŽ‰ **WYGRANA!**\n\nđź‘ą PokonaĹ‚eĹ›: **${enemy.name}** (${enemy.emoji})\nđź’° Zdobycz: ${coins} ${COIN}\nâś¨ XP: +${xp}\nđź“ Level: ${profile.level} â†’ ${newLevel}`,
+        content: `🎉 **WYGRANA!**\n\n👹 Pokonałeś: **${enemy.name}** (${enemy.emoji})\n💰 Zdobycz: ${coins} ${COIN}\n✨ XP: +${xp}\n📈 Level: ${profile.level} → ${newLevel}`,
         embeds: [
             new EmbedBuilder()
-                .setTitle('đźŽ‰ Wygrana walka!')
-                .setDescription(`đź’° ${coins} ${COIN} | âś¨ ${xp} XP`)
+                .setTitle('🎉 Wygrana walka!')
+                .setDescription(`💰 ${coins} ${COIN} | ✨ ${xp} XP`)
                 .setColor('#22FF00'),
         ],
     });
 }
 
-// â”€â”€ MIASTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── MIASTO ─────────────────────────────────────────────────────────────
 async function handleCity(interaction, supabase, profile) {
     const embed = new EmbedBuilder()
-        .setTitle('đźŹ™ď¸Ź Miasto')
+        .setTitle('🏙️ Miasto')
         .setColor('#1bbdbd')
         .setDescription(
-            '**DostÄ™pne miejsca:**\n\n' +
-            'đź›’ **Sklep** - Mikstury, Jedzenie, SprzÄ™t\n' +
-            'đźŹĄ **Szpital** - Leczenie za 50 coins\n' +
-            'đź”¨ **KuĹşnia** - Ulepszaj przedmioty\n' +
-            'đźŚ± **Farma** - Uprawiaj roĹ›liny'
+            '**Dostępne miejsca:**\n\n' +
+            '🛒 **Sklep** - Mikstury, Jedzenie, Sprzęt\n' +
+            '🏥 **Szpital** - Leczenie za 50 coins\n' +
+            '🔨 **Kuźnia** - Ulepszaj przedmioty\n' +
+            '🌱 **Farma** - Uprawiaj rośliny'
         );
 
-    const btnShop = new ButtonBuilder().setCustomId('city_shop').setLabel('đź›’ Sklep').setStyle(ButtonStyle.Primary).setEmoji('đź›’');
-    const btnHeal = new ButtonBuilder().setCustomId('city_heal').setLabel('đźŹĄ Szpital').setStyle(ButtonStyle.Success).setEmoji('đźŹĄ');
-    const btnForge = new ButtonBuilder().setCustomId('city_forge').setLabel('đź”¨ KuĹşnia').setStyle(ButtonStyle.Secondary).setEmoji('đź”¨');
-    const btnFarm = new ButtonBuilder().setCustomId('city_farm').setLabel('đźŚ± Farma').setStyle(ButtonStyle.Secondary).setEmoji('đźŚ±');
+    const btnShop = new ButtonBuilder().setCustomId('city_shop').setLabel('🛒 Sklep').setStyle(ButtonStyle.Primary).setEmoji('🛒');
+    const btnHeal = new ButtonBuilder().setCustomId('city_heal').setLabel('🏥 Szpital').setStyle(ButtonStyle.Success).setEmoji('🏥');
+    const btnForge = new ButtonBuilder().setCustomId('city_forge').setLabel('🔨 Kuźnia').setStyle(ButtonStyle.Secondary).setEmoji('🔨');
+    const btnFarm = new ButtonBuilder().setCustomId('city_farm').setLabel('🌱 Farma').setStyle(ButtonStyle.Secondary).setEmoji('🌱');
 
     const components = [
         new ActionRowBuilder().addComponents(btnShop, btnHeal),
@@ -534,7 +534,7 @@ async function handleCity(interaction, supabase, profile) {
     await interaction.reply({ embeds: [embed], components });
 }
 
-// â”€â”€ SKLEP (Shop) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── SKLEP (Shop) ───────────────────────────────────────────────────────
 async function handleCityShop(interaction, supabase, profile) {
     const money = profile.money || 0;
 
@@ -545,7 +545,7 @@ async function handleCityShop(interaction, supabase, profile) {
     ];
 
     const embed = new EmbedBuilder()
-        .setTitle('đź›’ Sklep w MieĹ›cie')
+        .setTitle('🛒 Sklep w Mieście')
         .setColor('#1bbdbd')
         .setDescription(
             `Portfel: **${money.toLocaleString('pl-PL')} ${COIN}**\n\n` +
@@ -561,7 +561,7 @@ async function handleCityShop(interaction, supabase, profile) {
 
         if (money < item.price) {
             btn.setDisabled(true);
-            btn.setEmoji('âťŚ');
+            btn.setEmoji('❌');
         }
 
         return btn;
@@ -575,14 +575,14 @@ async function handleCityShop(interaction, supabase, profile) {
     await interaction.reply({ embeds: [embed], components: rows });
 }
 
-// â”€â”€ SZPITAL (Heal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── SZPITAL (Heal) ─────────────────────────────────────────────────────
 async function handleCityHeal(interaction, supabase, profile) {
     const stats = calculateStats(profile);
     const healCost = 50;
 
     if (stats.hp >= 100) {
         return interaction.reply({
-            content: 'đź©ş Twoja postaÄ‡ jest juĹĽ w peĹ‚ni wyleczona!',
+            content: '🩺 Twoja postać jest już w pełni wyleczona!',
             ephemeral: true,
         });
     }
@@ -591,7 +591,7 @@ async function handleCityHeal(interaction, supabase, profile) {
 
     if (money < healCost) {
         return interaction.reply({
-            content: `âťŚ Nie masz wystarczajÄ…co monet! Potrzebujesz **${healCost} ${COIN}**.\n`,
+            content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${healCost} ${COIN}**.\n`,
             ephemeral: true,
         });
     }
@@ -600,28 +600,28 @@ async function handleCityHeal(interaction, supabase, profile) {
     await supabase.from('profiles').update({ money: newMoney }).eq('id', profile.id);
 
     return interaction.reply({
-        content: `đźŹĄ **Szpital**\n\nâś… Wyleczono! HP: ${stats.hp} â†’ 100\nđź’° Koszt: ${healCost} ${COIN}\nđź’µ PozostaĹ‚o: ${newMoney} ${COIN}`,
+        content: `🏥 **Szpital**\n\n✅ Wyleczono! HP: ${stats.hp} → 100\n💰 Koszt: ${healCost} ${COIN}\n💵 Pozostało: ${newMoney} ${COIN}`,
         ephemeral: true,
     });
 }
 
-// â”€â”€ KUĹąNIA (Forge) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── KUŹNIA (Forge) ──────────────────────────────────────────────────────
 async function handleCityForge(interaction, supabase, profile) {
     const stats = calculateStats(profile);
     const money = profile.money || 0;
 
     const upgrades = [
-        { name: 'Ulepsz broĹ„', price: 100, desc: '+5 ATK' },
-        { name: 'Ulepsz heĹ‚m', price: 100, desc: '+3 DEF' },
-        { name: 'Ulepsz zbrojÄ™', price: 200, desc: '+10 DEF' },
+        { name: 'Ulepsz broń', price: 100, desc: '+5 ATK' },
+        { name: 'Ulepsz hełm', price: 100, desc: '+3 DEF' },
+        { name: 'Ulepsz zbroję', price: 200, desc: '+10 DEF' },
         { name: 'Ulepsz spodenie', price: 150, desc: '+7 DEF' },
         { name: 'Ulepsz buty', price: 150, desc: '+7 DEF' },
-        { name: 'Ulepsz tarczÄ™', price: 150, desc: '+10 DEF' },
-        { name: 'Ulepsz pierĹ›cionek', price: 100, desc: '+5 stat' },
+        { name: 'Ulepsz tarczę', price: 150, desc: '+10 DEF' },
+        { name: 'Ulepsz pierścionek', price: 100, desc: '+5 stat' },
     ];
 
     const embed = new EmbedBuilder()
-        .setTitle('đź”¨ KuĹşnia')
+        .setTitle('🔨 Kuźnia')
         .setColor('#f6b41e')
         .setDescription(`Portfel: **${money.toLocaleString('pl-PL')} ${COIN}**\n\n${upgrades.map((u, i) => `${i + 1}. ${u.emoji} **${u.name}** - ${u.price} ${COIN} | ${u.desc}`).join('\n')}`);
 
@@ -634,7 +634,7 @@ async function handleCityForge(interaction, supabase, profile) {
 
         if (money < upgrade.price) {
             btn.setDisabled(true);
-            btn.setEmoji('âťŚ');
+            btn.setEmoji('❌');
         }
 
         return btn;
@@ -648,15 +648,15 @@ async function handleCityForge(interaction, supabase, profile) {
     await interaction.reply({ embeds: [embed], components: rows });
 }
 
-// â”€â”€ FARMA (Future - Placeholder) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── FARMA (Future - Placeholder) ───────────────────────────────────────
 async function handleCityFarm(interaction, supabase, profile) {
     return interaction.reply({
-        content: 'đźŚ± **Farma** - Funkcja w Ń€Đ°Đ·Ń€Đ°Đ±ĐľŃ‚ĐşĐµ. WrĂłÄ‡ pĂłĹşniej!',
+        content: '🌱 **Farma** - Funkcja w разработке. Wróć później!',
         ephemeral: true,
     });
 }
 
-// â”€â”€ OBSĹUGA MIÄSTO BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── OBSŁUGA MIĘSTO BUTTONS ────────────────────────────────────────────
 async function handleCityButton(interaction, supabase, profile) {
     if (interaction.customId.startsWith('shop_')) {
         await handleCityShop(interaction, supabase, profile);
@@ -679,7 +679,7 @@ async function handleCityButton(interaction, supabase, profile) {
     }
 }
 
-// â”€â”€ EXPORTY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── EXPORTY ────────────────────────────────────────────────────────────
 module.exports = {
     getRpgProfile,
     calculateStats,
