@@ -135,8 +135,19 @@ export default function ProfilePage() {
 
     useEffect(() => {
         let channel: any = null;
+        // onAuthStateChange (INITIAL_SESSION) and the getSession() fallback
+        // below can both observe an active session on mount and call
+        // fetchData concurrently — without this guard, the second call
+        // would create a second realtime channel for the same topic while
+        // the first is still subscribing, and Supabase rejects adding a
+        // postgres_changes listener to a channel that's already past
+        // subscribe(). No await happens between the check and the set, so
+        // this is safe even though both callers are async.
+        let fetchStarted = false;
 
         const fetchData = async (currentUser: any) => {
+            if (fetchStarted) return;
+            fetchStarted = true;
             const discordId = currentUser.user_metadata?.provider_id || currentUser.id;
 
             // Fetch ranking data FIRST (outside realtime callback)
