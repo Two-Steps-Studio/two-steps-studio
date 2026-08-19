@@ -110,4 +110,31 @@ contextBridge.exposeInMainWorld('electron', {
   // Crash reporting
   getCrashReports: () => ipcRenderer.invoke('get-crash-reports'),
   clearCrashReports: () => ipcRenderer.invoke('clear-crash-reports'),
+
+  // Game distribution
+  games: {
+    getLibrary: () => ipcRenderer.invoke('game-get-library'),
+    chooseInstallDir: (suggestedFolderName) => ipcRenderer.invoke('game-choose-install-dir', { suggestedFolderName }),
+    syncStart: (payload) => ipcRenderer.invoke('game-sync-start', payload),
+    cancelSync: (gameId) => ipcRenderer.invoke('game-cancel-sync', { gameId }),
+    launch: (gameId) => ipcRenderer.invoke('game-launch', { gameId }),
+    uninstall: (gameId) => ipcRenderer.invoke('game-uninstall', { gameId }),
+    getStatus: (gameId) => ipcRenderer.invoke('game-get-status', { gameId }),
+
+    onSyncProgress: (callback) => ipcRenderer.on('game-sync-progress', (_, data) => callback(data)),
+    onSyncComplete: (callback) => ipcRenderer.on('game-sync-complete', (_, data) => callback(data)),
+    onSyncError: (callback) => ipcRenderer.on('game-sync-error', (_, data) => callback(data)),
+    onSyncCancelled: (callback) => ipcRenderer.on('game-sync-cancelled', (_, data) => callback(data)),
+    onProcessExit: (callback) => ipcRenderer.on('game-process-exit', (_, data) => callback(data)),
+    onLibraryUpdated: (callback) => ipcRenderer.on('game-library-updated', (_, data) => callback(data)),
+
+    removeAllGameListeners: () => {
+      ipcRenderer.removeAllListeners('game-sync-progress');
+      ipcRenderer.removeAllListeners('game-sync-complete');
+      ipcRenderer.removeAllListeners('game-sync-error');
+      ipcRenderer.removeAllListeners('game-sync-cancelled');
+      ipcRenderer.removeAllListeners('game-process-exit');
+      ipcRenderer.removeAllListeners('game-library-updated');
+    },
+  },
 });

@@ -1,5 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
-import type { ElectronAPI, UpdateInfo, DownloadProgress, SessionData, AppInfo } from '@/types/electron';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import type {
+  ElectronAPI, UpdateInfo, DownloadProgress, SessionData, AppInfo,
+  LibraryEntry, GameSyncProgress, GameSyncCompleteEvent, GameSyncErrorEvent,
+  GameProcessExitEvent, GameLibraryUpdatedEvent, GameSyncMode, GameSyncFileEntry,
+} from '@/types/electron';
 
 /**
  * Hook to check if the app is running in Electron
@@ -429,4 +433,281 @@ export function useCrashReports() {
   }, [isElectron]);
 
   return { reports, isLoading, getCrashReports, clearCrashReports };
+}
+
+// ============================================
+// Game distribution
+// ============================================
+
+// Internal fan-out bus: the preload API only exposes "add a listener" and
+// "remove ALL listeners for this channel" (see removeAllGameListeners in
+// preload.js). Multiple simultaneous useGameDownload instances (one per
+// game card in a library list) each need their own subscribe/unsubscribe
+// without stepping on each other, so the six IPC channels are wired up
+// exactly once per app lifetime here and fanned out to per-hook callback
+// sets instead of letting each hook instance touch ipcRenderer directly.
+type GameEventName = 'progress' | 'complete' | 'error' | 'cancelled' | 'processExit' | 'libraryUpdated';
+const gameEventListeners: Record<GameEventName, Set<(data: any) => void>> = {
+  progress: new Set(),
+  complete: new Set(),
+  error: new Set(),
+  cancelled: new Set(),
+  processExit: new Set(),
+  libraryUpdated: new Set(),
+};
+let gameEventBusInitialized = false;
+
+function ensureGameEventBus() {
+  if (gameEventBusInitialized || typeof window === 'undefined' || !window.electron?.games) return;
+  gameEventBusInitialized = true;
+  const g = window.electron.games;
+  g.onSyncProgress((data) => gameEventListeners.progress.forEach((cb) => cb(data)));
+  g.onSyncComplete((data) => gameEventListeners.complete.forEach((cb) => cb(data)));
+  g.onSyncError((data) => gameEventListeners.error.forEach((cb) => cb(data)));
+  g.onSyncCancelled((data) => gameEventListeners.cancelled.forEach((cb) => cb(data)));
+  g.onProcessExit((data) => gameEventListeners.processExit.forEach((cb) => cb(data)));
+  g.onLibraryUpdated((data) => gameEventListeners.libraryUpdated.forEach((cb) => cb(data)));
+}
+
+function useGameEvent<T>(name: GameEventName, handler: (data: T) => void, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+    ensureGameEventBus();
+    gameEventListeners[name].add(handler as (data: any) => void);
+    return () => {
+      gameEventListeners[name].delete(handler as (data: any) => void);
+    };
+  }, [name, handler, enabled]);
+}
+
+/**
+ * Hook for the local installed-games library (Electron-only, local disk
+ * state — see electron/game-manager.js's game-library.json).
+ */
+export function useGameLibrary() {
+  const isElectron = useIsElectron();
+  const [library, setLibrary] = useState<Record<string, LibraryEntry>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!isElectron) {
+      setIsLoading(false);
+      return;
+    }
+    const result = await window.electron.games.getLibrary();
+    if (result.success && result.library) {
+      setLibrary(result.library);
+    }
+    setIsLoading(false);
+  }, [isElectron]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const onLibraryUpdated = useCallback((data: GameLibraryUpdatedEvent) => {
+    setLibrary((prev) => {
+      const next = { ...prev };
+      if (data.entry) {
+        next[data.gameId] = data.entry;
+      } else {
+        delete next[data.gameId];
+      }
+      return next;
+    });
+  }, []);
+  useGameEvent('libraryUpdated', onLibraryUpdated, isElectron);
+
+  return { library, isLoading, refresh };
+}
+
+export type GameDownloadStatus =
+  | 'not-installed' | 'checking' | 'downloading' | 'verifying'
+  | 'installed' | 'update-available' | 'updating' | 'repairing'
+  | 'running' | 'error';
+
+/**
+ * Orchestrates one game's full install/update/repair/launch/uninstall
+ * lifecycle: fetches the manifest + signed URLs from the Next.js API
+ * (same-origin, cookie session already attached), hands a flat file list
+ * to the Electron main process over one IPC call, and tracks progress —
+ * same state-machine shape as useAutoUpdater() above.
+ */
+export function useGameDownload(gameId: number, platform: string = 'windows') {
+  const isElectron = useIsElectron();
+  const { library, refresh: refreshLibrary } = useGameLibrary();
+  const gameIdStr = String(gameId);
+  const libraryEntry = library[gameIdStr] || null;
+
+  const [currentReleaseId, setCurrentReleaseId] = useState<string | null>(null);
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
+  const [activePhase, setActivePhase] = useState<GameDownloadStatus | null>(null);
+  const [progress, setProgress] = useState<GameSyncProgress | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pid, setPid] = useState<number | null>(null);
+  const modeRef = useRef<GameSyncMode>('install');
+
+  const fetchCurrentRelease = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/games/${gameId}/releases/current?platform=${encodeURIComponent(platform)}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setCurrentReleaseId(data.data.id);
+        setCurrentVersion(data.data.version);
+      } else {
+        setCurrentReleaseId(null);
+        setCurrentVersion(null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch current release:', err);
+    }
+  }, [gameId, platform]);
+
+  useEffect(() => {
+    fetchCurrentRelease();
+  }, [fetchCurrentRelease]);
+
+  const matchesThisGame = useCallback((data: { gameId: string }) => data.gameId === gameIdStr, [gameIdStr]);
+
+  useGameEvent<GameSyncProgress>('progress', (data) => {
+    if (!matchesThisGame(data)) return;
+    setProgress(data);
+    setActivePhase(data.phase === 'verifying' ? 'verifying' : modeRef.current === 'update' ? 'updating' : modeRef.current === 'repair' ? 'repairing' : 'downloading');
+  }, isElectron);
+
+  useGameEvent<GameSyncCompleteEvent>('complete', (data) => {
+    if (!matchesThisGame(data)) return;
+    setActivePhase(null);
+    setProgress(null);
+    refreshLibrary();
+    fetchCurrentRelease();
+  }, isElectron);
+
+  useGameEvent<GameSyncErrorEvent>('error', (data) => {
+    if (!matchesThisGame(data)) return;
+    setError(data.error);
+    setActivePhase('error');
+    setProgress(null);
+  }, isElectron);
+
+  useGameEvent<{ gameId: string }>('cancelled', (data) => {
+    if (!matchesThisGame(data)) return;
+    setActivePhase(null);
+    setProgress(null);
+  }, isElectron);
+
+  useGameEvent<GameProcessExitEvent>('processExit', (data) => {
+    if (!matchesThisGame(data)) return;
+    setPid(null);
+  }, isElectron);
+
+  const runSync = useCallback(async (mode: GameSyncMode, installDirOverride?: string) => {
+    if (!isElectron || !currentReleaseId) return;
+    setError(null);
+
+    const installDir = installDirOverride || libraryEntry?.installDir;
+    if (!installDir) {
+      setError('Nie wybrano lokalizacji instalacji');
+      return;
+    }
+
+    try {
+      const manifestRes = await fetch(`/api/games/${gameId}/releases/${currentReleaseId}/manifest`);
+      const manifestData = await manifestRes.json();
+      if (!manifestData.success) throw new Error(manifestData.error || 'Nie udało się pobrać manifestu');
+
+      const files = manifestData.data.manifest.files as { path: string; size: number; sha256: string }[];
+      const executablePath = manifestData.data.executable_path as string;
+      const version = manifestData.data.version as string;
+
+      // Repair only needs URLs for files that don't already match locally,
+      // but re-signing everything is cheap (no bytes moved) and simpler —
+      // the main process still skips files that already verify by hash.
+      const paths = files.map((f) => f.path);
+      const urlsRes = await fetch(`/api/games/${gameId}/releases/${currentReleaseId}/signed-urls`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths }),
+      });
+      const urlsData = await urlsRes.json();
+      if (!urlsData.success) throw new Error(urlsData.error || 'Nie udało się uzyskać adresów pobierania');
+
+      const urlByPath = new Map<string, string>(urlsData.data.urls.map((u: { path: string; signedUrl: string }) => [u.path, u.signedUrl]));
+      const syncFiles: GameSyncFileEntry[] = files
+        .filter((f) => urlByPath.has(f.path))
+        .map((f) => ({ ...f, signedUrl: urlByPath.get(f.path)! }));
+
+      modeRef.current = mode;
+      setActivePhase(mode === 'update' ? 'updating' : mode === 'repair' ? 'repairing' : 'downloading');
+
+      const result = await window.electron.games.syncStart({
+        gameId: gameIdStr,
+        releaseId: currentReleaseId,
+        version,
+        platform,
+        mode,
+        installDir,
+        executablePath,
+        files: syncFiles,
+      });
+      if (!result.success) throw new Error(result.error || 'Nie udało się rozpocząć synchronizacji');
+    } catch (err: any) {
+      setError(err.message || 'Nieznany błąd');
+      setActivePhase('error');
+    }
+  }, [isElectron, currentReleaseId, libraryEntry, gameId, gameIdStr, platform]);
+
+  const install = useCallback(async (suggestedFolderName: string) => {
+    if (!isElectron) return;
+    const dirResult = await window.electron.games.chooseInstallDir(suggestedFolderName);
+    if (dirResult.canceled || !dirResult.path) return;
+    await runSync('install', dirResult.path);
+  }, [isElectron, runSync]);
+
+  const update = useCallback(() => runSync('update'), [runSync]);
+  const repair = useCallback(() => runSync('repair'), [runSync]);
+
+  const cancel = useCallback(async () => {
+    if (!isElectron) return;
+    await window.electron.games.cancelSync(gameIdStr);
+  }, [isElectron, gameIdStr]);
+
+  const launch = useCallback(async () => {
+    if (!isElectron) return;
+    setError(null);
+    const result = await window.electron.games.launch(gameIdStr);
+    if (!result.success) {
+      setError(result.error || 'Nie udało się uruchomić gry');
+      return;
+    }
+    setPid(result.pid || null);
+  }, [isElectron, gameIdStr]);
+
+  const uninstall = useCallback(async () => {
+    if (!isElectron) return;
+    const result = await window.electron.games.uninstall(gameIdStr);
+    if (!result.success) {
+      setError(result.error || 'Nie udało się odinstalować gry');
+      return;
+    }
+    refreshLibrary();
+  }, [isElectron, gameIdStr, refreshLibrary]);
+
+  let status: GameDownloadStatus;
+  if (activePhase) {
+    status = activePhase;
+  } else if (pid) {
+    status = 'running';
+  } else if (!libraryEntry) {
+    status = 'not-installed';
+  } else if (currentVersion && libraryEntry.version !== currentVersion) {
+    status = 'update-available';
+  } else {
+    status = 'installed';
+  }
+
+  return {
+    status, progress, error, libraryEntry, currentVersion,
+    install, update, repair, cancel, launch, uninstall,
+  };
 }

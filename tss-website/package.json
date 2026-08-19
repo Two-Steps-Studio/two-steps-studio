@@ -98,6 +98,7 @@
     "estree-walker": "2.0.2",
     "framer-motion": "^12.23.24",
     "input-otp": "^1.4.2",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.552.0",
     "mini-svg-data-uri": "^1.4.4",
     "motion": "^12.23.24",
@@ -136,8 +137,8 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^5.2.1",
     "@eslint/eslintrc": "^3.3.1",
-    "@playwright/test": "^1.62.1",
     "@next/bundle-analyzer": "16.3.1",
+    "@playwright/test": "^1.62.1",
     "@storybook/addon-a11y": "^10.5.5",
     "@storybook/addon-docs": "^10.5.5",
     "@storybook/addon-onboarding": "^10.5.5",

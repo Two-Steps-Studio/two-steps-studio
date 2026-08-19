@@ -77,6 +77,9 @@ export interface ElectronAPI {
   // Crash reporting
   getCrashReports: () => Promise<{ success: boolean; reports?: CrashReport[]; error?: string }>;
   clearCrashReports: () => Promise<{ success: boolean; error?: string }>;
+
+  // Game distribution
+  games: GameElectronAPI;
 }
 
 export interface CrashReport {
@@ -132,6 +135,98 @@ export interface SessionData {
     name: string;
   };
   expiresAt?: number;
+}
+
+// ============================================
+// Game distribution
+// ============================================
+
+export interface GameManifestFileEntry {
+  path: string;
+  size: number;
+  sha256: string;
+}
+
+export interface LibraryEntry {
+  gameId: string;
+  releaseId: string;
+  version: string;
+  platform: string;
+  installDir: string;
+  executablePath: string;
+  manifest: GameManifestFileEntry[];
+  installedAt: string;
+  updatedAt: string;
+}
+
+export type GameSyncMode = 'install' | 'update' | 'repair';
+
+export interface GameSyncFileEntry extends GameManifestFileEntry {
+  signedUrl: string;
+}
+
+export interface GameSyncStartPayload {
+  gameId: string;
+  releaseId: string;
+  version: string;
+  platform: string;
+  mode: GameSyncMode;
+  installDir: string;
+  executablePath: string;
+  files: GameSyncFileEntry[];
+}
+
+export interface GameSyncProgress {
+  gameId: string;
+  phase: 'downloading' | 'verifying' | 'finalizing';
+  fileIndex: number;
+  fileCount: number;
+  currentFile: string;
+  bytesDone: number;
+  bytesTotal: number;
+}
+
+export interface GameSyncCompleteEvent {
+  gameId: string;
+  mode: GameSyncMode;
+  installedVersion: string;
+}
+
+export interface GameSyncErrorEvent {
+  gameId: string;
+  error: string;
+  filePath?: string;
+}
+
+export interface GameProcessExitEvent {
+  gameId: string;
+  code: number | null;
+  signal: string | null;
+  error?: string;
+}
+
+export interface GameLibraryUpdatedEvent {
+  gameId: string;
+  entry: LibraryEntry | null;
+}
+
+export interface GameElectronAPI {
+  getLibrary: () => Promise<{ success: boolean; library?: Record<string, LibraryEntry>; error?: string }>;
+  chooseInstallDir: (suggestedFolderName: string) => Promise<{ canceled: boolean; path?: string; error?: string }>;
+  syncStart: (payload: GameSyncStartPayload) => Promise<{ success: boolean; error?: string }>;
+  cancelSync: (gameId: string) => Promise<{ success: boolean }>;
+  launch: (gameId: string) => Promise<{ success: boolean; pid?: number; error?: string }>;
+  uninstall: (gameId: string) => Promise<{ success: boolean; error?: string }>;
+  getStatus: (gameId: string) => Promise<{ status: 'idle' | 'syncing' | 'running'; pid?: number }>;
+
+  onSyncProgress: (callback: (data: GameSyncProgress) => void) => void;
+  onSyncComplete: (callback: (data: GameSyncCompleteEvent) => void) => void;
+  onSyncError: (callback: (data: GameSyncErrorEvent) => void) => void;
+  onSyncCancelled: (callback: (data: { gameId: string }) => void) => void;
+  onProcessExit: (callback: (data: GameProcessExitEvent) => void) => void;
+  onLibraryUpdated: (callback: (data: GameLibraryUpdatedEvent) => void) => void;
+
+  removeAllGameListeners: () => void;
 }
 
 declare global {

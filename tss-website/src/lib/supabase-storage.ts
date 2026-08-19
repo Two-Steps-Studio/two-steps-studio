@@ -305,6 +305,127 @@ export async function uploadDevFile(
 }
 
 /**
+ * Game build storage path layout — single source of truth, reused by both
+ * the player-facing signed-URL routes and the admin publish routes.
+ * Layout: {gameId}/{platform}/{version}/manifest.json
+ *         {gameId}/{platform}/{version}/files/{relativePath}
+ */
+export function getReleasePrefix(gameId: number | string, platform: string, version: string): string {
+  return `${gameId}/${platform}/${version}`;
+}
+
+export function getManifestPath(gameId: number | string, platform: string, version: string): string {
+  return `${getReleasePrefix(gameId, platform, version)}/manifest.json`;
+}
+
+export function getReleaseFilesPrefix(gameId: number | string, platform: string, version: string): string {
+  return `${getReleasePrefix(gameId, platform, version)}/files/`;
+}
+
+export function getReleaseFilePath(gameId: number | string, platform: string, version: string, relativePath: string): string {
+  return `${getReleaseFilesPrefix(gameId, platform, version)}${relativePath}`;
+}
+
+/**
+ * Ensure the private game-builds bucket exists (large binaries, signed URLs only)
+ */
+export async function ensureGameBuildsBucket(): Promise<{ created: boolean; error?: string }> {
+  return ensureBucketExists(STORAGE_BUCKETS.GAME_BUILDS, {
+    public: false,
+    fileSizeLimit: FILE_SIZE_LIMITS.GAME_BUILD_FILE,
+  });
+}
+
+/**
+ * Create a signed upload URL for one game build file (admin publish flow).
+ * Client PUTs the file bytes directly to Storage — the Next.js server never
+ * touches the binary content.
+ */
+export async function createGameFileUploadUrl(storagePath: string) {
+  const client = createServiceClient();
+
+  const { data, error } = await client.storage
+    .from(STORAGE_BUCKETS.GAME_BUILDS)
+    .createSignedUploadUrl(storagePath);
+
+  if (error) {
+    console.error('[Storage] createGameFileUploadUrl error:', error);
+    throw new Error(`Nie udało się utworzyć adresu do przesłania pliku: ${error.message}`);
+  }
+
+  return data; // { signedUrl, token, path }
+}
+
+/**
+ * Create signed download URLs for a batch of game build files (player download/update/repair).
+ * One round trip regardless of file count. 60 min expiry: generating a URL
+ * costs nothing (no bytes moved), so it's fine to over-fetch for files that
+ * end up unchanged in an update/repair diff.
+ */
+export async function createGameFileDownloadUrls(storagePaths: string[], expiresInSeconds = 3600) {
+  if (storagePaths.length === 0) return [];
+
+  const client = createServiceClient();
+
+  const { data, error } = await client.storage
+    .from(STORAGE_BUCKETS.GAME_BUILDS)
+    .createSignedUrls(storagePaths, expiresInSeconds);
+
+  if (error) {
+    console.error('[Storage] createGameFileDownloadUrls error:', error);
+    throw new Error(`Nie udało się utworzyć adresów pobierania: ${error.message}`);
+  }
+
+  return data; // [{ path, signedUrl, error }]
+}
+
+/**
+ * List all object paths (+ sizes) currently stored under a release's files/
+ * prefix — keyed by relative path, matching manifest.json's `path` field.
+ * Used by admin finalize to verify completeness (path + size), and to
+ * resume an interrupted upload without re-uploading files already present.
+ */
+export async function listReleaseFiles(gameId: number | string, platform: string, version: string): Promise<Map<string, number>> {
+  const client = createServiceClient();
+  const prefix = getReleaseFilesPrefix(gameId, platform, version);
+  const found = new Map<string, number>();
+
+  // Supabase Storage list() is not recursive and paginates at 100 by default;
+  // walk it explicitly so nested subfolders in a build are all counted.
+  async function walk(subPath: string) {
+    let offset = 0;
+    const limit = 1000;
+    for (;;) {
+      const { data, error } = await client.storage
+        .from(STORAGE_BUCKETS.GAME_BUILDS)
+        .list(subPath, { limit, offset });
+
+      if (error) {
+        console.error('[Storage] listReleaseFiles error:', error);
+        throw new Error(`Nie udało się odczytać zawartości Storage: ${error.message}`);
+      }
+      if (!data || data.length === 0) break;
+
+      for (const entry of data) {
+        const entryPath = subPath ? `${subPath}/${entry.name}` : entry.name;
+        if (entry.id === null) {
+          // folder (no id) — recurse
+          await walk(entryPath);
+        } else {
+          found.set(entryPath.slice(prefix.length), entry.metadata?.size ?? 0);
+        }
+      }
+
+      if (data.length < limit) break;
+      offset += limit;
+    }
+  }
+
+  await walk(prefix.replace(/\/$/, ''));
+  return found;
+}
+
+/**
  * Get project storage usage
  */
 export async function getProjectStorageUsage(projectId: number): Promise<number> {

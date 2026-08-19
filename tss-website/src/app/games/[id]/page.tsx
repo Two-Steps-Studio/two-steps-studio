@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Download, Eye, Gamepad2, Monitor, Cpu, HardDrive, Tag } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { GameInstallControls } from "@/components/Games/GameInstallControls";
 import type { GameWithDetails, GameCategory, GameStatus } from "@/types/games-records";
 
 const CATEGORY_LABELS: Record<GameCategory, string> = {
@@ -258,15 +259,7 @@ export default function GameDetailPage({ params }: { params: Promise<{ id: strin
               <CardTitle className="text-2xl font-bold text-white">Akcje</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {game.download_url && (
-                <Button
-                  onClick={() => window.open(game.download_url, '_blank')}
-                  className="w-full bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium transition-colors"
-                >
-                  <Download size={18} className="mr-2" />
-                  Pobierz grę
-                </Button>
-              )}
+              {game.id !== undefined && <GameInstallControls gameId={game.id} title={game.title} />}
               <Button variant="outline" className="w-full border-[var(--color-games)]/30 text-[var(--color-games)] hover:bg-[var(--color-games)]/10 rounded-full font-medium transition-colors">
                 Dodaj do ulubionych
               </Button>
