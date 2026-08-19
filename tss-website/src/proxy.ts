@@ -179,6 +179,22 @@ export async function proxy(request: NextRequest) {
     },
   });
 
+  // PERF: supabase.auth.getUser() performs a network round-trip to Supabase
+  // to validate the JWT (unlike getSession(), which reads locally), costing
+  // ~100ms on every request for a signed-in user. Only a handful of path
+  // prefixes below actually consult `user`, so for everything else — most
+  // notably /api/*, where each route already calls requireAuth() and would
+  // repeat the very same lookup — skip the client entirely and return early.
+  const pathname = request.nextUrl.pathname;
+  const AUTH_AWARE_PREFIXES = [
+    "/profile", "/ustawienia", "/notifications", // protected
+    "/login", "/registration",                    // redirect-if-signed-in
+    "/dev", "/games", "/records",                 // project access + category visibility
+  ];
+  if (!AUTH_AWARE_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return response;
+  }
+
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
