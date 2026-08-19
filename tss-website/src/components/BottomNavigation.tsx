@@ -7,9 +7,9 @@ import {
   Home,
   User,
   Gamepad2,
-  Zap,
   MessageSquare,
   Music2,
+  Code,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -54,7 +54,7 @@ export function BottomNavigation() {
       size: 18,
       color: isActive
           ? "var(--color-general-current)"
-          : "rgba(255,255,255,0.15)",
+          : "rgb(0,0,0)",
       className: cn(
           "transition-all duration-300",
           isActive
@@ -68,7 +68,7 @@ export function BottomNavigation() {
       case "/profile":       return <User {...props} />;
       case "/games":         return <Gamepad2 {...props} />;
       case "/records":       return <Music2 {...props} />;
-      case "/dev":           return <Zap {...props} />;
+      case "/dev":           return <Code {...props} />;
       case "/notifications": return <MessageSquare {...props} />;
       default:               return null;
     }

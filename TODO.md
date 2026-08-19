@@ -1,4 +1,49 @@
-﻿# Competitive Teardown: Guidon vs. the Context/Memory PM Landscape (August 2026)
+﻿Stórz dal guidona:
+Create Custom Auth Provider
+Provider Identifier
+Two Steps Studio
+Identifier can only contain letters, numbers, hyphens, and underscores
+
+Lowercase letters, numbers, and hyphens only. Used in SDK: signInWithOAuth({ provider: 'custom:my-company' })
+Display Name
+Two Steps Studio
+Configuration Method
+
+Auto-discovery (Recommended)
+Automatically fetch OAuth endpoints
+
+
+Manual configuration
+Enter endpoints myself
+
+OAuth Endpoints
+Issuer URL
+https://auth.company.com
+Please provide a valid URL
+
+Base URL of your OAuth provider. Discovery runs when you save.
+Discovery URL
+https://github.company.com/.well-known/openid-configuration
+Leave empty to use standard path: {issuer}/.well-known/openid-configuration. Only needed if your provider uses a non-standard discovery path. Discovery runs when you save.
+Client ID
+Client ID
+Please provide a client ID
+
+Client Secret
+Client secret
+Please provide a client secret
+
+Scopes
+openid, email, profile
+Comma-separated list. Common: openid, email, profile
+Allow users without email
+
+Allows the user to successfully authenticate when the provider does not return an email address.
+Callback URL
+https://thtzaeeatjwyitifdcxb.supabase.co/auth/v1/callback
+Configure this in your OAuth provider's settings.
+
+# Competitive Teardown: Guidon vs. the Context/Memory PM Landscape (August 2026)
 
 ## TL;DR
 - **No shipped competitor combines all four of Guidon's pillars** — a cross-domain Context Layer graph, contextual "Why"/decision surfacing next to tasks, a persistent FACT-vs-AI-INSIGHT provenance state, and a provider-neutral "Generic Agent Context" package. Individual pieces exist (Plane's embedded AI, projectmem's issue/attempt/fix log, Align's decision graph), but none integrate them in a mainstream PM product.

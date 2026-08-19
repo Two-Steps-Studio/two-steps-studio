@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Beatmapy i Muzyka — Two Steps Studio',
+  title: 'Beaty, Podcasty i Muzyka - Two Steps Studio',
   description: 'Beattmapy, podcasty i oryginalna muzyka. Odkryj najnowsze wydania ze Studia Two Steps. Łącz się z fanami i twórcami.',
   openGraph: {
     title: 'Beatmapy i Muzyka — Two Steps Studio',

@@ -47,7 +47,9 @@ function Button({
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {
-  const Comp = "button"
+  // Slot lets `asChild` render the child element (e.g. an <a>) with the
+  // button's styling, instead of nesting it inside a real <button>.
+  const Comp = asChild ? Slot : "button"
   const audioCtxRef = React.useRef<AudioContext | null>(null)
   const playClick = React.useCallback(() => {
     try {

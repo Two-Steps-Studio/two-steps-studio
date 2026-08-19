@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Make Tailwind's `dark:` variant follow the .dark class that next-themes
+   puts on <html>, instead of the OS-level prefers-color-scheme it defaults
+   to in v4. Without this the two disagree whenever a user picks a theme
+   that differs from their system setting: --bg/--text (class-driven) would
+   switch while every dark: utility stayed put, e.g. painting dark:text-white
+   onto a light background. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-general: var(--color-general-current, #1bbdbd);
   --color-primary: var(--color-general);
