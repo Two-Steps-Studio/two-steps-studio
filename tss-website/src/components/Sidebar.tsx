@@ -154,7 +154,10 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
       ]}
     ] : []),
     ...(categoryVisibility.dev ? [{
-      id: "dev", type: "single", href: "/dev", label: t.nav.dev || "Dev", icon: Code, items: []}
+      id: "dev", type: "expandable", href: "/dev", label: t.nav.dev || "Dev", icon: Code, items: [
+        { href: "/dev/about", label: "About Us", icon: Book },
+        { href: "/dev/recruitment", label: "Recruitment", icon: Book },  
+      ]}
     ] : []),
     { id: "notifications", type: "single", href: "/notifications", label: t.nav.notifications || "Powiadomienia", icon: Bell, ariaCurrent: getAriaCurrent("/ankiety/rating") },
   ];

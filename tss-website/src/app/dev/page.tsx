@@ -1,16 +1,19 @@
 import { Metadata } from "next";
-import { DevPageClient } from "@/components/DEV/DevPageClient";
 
 export const metadata: Metadata = {
   title: "DEV - Two Steps Studio",
-  description: "Panel deweloperski Two Steps Studio - zarządzanie projektami",
+  description: "Zespół deweloperski Two Steps Studio - projekty",
   openGraph: {
     title: "DEV - Two Steps Studio",
-    description: "Panel deweloperski Two Steps Studio - zarządzanie projektami",
+    description: "Zespół deweloperski Two Steps Studio - projekty",
     url: "https://twostepsstudio.vercel.app/dev",
   },
 };
 
 export default function DevPage() {
-  return <DevPageClient />;
+  return (
+    <div>
+      DEV
+    </div>
+  );
 }
