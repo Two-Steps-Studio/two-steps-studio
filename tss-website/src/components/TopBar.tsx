@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { LanguageSelect } from "./LanguageSelect";
 import { supabase } from "@/lib/supabase";
 
-export function TopBar() {
+export function TopBar({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const { toggle } = useSidebar();
   const { t, language, setLanguage } = useLanguage();
@@ -128,7 +128,8 @@ export function TopBar() {
   return (
       <header className={cn(
           "fixed top-0 right-0 left-0 lg:left-[240px] z-[40] transition-all duration-500 px-4 pt-4",
-          isScrolled ? "h-[70px]" : "h-[80px]"
+          isScrolled ? "h-[70px]" : "h-[80px]",
+          className
       )}>
         <div className={cn(
             "h-full w-full glass rounded-3xl px-4 md:px-6 flex items-center justify-between transition-all duration-500",

@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "guidon",
       "port": 3000
+    },
+    {
+      "name": "tss-website",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
+      "cwd": "tss-website",
+      "port": 3001
     }
   ]
 }

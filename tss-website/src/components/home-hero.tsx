@@ -106,10 +106,10 @@ export function HomeHero({ language, content }: HomeHeroProps) {
                           document.body.removeChild(link);
                         }}
                         size="lg"
-                        className="h-20 px-16 rounded-[2rem] bg-white text-black hover:bg-[var(--color-general)] hover:text-white font-black text-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)] relative overflow-hidden group/btn cursor-pointer"
+                        className="h-14 px-6 sm:h-20 sm:px-16 rounded-[2rem] bg-white text-black hover:bg-[var(--color-general)] hover:text-white font-black text-base sm:text-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)] relative overflow-hidden group/btn cursor-pointer max-w-full"
                     >
-                  <span className="relative z-10 flex items-center gap-4">
-                    <LucideDownload size={28} className="animate-bounce" />
+                  <span className="relative z-10 flex items-center gap-2 sm:gap-4">
+                    <LucideDownload size={20} className="shrink-0 animate-bounce sm:size-7" />
                     {content.hero.ctaPrimary}
                   </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer" />

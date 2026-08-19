@@ -17,7 +17,6 @@ const BOTTOM_NAV_ITEMS = {
   home: { label: "Strona główna", href: "/" },
   profile: { label: "Profil", href: "/profile" },
   games: { label: "Games", href: "/games" },
-  esport: { label: "E-sport", href: "/e-sport" },
   records: { label: "Records", href: "/records" },
   dev: { label: "Dev", href: "/dev" },
   notifications: { label: "Powiadomienia", href: "/notifications" },
@@ -84,7 +83,7 @@ export function BottomNavigation() {
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
 
               return (
-                  <li key={key} className="flex-1">
+                  <li key={key} className="min-w-0 flex-1">
                     <Link
                         href={item.href}
                         className={cn(
@@ -93,7 +92,7 @@ export function BottomNavigation() {
                         )}
                     >
                       {getIcon(item.href)}
-                      <span className="text-[8px] font-bold text-[var(--text)] text-center leading-none">
+                      <span className="w-full truncate px-0.5 text-center text-[8px] font-bold leading-none text-[var(--text)]">
                         {item.label}
                       </span>
                     </Link>

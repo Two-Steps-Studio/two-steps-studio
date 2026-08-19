@@ -85,10 +85,10 @@ export function MobileHeader() {
             href="/"
             className="flex items-center gap-2"
           >
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-general)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-general)] flex items-center justify-center shrink-0">
               <span className="text-white font-black text-xs">TSS</span>
             </div>
-            <span className="font-black text-[var(--text)]">TWO STEPS</span>
+            <span className="hidden whitespace-nowrap font-black text-[var(--text)] sm:inline">TWO STEPS</span>
           </Link>
         </div>
 

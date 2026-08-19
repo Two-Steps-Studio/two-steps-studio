@@ -34,7 +34,7 @@ export default function FirstRunExperience() {
     await checkForUpdates();
   };
 
-  if (step === 0) return null;
+  if (!isElectron || step === 0) return null;
 
   return (
       <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
