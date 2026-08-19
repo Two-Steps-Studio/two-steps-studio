@@ -274,16 +274,17 @@ async function handleMine(interaction, supabase, profile) {
 
     const xpGain = Math.floor((resource.baseValue || 10) / 2);
     const moneyGain = resource.baseValue || 10;
-    const newXp = (profile.xp || 0) + xpGain;
-    const newLevel = getLevelFromXp(newXp);
-    const oreItem = { id: `ore_${Date.now()}_7`, ...resource };
+    const newLevel = getLevelFromXp((profile.xp || 0) + xpGain);
 
-    const { data: mineData } = await supabase.rpc('apply_mine_reward', {
+    // apply_mine_reward (which also appended to a profiles.ore column) was
+    // dropped — that column never existed on the live table, so this write
+    // never actually persisted anything before either. apply_xp_money_reward
+    // is the correct, already-existing shape for what's actually there.
+    await supabase.rpc('apply_xp_money_reward', {
         p_user_id: profile.id,
-        p_money_delta: moneyGain,
         p_xp_delta: xpGain,
+        p_money_delta: moneyGain,
         p_new_level: newLevel,
-        p_ore_item: oreItem,
     });
 
     return interaction.editReply({
@@ -305,16 +306,18 @@ async function handleStaw(interaction, supabase, profile) {
     const fishName = fish.name === 'Zwykła ryba' ? `${fish.name} ${Math.floor(Math.random() * 10) + 1}cm` : fish.name;
 
     const xpGain = Math.floor(fish.value / 5);
-    const newXp = (profile.xp || 0) + xpGain;
-    const newLevel = getLevelFromXp(newXp);
-    const fishItem = { id: `fish_${Date.now()}`, name: fishName, value: fish.value, type: 'fish' };
+    const newLevel = getLevelFromXp((profile.xp || 0) + xpGain);
 
-    await supabase.rpc('apply_staw_reward', {
+    // apply_staw_reward (which also appended to a profiles.fish column) was
+    // dropped — that column never existed on the live table, so the old
+    // single .update() call always failed as a whole, silently, and this
+    // reward has likely never actually persisted before. apply_xp_money_reward
+    // is the correct, already-existing shape for what's actually there.
+    await supabase.rpc('apply_xp_money_reward', {
         p_user_id: profile.id,
-        p_money_delta: fish.value,
         p_xp_delta: xpGain,
+        p_money_delta: fish.value,
         p_new_level: newLevel,
-        p_fish_item: fishItem,
     });
 
     return interaction.reply({

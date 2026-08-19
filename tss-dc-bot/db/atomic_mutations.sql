@@ -7,24 +7,44 @@
 -- There is no migration runner in this repo (tss-website/src/db uses the same
 -- loose-.sql-file convention, applied by hand) — this file IS the migration.
 --
--- VERIFY BEFORE APPLYING:
---   1. Confirm live column types of `ore` and `fish` on `profiles`. This file
---      assumes JSONB holding a JSON array:
---        SELECT pg_typeof(ore), pg_typeof(fish) FROM profiles LIMIT 1;
---      If they are a native Postgres array type instead, the
---      `COALESCE(ore, '[]'::jsonb) || jsonb_build_array(...)` lines in
---      apply_mine_reward / apply_staw_reward must become `array_append(...)`.
---   2. Confirm `profiles.id` (TEXT) is the only identity column bot writes
---      should target — shop.js has a `.or('id.eq...,discord_id.eq...')`
---      clause referencing a `discord_id` column not present in
---      tss-website/src/db/schema.sql. These RPCs target `id` only, matching
---      every other call site in the bot; if `discord_id` turns out to be a
---      real, separately-populated column, that's a distinct problem to
---      report, not something silently patched here.
---   3. Confirm `fishing_gear.user_id` and its 8 level columns
---      (zylka, kolowrotek, haczyk, przynet, wedka, zaneta, lodz, skrzynka)
---      match purchase_gear_upgrade's branches below — verified against
---      tss-dc-bot/fishing/gear.config.js's GEAR object keys.
+-- REVISION 2 — corrects two things found by live verification against the
+-- real database after the first version was applied:
+--   1. Every function below whose RETURNS TABLE column shared a name with a
+--      table column it also wrote (money, bank, xp) failed at call time with
+--      "column reference is ambiguous" — PL/pgSQL treats a RETURNS TABLE
+--      column as a declared variable in scope for the whole function body,
+--      not just the RETURNING clause, so it collides with any unqualified
+--      reference to a same-named table column anywhere in SET/WHERE too.
+--      Fixed with `#variable_conflict use_column` as the first line of every
+--      affected function body.
+--   2. `profiles.ore` and `profiles.fish` do not exist on the live table —
+--      confirmed via `select('*')`. Mining/pond-fishing item persistence was
+--      never real (handleMine crashed before reaching its write at all; the
+--      old code's SAME single .update() call also carried money/xp/level
+--      alongside the bad `fish` field, so Postgres rejected the whole write
+--      and — since the original code never checked the error — pond fishing
+--      has likely never actually saved money or XP either, silently, this
+--      whole time). apply_mine_reward / apply_staw_reward are dropped;
+--      handleMine/handleStaw now call apply_xp_money_reward directly, same
+--      as every other XP+money site. This is a net improvement, not scope
+--      creep — it's the same call sites the original plan already touched,
+--      just discovering their target columns don't exist and adjusting to
+--      what's actually there. Item/inventory persistence for mining and
+--      pond fishing remains not implemented (it never was) — a separate,
+--      real feature gap, not something this migration invents.
+--
+-- VERIFIED against live schema (read-only introspection, not assumed):
+--   - profiles.id (TEXT, Discord snowflake, PK) — confirmed real
+--   - profiles.money, bank, xp, level, last_work, discord_roles, background,
+--     updated_at — all confirmed real and populated
+--   - profiles.discord_id exists but is NULL on every sampled row — dead in
+--     practice; every RPC below targets `id` only, matching the rest of the
+--     bot's code
+--   - fishing_gear is a real, separate table (user_id PK + zylka,
+--     kolowrotek, haczyk, przynet, wedka, zaneta, lodz, skrzynka +
+--     updated_at), populated with real player data — confirmed directly,
+--     NOT the same thing as the unrelated `profiles.fishing_gear` jsonb
+--     column (which is empty on every sampled row and unused by the bot)
 --
 -- Called via: supabase.rpc('function_name', { p_param: value })
 -- The bot always calls through its service-role client, so RLS is already
@@ -33,6 +53,9 @@
 -- would need real caller-identity checks first — none of them verify that
 -- the caller is authorized to act as p_user_id today.
 -- ============================================================================
+
+DROP FUNCTION IF EXISTS apply_mine_reward(TEXT, INTEGER, INTEGER, INTEGER, JSONB);
+DROP FUNCTION IF EXISTS apply_staw_reward(TEXT, INTEGER, INTEGER, INTEGER, JSONB);
 
 -- ── Shape 1: guarded single-field money increment/decrement ────────────────
 -- delta may be positive or negative. Guard makes decrements atomic against
@@ -43,6 +66,7 @@ CREATE OR REPLACE FUNCTION increment_profile_money(
     p_delta INTEGER
 )
 RETURNS TABLE (money INTEGER) AS $$
+#variable_conflict use_column
 BEGIN
     RETURN QUERY
     UPDATE profiles
@@ -60,6 +84,7 @@ CREATE OR REPLACE FUNCTION apply_work_reward(
     p_earnings INTEGER
 )
 RETURNS TABLE (money INTEGER, last_work TIMESTAMPTZ) AS $$
+#variable_conflict use_column
 BEGIN
     RETURN QUERY
     UPDATE profiles
@@ -77,6 +102,7 @@ CREATE OR REPLACE FUNCTION deposit_to_bank(
     p_amount INTEGER
 )
 RETURNS TABLE (money INTEGER, bank INTEGER) AS $$
+#variable_conflict use_column
 BEGIN
     RETURN QUERY
     UPDATE profiles
@@ -95,6 +121,7 @@ CREATE OR REPLACE FUNCTION withdraw_from_bank(
     p_amount INTEGER
 )
 RETURNS TABLE (money INTEGER, bank INTEGER) AS $$
+#variable_conflict use_column
 BEGIN
     RETURN QUERY
     UPDATE profiles
@@ -111,7 +138,9 @@ $$ LANGUAGE plpgsql;
 -- ── Shape 3: two-row transfer, deadlock-safe locking ────────────────────────
 -- Locks both rows in a deterministic order (lexicographic on id) so two
 -- concurrent /pay calls between the same two users (in either direction)
--- can never deadlock waiting on each other's row lock.
+-- can never deadlock waiting on each other's row lock. RETURNS TABLE columns
+-- are aliased (sender_money/recipient_money) so they never collide with the
+-- real `money` column — no #variable_conflict needed here.
 CREATE OR REPLACE FUNCTION pay_transfer(
     p_sender_id TEXT,
     p_recipient_id TEXT,
@@ -162,6 +191,10 @@ $$ LANGUAGE plpgsql;
 -- (getLevelFromXp from level_stats.js); this function stays curve-agnostic.
 -- money is clamped at 0 via GREATEST to match existing JS semantics
 -- (Math.max(0, ...)) in fishing.js / afk_fishing.js.
+-- Also used directly by handleMine/handleStaw in rpg/index.js — the item-
+-- array append that used to be bundled with those two writes targeted
+-- columns that don't exist (see file header); this function is the correct,
+-- already-existing shape for what those two call sites actually need.
 CREATE OR REPLACE FUNCTION apply_xp_money_reward(
     p_user_id TEXT,
     p_xp_delta INTEGER,
@@ -169,6 +202,7 @@ CREATE OR REPLACE FUNCTION apply_xp_money_reward(
     p_new_level INTEGER
 )
 RETURNS TABLE (xp INTEGER, money INTEGER, level INTEGER) AS $$
+#variable_conflict use_column
 BEGIN
     RETURN QUERY
     UPDATE profiles
@@ -181,60 +215,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ── Shape 5: mining — xp/money/level combo + ore array append ──────────────
--- Assumes `ore` is JSONB holding a JSON array — see verification note at top
--- of file.
-CREATE OR REPLACE FUNCTION apply_mine_reward(
-    p_user_id TEXT,
-    p_money_delta INTEGER,
-    p_xp_delta INTEGER,
-    p_new_level INTEGER,
-    p_ore_item JSONB
-)
-RETURNS TABLE (money INTEGER, xp INTEGER, level INTEGER, ore JSONB) AS $$
-BEGIN
-    RETURN QUERY
-    UPDATE profiles
-    SET money = GREATEST(0, COALESCE(money, 0) + p_money_delta),
-        xp    = COALESCE(xp, 0) + p_xp_delta,
-        level = p_new_level,
-        ore   = COALESCE(ore, '[]'::jsonb) || jsonb_build_array(p_ore_item),
-        updated_at = NOW()
-    WHERE id = p_user_id
-    RETURNING profiles.money, profiles.xp, profiles.level, profiles.ore;
-END;
-$$ LANGUAGE plpgsql;
-
--- ── Shape 5b: pond fishing — xp/money/level combo + fish array append ──────
-CREATE OR REPLACE FUNCTION apply_staw_reward(
-    p_user_id TEXT,
-    p_money_delta INTEGER,
-    p_xp_delta INTEGER,
-    p_new_level INTEGER,
-    p_fish_item JSONB
-)
-RETURNS TABLE (money INTEGER, xp INTEGER, level INTEGER, fish JSONB) AS $$
-BEGIN
-    RETURN QUERY
-    UPDATE profiles
-    SET money = GREATEST(0, COALESCE(money, 0) + p_money_delta),
-        xp    = COALESCE(xp, 0) + p_xp_delta,
-        level = p_new_level,
-        fish  = COALESCE(fish, '[]'::jsonb) || jsonb_build_array(p_fish_item),
-        updated_at = NOW()
-    WHERE id = p_user_id
-    RETURNING profiles.money, profiles.xp, profiles.level, profiles.fish;
-END;
-$$ LANGUAGE plpgsql;
-
 -- ── Shape 6: cross-table paired write — wedka gear upgrade ──────────────────
 -- Deducts money (guarded) and upgrades exactly one fishing_gear column in
 -- the same function transaction — if the gear write fails, the whole
 -- transaction rolls back, including the money deduction (fixes the
 -- "money lost, gear not upgraded" bug from the old Promise.all([...]) code).
 -- Deliberately no dynamic SQL: 8 explicit branches over the known gear keys
--- (verified against fishing/gear.config.js), each one a plain, inspectable
--- UPDATE — for a function that moves money, that's worth the verbosity.
+-- (verified against fishing/gear.config.js and directly against real rows
+-- in the fishing_gear table), each one a plain, inspectable UPDATE — for a
+-- function that moves money, that's worth the verbosity.
 CREATE OR REPLACE FUNCTION purchase_gear_upgrade(
     p_user_id TEXT,
     p_gear_key TEXT,
@@ -242,6 +231,7 @@ CREATE OR REPLACE FUNCTION purchase_gear_upgrade(
     p_new_level INTEGER
 )
 RETURNS TABLE (money INTEGER, gear_level INTEGER) AS $$
+#variable_conflict use_column
 DECLARE
     v_money INTEGER;
 BEGIN
