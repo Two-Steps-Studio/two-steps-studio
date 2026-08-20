@@ -1,253 +1,270 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Download, Monitor, Package, CheckCircle2, Clock, HardDrive, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import {
+  Download,
+  Monitor,
+  Package,
+  CheckCircle2,
+  Clock,
+  HardDrive,
+  AlertCircle,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { formatBytes, type DesktopRelease } from '@/lib/desktop-release';
 
-interface ReleaseInfo {
-  version: string;
-  releaseDate: string;
-  size: string;
-  downloadUrl: string;
-  portableUrl: string;
-  changelog: string[];
+const SYSTEM_REQUIREMENTS = [
+  'System operacyjny: Windows 10 lub nowszy (64-bit)',
+  'Procesor: Intel Core i3 lub równoważny',
+  'Pamięć RAM: 4 GB minimum (8 GB zalecane)',
+  'Miejsce na dysku: 500 MB na instalację',
+  'Połączenie internetowe: wymagane do synchronizacji',
+];
+
+const FEATURES = [
+  { heading: 'Funkcje aplikacji', items: ['Powiadomienia systemowe', 'Praca w zasobniku systemowym', 'Automatyczne aktualizacje', 'Szybki start aplikacji'] },
+  { heading: 'Integracja', items: ['Synchronizacja z kontem TSS', 'Udostępnianie plików', 'Powiadomienia o projektach', 'Wsparcie dla ciemnego motywu'] },
+];
+
+function formatDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('pl-PL', { dateStyle: 'long' }).format(date);
 }
 
 export default function DownloadPage() {
-  const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [release, setRelease] = useState<DesktopRelease | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
 
   useEffect(() => {
-    // In production, this would fetch from your API
-    // For now, using mock data
-    const mockRelease: ReleaseInfo = {
-      version: '1.0.0',
-      releaseDate: '2024-08-02',
-      size: '145 MB',
-      downloadUrl: 'https://releases.twostepsstudio.com/desktop/Two-Steps-Studio-1.0.0-x64.exe',
-      portableUrl: 'https://releases.twostepsstudio.com/desktop/Two-Steps-Studio-1.0.0-portable.exe',
-      changelog: [
-        'Pierwsza oficjalna wersja aplikacji desktopowej',
-        'Pełna integracja z systemem powiadomień Windows',
-        'Wsparcie dla trybu offline',
-        'Automatyczne aktualizacje',
-        'Synchronizacja sesji z wersją webową',
-        'Optymalizacja wydajności',
-      ],
-    };
+    let cancelled = false;
 
-    setTimeout(() => {
-      setReleaseInfo(mockRelease);
-      setIsLoading(false);
-    }, 500);
+    fetch('/api/desktop/release')
+      .then((response) => response.json())
+      .then((payload: { release: DesktopRelease | null }) => {
+        if (cancelled) return;
+        if (payload.release) {
+          setRelease(payload.release);
+          setStatus('ready');
+        } else {
+          setStatus('empty');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-2xl">
-            <Monitor className="w-10 h-10" />
+        <header className="mb-12 text-center">
+          <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] shadow-lg">
+            <Monitor className="h-10 w-10 text-[var(--color-general)]" />
           </div>
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="mb-4 text-4xl font-bold text-[var(--text)] sm:text-5xl">
             Pobierz aplikację desktopową
           </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Ciesz się pełnym doświadczeniem Two Steps Studio bezpośrednio na swoim komputerze.
-            Szybko, wygodnie, z pełnym wsparciem offline.
+          <p className="mx-auto max-w-2xl text-lg text-[var(--text)]/70">
+            Two Steps Studio na Twoim komputerze — powiadomienia systemowe, praca w zasobniku
+            i automatyczne aktualizacje.
           </p>
-        </div>
+        </header>
 
-        {/* Main Download Card */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <Card className="bg-gray-800/50 border-gray-700 backdrop-blur">
+        <div className="mx-auto mb-12 max-w-4xl">
+          <Card className="border-[var(--border-color)] bg-[var(--card-bg)]">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <CardTitle className="text-2xl text-white mb-2">
+                  <CardTitle className="mb-2 text-2xl text-[var(--text)]">
                     Two Steps Studio Desktop
                   </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Wersja {releaseInfo?.version} • Windows 10/11
+                  <CardDescription className="text-[var(--text)]/70">
+                    {status === 'ready' && release
+                      ? `Wersja ${release.version} • ${release.minimumOs ?? 'Windows 10/11'} • wydana ${formatDate(release.releasedAt)}`
+                      : 'Windows 10/11 (64-bit)'}
                   </CardDescription>
                 </div>
-                <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  Najnowsza wersja
-                </Badge>
+                {status === 'ready' && (
+                  <Badge
+                    variant="secondary"
+                    className="border-green-500/30 bg-green-500/15 text-green-700 dark:text-green-300"
+                  >
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    Najnowsza wersja
+                  </Badge>
+                )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Download Buttons */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <Button
-                  size="lg"
-                  className="w-full h-16 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  onClick={() => window.open(releaseInfo?.downloadUrl, '_blank')}
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Pobierz instalator
-                  <Badge variant="secondary" className="ml-2 bg-white/20">
-                    {releaseInfo?.size}
-                  </Badge>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full h-16 text-lg border-gray-600 hover:bg-gray-700/50"
-                  onClick={() => window.open(releaseInfo?.portableUrl, '_blank')}
-                >
-                  <Package className="w-5 h-5 mr-2" />
-                  Wersja portable
-                  <Badge variant="secondary" className="ml-2 bg-white/20">
-                    {releaseInfo?.size}
-                  </Badge>
-                </Button>
-              </div>
 
-              {/* System Requirements */}
-              <div className="bg-gray-900/50 rounded-lg p-4 space-y-3">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <HardDrive className="w-4 h-4" />
+            <CardContent className="space-y-6">
+              {status === 'loading' && (
+                <div className="grid gap-4 md:grid-cols-2" aria-busy="true">
+                  <div className="h-16 animate-pulse rounded-xl bg-[var(--text)]/10" />
+                  <div className="h-16 animate-pulse rounded-xl bg-[var(--text)]/10" />
+                </div>
+              )}
+
+              {(status === 'empty' || status === 'error') && (
+                <div
+                  role="status"
+                  className="flex items-start gap-3 rounded-xl border border-[var(--border-color)] p-4"
+                >
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <div>
+                    <p className="font-medium text-[var(--text)]">
+                      {status === 'empty'
+                        ? 'Żadna wersja nie została jeszcze opublikowana'
+                        : 'Nie udało się pobrać informacji o wydaniu'}
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--text)]/70">
+                      {status === 'empty'
+                        ? 'Pracujemy nad pierwszym publicznym wydaniem. Zajrzyj tu ponownie wkrótce.'
+                        : 'Odśwież stronę za chwilę. Jeśli problem się powtarza, napisz do nas.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {status === 'ready' && release && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {release.artifacts.map((artifact) => {
+                    const isInstaller = artifact.kind === 'installer';
+                    const Icon = isInstaller ? Download : Package;
+                    return (
+                      <a
+                        key={artifact.kind}
+                        href={artifact.url}
+                        download={artifact.filename}
+                        className={`flex h-16 items-center justify-center gap-2 rounded-xl px-4 text-lg font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-general)] ${
+                          isInstaller
+                            ? 'bg-[var(--color-general)] text-black hover:opacity-90'
+                            : 'border border-[var(--border-color)] text-[var(--text)] hover:border-[var(--color-general)]'
+                        }`}
+                      >
+                        <Icon className="h-5 w-5 shrink-0" />
+                        <span>{artifact.label}</span>
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-sm font-medium ${
+                            isInstaller ? 'bg-black/15' : 'bg-[var(--text)]/10'
+                          }`}
+                        >
+                          {formatBytes(artifact.sizeBytes)}
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4">
+                <h2 className="flex items-center gap-2 font-semibold text-[var(--text)]">
+                  <HardDrive className="h-4 w-4" />
                   Wymagania systemowe
-                </h3>
-                <ul className="text-sm text-gray-400 space-y-1">
-                  <li>• System operacyjny: Windows 10 lub nowszy (64-bit)</li>
-                  <li>• Procesor: Intel Core i3 lub równoważny</li>
-                  <li>• Pamięć RAM: 4 GB minimum (8 GB zalecane)</li>
-                  <li>• Miejsce na dysku: 500 MB na instalację</li>
-                  <li>• Połączenie internetowe: wymagane do synchronizacji</li>
+                </h2>
+                <ul className="space-y-1 text-sm text-[var(--text)]/75">
+                  {SYSTEM_REQUIREMENTS.map((requirement) => (
+                    <li key={requirement}>• {requirement}</li>
+                  ))}
                 </ul>
               </div>
 
-              {/* Features */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-white">Funkcje aplikacji</h3>
-                  <ul className="text-sm text-gray-400 space-y-1">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Pełna funkcjonalność offline
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Automatyczne aktualizacje
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Powiadomienia systemowe
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Szybki start aplikacji
-                    </li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-white">Integracja</h3>
-                  <ul className="text-sm text-gray-400 space-y-1">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Synchronizacja z kontem TSS
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Udostępnianie plików
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Powiadomienia o projektach
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Wsparcie dla ciemnego motywu
-                    </li>
-                  </ul>
-                </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {FEATURES.map(({ heading, items }) => (
+                  <div key={heading} className="space-y-2">
+                    <h2 className="font-semibold text-[var(--text)]">{heading}</h2>
+                    <ul className="space-y-1 text-sm text-[var(--text)]/75">
+                      {items.map((item) => (
+                        <li key={item} className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Changelog */}
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-gray-800/50 border-gray-700 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-xl text-white flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Lista zmian - wersja {releaseInfo?.version}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {releaseInfo?.changelog.map((change, index) => (
-                  <li key={index} className="flex items-start gap-2 text-gray-300">
-                    <span className="text-blue-400 mt-1">•</span>
-                    {change}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
+        {status === 'ready' && release && release.notes.length > 0 && (
+          <div className="mx-auto mb-8 max-w-4xl">
+            <Card className="border-[var(--border-color)] bg-[var(--card-bg)]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl text-[var(--text)]">
+                  <Clock className="h-5 w-5" />
+                  Lista zmian — wersja {release.version}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {release.notes.map((note) => (
+                    <li key={note} className="flex items-start gap-2 text-[var(--text)]/85">
+                      <span className="mt-1 text-[var(--color-general)]">•</span>
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-        {/* Installation Instructions */}
-        <div className="max-w-4xl mx-auto mt-8">
-          <Card className="bg-gray-800/50 border-gray-700 backdrop-blur">
+        <div className="mx-auto max-w-4xl">
+          <Card className="border-[var(--border-color)] bg-[var(--card-bg)]">
             <CardHeader>
-              <CardTitle className="text-xl text-white">Instrukcja instalacji</CardTitle>
+              <CardTitle className="text-xl text-[var(--text)]">Instrukcja instalacji</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <h3 className="font-semibold text-white">Instalator (.exe)</h3>
-                <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside">
+                <h3 className="font-semibold text-[var(--text)]">Instalator (.exe)</h3>
+                <ol className="list-inside list-decimal space-y-1 text-sm text-[var(--text)]/75">
                   <li>Pobierz plik instalatora</li>
                   <li>Uruchom pobrany plik (kliknij dwukrotnie)</li>
-                  <li>Postępuj zgodnie z instrukcjami kreatora instalacji</li>
+                  <li>
+                    Windows może pokazać ostrzeżenie SmartScreen — wybierz „Więcej informacji" i
+                    „Uruchom mimo to"
+                  </li>
                   <li>Wybierz lokalizację instalacji lub użyj domyślnej</li>
-                  <li>Zaznacz opcje tworzenia skrótów (pulpit, Menu Start)</li>
                   <li>Zakończ instalację i uruchom aplikację</li>
                 </ol>
               </div>
-              <Separator className="bg-gray-700" />
+              <Separator className="bg-[var(--border-color)]" />
               <div className="space-y-2">
-                <h3 className="font-semibold text-white">Wersja portable</h3>
-                <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside">
+                <h3 className="font-semibold text-[var(--text)]">Wersja portable</h3>
+                <ol className="list-inside list-decimal space-y-1 text-sm text-[var(--text)]/75">
                   <li>Pobierz plik portable (.exe)</li>
-                  <li>Rozpakuj archiwum do wybranego folderu</li>
-                  <li>Uruchom aplikację bezpośrednio z folderu</li>
-                  <li>Brak konieczności instalacji - działa z USB</li>
+                  <li>Uruchom go bezpośrednio — instalacja nie jest wymagana</li>
+                  <li>Przy pierwszym starcie plik rozpakowuje się, więc trwa on dłużej</li>
+                  <li>Działa również z pendrive'a</li>
                 </ol>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Footer Info */}
-        <div className="max-w-4xl mx-auto mt-8 text-center text-sm text-gray-500">
+        <footer className="mx-auto mt-8 max-w-4xl text-center text-sm text-[var(--text)]/70">
           <p>
-            Aplikacja jest regularnie aktualizowana. Włącz automatyczne aktualizacje w ustawieniach,
-            aby zawsze korzystać z najnowszej wersji.
+            Aplikacja sprawdza aktualizacje automatycznie. Możesz to wyłączyć w ustawieniach
+            aplikacji.
           </p>
           <p className="mt-2">
-            W razie problemów z instalacją, skontaktuj się z nami:{' '}
-            <a href="mailto:support@twostepsstudio.com" className="text-blue-400 hover:underline">
+            W razie problemów z instalacją napisz na{' '}
+            <a
+              href="mailto:support@twostepsstudio.com"
+              className="font-medium text-[var(--color-general)] underline underline-offset-4"
+            >
               support@twostepsstudio.com
             </a>
           </p>
-        </div>
+        </footer>
       </div>
     </div>
   );

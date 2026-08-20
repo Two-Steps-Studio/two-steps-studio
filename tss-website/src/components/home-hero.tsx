@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Download as LucideDownload } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { useRef, useState, useEffect } from "react";
 import { InstallPWA } from "./install-pwa";
@@ -13,6 +14,7 @@ interface HomeHeroProps {
 }
 
 export function HomeHero({ language, content }: HomeHeroProps) {
+  const router = useRouter();
   const containerRef = useRef(null);
   const [mounted, setMounted] = useState(false);
 
@@ -97,14 +99,10 @@ export function HomeHero({ language, content }: HomeHeroProps) {
               <div className="flex flex-wrap justify-center items-center gap-6">
                 {mounted && (
                     <Button
-                        onClick={() => {
-                          const link = document.createElement("a");
-                          link.href = "/TwoStepsLauncher.exe";
-                          link.download = "TwoStepsLauncher.exe";
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
+                        // /TwoStepsLauncher.exe was never shipped, so this
+                        // button used to download a 404 page. /download reads
+                        // the published release manifest instead.
+                        onClick={() => router.push("/download")}
                         size="lg"
                         className="h-14 px-6 sm:h-20 sm:px-16 rounded-[2rem] bg-white text-black hover:bg-[var(--color-general)] hover:text-white font-black text-base sm:text-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)] relative overflow-hidden group/btn cursor-pointer max-w-full"
                     >

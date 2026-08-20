@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Monitor, Laptop, Gamepad2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useLanguage } from "../hooks/use-language";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function InstallPWA() {
+  const router = useRouter();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstall, setShowInstall] = useState(true);
     const { t } = useLanguage();
@@ -16,14 +18,12 @@ export function InstallPWA() {
       setMounted(true);
     }, []);
 
-    const handleInstall = async () => {
-      // Trigger a direct download for the launcher installer
-      const link = document.createElement("a");
-      link.href = "/TwoStepsLauncher.exe"; // Placeholder installer file
-      link.download = "TwoStepsLauncher.exe";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    const handleInstall = () => {
+      // /download is the single source of truth for the current build: it reads
+      // the published release manifest, so there is no installer path to keep
+      // in sync here. (This used to point at /TwoStepsLauncher.exe, which was
+      // never shipped, so the button silently downloaded a 404 page.)
+      router.push("/download");
     };
 
     return (
