@@ -13,9 +13,14 @@ import {
   DEFAULT_LOCALE,
   LOCALES,
   loadMessages,
+  messages as bundledMessages,
   type Locale,
   type LocaleMessages,
 } from "@/locales";
+
+// PL is bundled eagerly, so real strings are available synchronously on the
+// very first render — server and client alike.
+const DEFAULT_MESSAGES = bundledMessages[DEFAULT_LOCALE];
 
 const STORAGE_KEY = "tss-i18n-locale";
 
@@ -94,11 +99,11 @@ function buildHybridT(messages: LocaleMessages): TranslationT {
   }) as TranslationT;
 }
 
-const noopT = new Proxy(
-  ((path: string) => path) as unknown as TranslationT,
-  { get: () => noopT }
-);
-
+// Used when the provider is missing. It must be a real message tree: a proxy
+// that returned itself for every property made `t.nav.login` a *function*,
+// which React refuses to render and the DOM refuses as an attribute value.
+// Only the callable form `t("nav.login")` ever worked with that fallback,
+// while every existing consumer uses the object form.
 const fallbackValue: TranslationContextValue = {
   locale: DEFAULT_LOCALE,
   setLocale: () => {},
@@ -106,12 +111,15 @@ const fallbackValue: TranslationContextValue = {
   language: DEFAULT_LOCALE,
   setLanguage: () => {},
   availableLanguages: LOCALES,
-  t: noopT,
+  t: buildHybridT(DEFAULT_MESSAGES),
 };
 
 export function TranslationProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
-  const [messages, setMessages] = useState<LocaleMessages | null>(null);
+  // Seeded with the eagerly bundled default locale rather than null, so the
+  // first render already has strings. Starting from null meant every SSR and
+  // hydration pass rendered through the fallback.
+  const [messages, setMessages] = useState<LocaleMessages>(DEFAULT_MESSAGES);
 
   // Initial load: synchronously serve PL (already eager), then hydrate from
   // localStorage and switch if necessary.
@@ -144,9 +152,8 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const value = useMemo<TranslationContextValue | null>(() => {
-    if (!messages) return null;
-    return {
+  const value = useMemo<TranslationContextValue>(
+    () => ({
       locale,
       setLocale,
       availableLocales: LOCALES,
@@ -155,16 +162,12 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
       setLanguage: setLocale,
       availableLanguages: LOCALES,
       t: buildHybridT(messages),
-    };
-  }, [locale, setLocale, messages]);
+    }),
+    [locale, setLocale, messages]
+  );
 
-  // Render even before messages load — the fallback returns the key string
-  // for any dot-path access, so consumers don't throw. Once messages load,
-  // a re-render swaps in real values.
   return (
-    <TranslationContext.Provider value={value ?? fallbackValue}>
-      {children}
-    </TranslationContext.Provider>
+    <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>
   );
 }
 
