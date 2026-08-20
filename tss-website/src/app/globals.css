@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Electron packaging output sits inside this package and contains .asar
+   blobs with prerendered HTML. Tailwind v4 auto content detection would
+   otherwise scan them and pick up HTML-escaped class names such as
+   bg-[url(&#x27;/noise.svg&#x27;)], emitting a url() the bundler cannot
+   resolve and breaking `next build`. */
+@source not "../../dist-electron*";
+
 /* Make Tailwind's `dark:` variant follow the .dark class that next-themes
    puts on <html>, instead of the OS-level prefers-color-scheme it defaults
    to in v4. Without this the two disagree whenever a user picks a theme

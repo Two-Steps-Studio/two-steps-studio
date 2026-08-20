@@ -27,6 +27,10 @@ build/
 
 # Electron
 dist-electron/
+# Any scratch/alternate packaging output dir. Also keeps Tailwind v4's
+# auto content detection from scanning packed .asar blobs (which contain
+# prerendered HTML and would otherwise emit broken utilities).
+dist-electron*/
 .electron/
 
 # TypeScript

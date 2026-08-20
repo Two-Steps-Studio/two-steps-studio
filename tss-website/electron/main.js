@@ -91,43 +91,102 @@ function loadSession() {
   return null;
 }
 
-function startNextServer() {
+// Port the packaged Next.js server listens on. Resolved at startup from the
+// OS so a running `npm run dev` on 3000 never collides with the desktop app.
+let serverPort = 3000;
+
+function getStartUrl() {
+  return isDev ? 'http://localhost:3000' : `http://127.0.0.1:${serverPort}`;
+}
+
+function findFreePort() {
+  const net = require('net');
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.unref();
+    probe.on('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
+function waitForServer(port, timeoutMs = 60000) {
+  const net = require('net');
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const attempt = () => {
+      const socket = new net.Socket();
+      socket.setTimeout(1000);
+      const retry = () => {
+        socket.destroy();
+        if (Date.now() > deadline) {
+          reject(new Error(`Server did not start listening on ${port} within ${timeoutMs}ms`));
+        } else {
+          setTimeout(attempt, 250);
+        }
+      };
+      socket.once('error', retry);
+      socket.once('timeout', retry);
+      socket.connect(port, '127.0.0.1', () => {
+        socket.destroy();
+        resolve();
+      });
+    };
+    attempt();
+  });
+}
+
+// The production server is Next.js' `output: 'standalone'` bundle. When
+// packaged it is copied next to app.asar (extraResources), because a child
+// process cannot read files from inside an asar archive. When running an
+// unpackaged production build it sits in .next/standalone.
+function resolveServerEntry() {
+  const candidates = [
+    process.resourcesPath ? path.join(process.resourcesPath, 'app-server', 'server.js') : null,
+    path.join(__dirname, '..', '.next', 'standalone', 'server.js'),
+  ].filter(Boolean);
+  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+async function startNextServer() {
   if (isDev) return;
-  
-  log('INFO', 'Starting Next.js server...');
-  
-  const nextPath = path.join(__dirname, '../node_modules/.bin/next');
-  const serverPath = path.join(__dirname, '..');
-  
-  // Environment optimization for production
-  const serverEnv = {
-    ...process.env,
-    PORT: '3000',
-    NODE_ENV: 'production',
-    ELECTRON: 'true',
-    NODE_OPTIONS: '--max-old-space-size=2048', // Limit memory usage
-    NEXT_TELEMETRY_DISABLED: '1', // Disable Next.js telemetry
-  };
-  
-  nextServer = spawn('node', [nextPath, 'start'], {
-    cwd: serverPath,
-    env: serverEnv,
+
+  const serverEntry = resolveServerEntry();
+  if (!serverEntry) {
+    log('ERROR', 'Standalone server bundle not found — run `npm run build` with ELECTRON=true');
+    showNotification('Błąd serwera', 'Brak plików serwera aplikacji');
+    return;
+  }
+
+  serverPort = await findFreePort();
+  log('INFO', `Starting Next.js server from ${serverEntry} on port ${serverPort}`);
+
+  // process.execPath is the app's own Electron binary; ELECTRON_RUN_AS_NODE
+  // makes it behave as a plain Node runtime, so the machine does not need a
+  // separate Node.js installation.
+  nextServer = spawn(process.execPath, [serverEntry], {
+    cwd: path.dirname(serverEntry),
+    env: {
+      ...process.env,
+      ELECTRON_RUN_AS_NODE: '1',
+      NODE_ENV: 'production',
+      PORT: String(serverPort),
+      HOSTNAME: '127.0.0.1',
+      NEXT_TELEMETRY_DISABLED: '1',
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
     detached: false,
   });
 
   nextServer.stdout.on('data', (data) => {
-    const output = data.toString();
-    log('INFO', 'Next.js output', output.trim());
-    if (output.includes('Ready') || output.includes('started server')) {
-      log('INFO', 'Next.js server is ready!');
-    }
+    log('INFO', 'Next.js output', data.toString().trim());
   });
 
   nextServer.stderr.on('data', (data) => {
-    const error = data.toString();
-    log('ERROR', 'Next.js error', error.trim());
+    log('ERROR', 'Next.js error', data.toString().trim());
   });
 
   nextServer.on('error', (error) => {
@@ -138,19 +197,25 @@ function startNextServer() {
   nextServer.on('exit', (code) => {
     log('INFO', `Next.js server exited with code ${code}`);
   });
-  
-  // Set up garbage collection hint periodically
-  setInterval(() => {
-    if (global.gc) {
-      global.gc();
-      log('INFO', 'Garbage collection triggered');
-    }
-  }, 300000); // Every 5 minutes
+
+  await waitForServer(serverPort);
+  log('INFO', 'Next.js server is ready!');
+}
+
+// public/ is not packed into app.asar — it ships with the standalone server
+// under resources/app-server. Resolve against whichever location exists so the
+// same call works in dev, in an unpackaged production run, and when packaged.
+function resolveAppAsset(relativePath) {
+  const candidates = [
+    process.resourcesPath ? path.join(process.resourcesPath, 'app-server', 'public', relativePath) : null,
+    path.join(__dirname, '..', 'public', relativePath),
+  ].filter(Boolean);
+  return candidates.find((candidate) => fs.existsSync(candidate)) || candidates[candidates.length - 1];
 }
 
 function createTray() {
   try {
-    const iconPath = path.join(__dirname, '../public/assets/Logo/Glowne/Two Steps Studio Bez Tła.png');
+    const iconPath = resolveAppAsset('assets/Logo/Glowne/Two Steps Studio Bez Tła.png');
     tray = new Tray(iconPath);
     
     const contextMenu = Menu.buildFromTemplate([
@@ -231,11 +296,9 @@ function createWindow() {
     },
   });
 
-  const startUrl = 'http://localhost:3000';
-
   const loadApp = () => {
     const startTime = Date.now();
-    mainWindow.loadURL(startUrl).catch((err) => {
+    mainWindow.loadURL(getStartUrl()).catch((err) => {
       log('ERROR', 'Failed to load URL', err.message);
       if (!isDev) {
         setTimeout(loadApp, 2000);
@@ -251,10 +314,14 @@ function createWindow() {
   };
 
   if (!isDev) {
-    startNextServer();
-    setTimeout(() => {
-      loadApp();
-    }, 5000);
+    // Load only once the server actually accepts connections, instead of
+    // guessing with a fixed delay.
+    startNextServer()
+      .then(loadApp)
+      .catch((error) => {
+        log('ERROR', 'Server startup failed', error.message);
+        showNotification('Błąd serwera', 'Nie udało się uruchomić serwera aplikacji');
+      });
   } else {
     loadApp();
   }
@@ -299,7 +366,7 @@ function createWindow() {
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
     try {
       const parsedUrl = new URL(navigationUrl);
-      const startUrlParsed = new URL(startUrl);
+      const startUrlParsed = new URL(getStartUrl());
       
       if (parsedUrl.origin !== startUrlParsed.origin) {
         event.preventDefault();
@@ -348,7 +415,7 @@ function createWindow() {
 function showNotification(title, body, icon = null) {
   try {
     if (Notification.isSupported()) {
-      const iconPath = icon || path.join(__dirname, '../public/assets/Logo/Glowne/Two Steps Studio Bez Tła.png');
+      const iconPath = icon || resolveAppAsset('assets/Logo/Glowne/Two Steps Studio Bez Tła.png');
       const notification = new Notification({
         title,
         body,
@@ -391,9 +458,12 @@ function handleProtocol(url) {
   }
 }
 
+// Must run before the app is ready — Electron rejects
+// registerSchemesAsPrivileged once the 'ready' event has already fired.
+registerProtocols();
+
 app.whenReady().then(() => {
   log('INFO', 'App starting...');
-  registerProtocols();
   createWindow();
   createTray();
 
