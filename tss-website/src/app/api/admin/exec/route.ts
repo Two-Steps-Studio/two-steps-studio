@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, isSupabaseAdminInitialized } from "@/lib/supabase-admin";
-
-// --- SECURITY: Rate Limiting & Logging ---
-let requestCount = 0;
-const MAX_REQUESTS = 10;
-const WINDOW_MS = 30000; // 30 seconds
+import { checkRateLimit } from "@/lib/api-rate-limit";
+import { timingSafeEqualString } from "@/lib/api-auth";
 
 const adminSecurityLog = (action: string, ip: string, endpoint: string) => {
   const timestamp = new Date().toISOString();
@@ -15,13 +12,21 @@ export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for") || "unknown";
 
   // --- Rate Limiting ---
-  requestCount++;
-  const now = Date.now();
-  if (requestCount > MAX_REQUESTS && now < WINDOW_MS) {
-    return NextResponse.json({ error: "Za wiele zapytań. Proszę spróbować później." }, { status: 429 });
+  // The previous counter here was a no-op: `now < WINDOW_MS` compared a
+  // millisecond epoch timestamp against a 30000 window-length constant
+  // (always false — Date.now() is billions), so the 429 branch could
+  // never run, and the line right after it (`requestCount = 0`) reset the
+  // counter on every single request regardless, so it could never exceed
+  // 1 anyway. checkRateLimit() is the same correct, shared limiter used
+  // elsewhere in the API.
+  const rateLimit = checkRateLimit(`admin-exec:${ip}`, "admin");
+  if (!rateLimit.allowed) {
+    adminSecurityLog(`Rate limit exceeded`, ip, req.url);
+    return NextResponse.json(
+      { error: "Za wiele zapytań. Proszę spróbować później." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter || 60) } }
+    );
   }
-  requestCount = 0;
-  setTimeout(() => { requestCount = 0; }, WINDOW_MS);
 
   // --- Input Validation ---
   try {
@@ -40,7 +45,7 @@ export async function POST(req: Request) {
       adminSecurityLog(`Invalid name`, ip, req.url);
       return NextResponse.json({ error: "Nieprawidlowa nazwa uzytkownika" }, { status: 401 });
     }
-    if (!password || password !== secret) {
+    if (!password || !timingSafeEqualString(password, secret)) {
       adminSecurityLog(`Invalid password`, ip, req.url);
       return NextResponse.json({ error: "Nieprawidlowe haslo" }, { status: 401 });
     }

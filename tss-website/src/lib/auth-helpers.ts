@@ -66,11 +66,17 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
     return ERROR_RESPONSES.UNAUTHORIZED();
   }
 
+  // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+  // the Supabase Auth UUID — user.id never matched the real row for a
+  // Discord-linked account, so `profile` here was always null and
+  // requireAdmin() silently rejected every real admin.
+  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+
   // Fetch user profile
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, username, avatar_url, settings, rank")
-    .eq("id", user.id)
+    .eq("id", discordId)
     .maybeSingle();
 
   // Determine user roles from current system (settings.isAdmin)

@@ -85,7 +85,7 @@ export async function GET(request: Request) {
     await supabase
       .from("profiles")
       .update({ dev_visible: devVisible })
-      .eq("id", user.id);
+      .eq("id", discordId);
   }
 
   return NextResponse.json({
@@ -124,11 +124,15 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+  // the Supabase Auth UUID — see the GET handler above for the full story.
+  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+
   // Check if profile exists, create if not
   const { data: existingProfile } = await supabase
     .from("profiles")
     .select("id")
-    .eq("id", user.id)
+    .eq("id", discordId)
     .maybeSingle();
 
   if (!existingProfile) {
@@ -136,7 +140,7 @@ export async function PATCH(request: Request) {
     const { error: createError } = await supabase
       .from("profiles")
       .insert({
-        id: user.id,
+        id: discordId,
         games_visible: true,
         records_visible: true,
         dev_visible: true,
@@ -218,7 +222,7 @@ export async function PATCH(request: Request) {
   const { data, error } = await supabase
     .from("profiles")
     .update(updateData)
-    .eq("id", user.id)
+    .eq("id", discordId)
     .select()
     .maybeSingle();
 

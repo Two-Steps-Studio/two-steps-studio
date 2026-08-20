@@ -266,6 +266,13 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+  // the Supabase Auth UUID — user.id never matched the real row for a
+  // Discord-linked account, so `profile` below was always null and every
+  // logged-in Discord user got redirected away from /games and /records
+  // via the `!profile` branch, regardless of their actual setting.
+  const discordId = user ? (user.user_metadata as any)?.provider_id || user.id : null;
+
   // Games routes - check if Games category is visible
   const isGamesRoute = request.nextUrl.pathname.startsWith("/games");
   if (isGamesRoute && user && supabase) {
@@ -273,7 +280,7 @@ export async function proxy(request: NextRequest) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("games_visible")
-        .eq("id", user.id)
+        .eq("id", discordId)
         .single();
 
       // Default to true if not set
@@ -292,7 +299,7 @@ export async function proxy(request: NextRequest) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("records_visible")
-        .eq("id", user.id)
+        .eq("id", discordId)
         .single();
 
       // Default to true if not set

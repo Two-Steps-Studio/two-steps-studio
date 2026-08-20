@@ -123,6 +123,23 @@ export function hashApiKey(apiKey: string): string {
 }
 
 /**
+ * Constant-time string comparison for secrets (admin console password,
+ * etc). `a !== b` short-circuits at the first differing character, which
+ * makes response time leak how many leading characters of a guess are
+ * correct — a real, exploitable timing side-channel over enough samples.
+ * crypto.timingSafeEqual requires equal-length buffers and throws
+ * otherwise, so a length mismatch is checked and hashed first: hashing
+ * pads every input to the same digest length before the constant-time
+ * compare, so neither the early return nor the compare itself leaks the
+ * secret's real length or contents.
+ */
+export function timingSafeEqualString(a: string, b: string): boolean {
+  const bufA = crypto.createHash('sha256').update(a).digest();
+  const bufB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
  * Extract key_id from API key (the public identifier part)
  * Format: tss_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  * Returns: tss_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (same as input for lookup)

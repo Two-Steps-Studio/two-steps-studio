@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
-
-// Rate limiting store
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-const MAX_ADMIN_REQUESTS = 5;
-const WINDOW_MS = 60000;
+import { timingSafeEqualString } from "@/lib/api-auth";
+import { checkRateLimit } from "@/lib/api-rate-limit";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth();
@@ -22,23 +19,19 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Check rate limit
+  // Check rate limit. (The previous hand-rolled version here never actually
+  // blocked anyone: `now < record.resetTime` compared a millisecond epoch
+  // timestamp against a 60000 window-length constant, always false, and
+  // `record?.count || 0 + 1` parses as `record.count || 1` — due to
+  // operator precedence — so the counter got stuck at 1 and never
+  // incremented. checkRateLimit() is the same correct, already-used
+  // limiter the rest of the API relies on.)
   const ip = req.headers.get("x-forwarded-for") || "unknown";
-  const now = Date.now();
-  const record = rateLimitStore.get(ip);
-
-  if (!record || now < record.resetTime) {
-    if (record && record.count >= MAX_ADMIN_REQUESTS) {
-      return NextResponse.json(
-        { error: "Too many requests. Please wait before trying again." },
-        { status: 429, headers: { "Retry-After": "60" } }
-      );
-    }
-    rateLimitStore.set(ip, { count: record?.count || 0 + 1, resetTime: record?.resetTime || now + WINDOW_MS });
-  } else if (record && record.count >= MAX_ADMIN_REQUESTS) {
+  const rateLimit = checkRateLimit(`admin-auth:${ip}`, "admin");
+  if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please wait before trying again." },
-      { status: 429, headers: { "Retry-After": "60" } }
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter || 60) } }
     );
   }
 
@@ -58,7 +51,7 @@ export async function POST(req: NextRequest) {
     if (name.trim().toLowerCase() !== allowedUser) {
       return NextResponse.json({ error: "Nieprawidłowa nazwa" }, { status: 401 });
     }
-    if (password !== secret) {
+    if (!timingSafeEqualString(password, secret)) {
       return NextResponse.json({ error: "Hasło nieprawidłowe" }, { status: 401 });
     }
 

@@ -14,6 +14,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
   default: { requests: 100, windowMs: 60000 }, // 100 requests per minute
   live: { requests: 100, windowMs: 60000 },    // Same as default
   test: { requests: 200, windowMs: 60000 },    // Higher limit for test keys
+  admin: { requests: 5, windowMs: 60000 },     // Admin console login/exec: tight, brute-force-resistant
 };
 
 // ============================================
@@ -45,7 +46,7 @@ function cleanupExpiredEntries(): void {
  */
 export function checkRateLimit(
   identifier: string,
-  keyType: 'live' | 'test' = 'live'
+  keyType: keyof typeof RATE_LIMITS = 'live'
 ): { allowed: boolean; retryAfter?: number } {
   // Clean up expired entries periodically
   if (Math.random() < 0.1) {

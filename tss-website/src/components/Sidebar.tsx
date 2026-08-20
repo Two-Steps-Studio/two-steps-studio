@@ -71,10 +71,12 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
+          // profiles.id is the Discord snowflake, not the Supabase Auth UUID.
+          const discordId = (user.user_metadata as any)?.provider_id || user.id;
           const { data: profile } = await supabase
             .from("profiles")
             .select("games_visible, records_visible, dev_visible")
-            .eq("id", user.id)
+            .eq("id", discordId)
             .single();
 
           if (profile) {

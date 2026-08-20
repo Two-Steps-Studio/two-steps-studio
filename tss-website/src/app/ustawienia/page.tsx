@@ -107,10 +107,12 @@ export default function SettingsPage() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          // profiles.id is the Discord snowflake, not the Supabase Auth UUID.
+          const discordId = (user.user_metadata as any)?.provider_id || user.id;
           const { data: profile } = await supabase
             .from("profiles")
             .select("username")
-            .eq("id", user.id)
+            .eq("id", discordId)
             .maybeSingle();
           if (profile?.username) {
             setUsername(profile.username);
@@ -142,10 +144,12 @@ export default function SettingsPage() {
 
       let currentPrefs = loadLocalStorage();
 
+      // profiles.id is the Discord snowflake, not the Supabase Auth UUID.
+      const discordId = (user.user_metadata as any)?.provider_id || user.id;
       const profileDataResult = await supabase
         .from("profiles")
         .select("settings")
-        .eq("id", user.id)
+        .eq("id", discordId)
         .single();
 
       const profileData = profileDataResult.data;
