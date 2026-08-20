@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Gamepad2, Download, Eye } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { GameInstallControls } from "@/components/Games/GameInstallControls";
 import type { Game, GameCategory, GameStatus } from "@/types/games-records";
 
 const CATEGORY_LABELS: Record<GameCategory, string> = {
@@ -182,15 +183,7 @@ export default function Page() {
                         Szczegóły
                       </Button>
                     </Link>
-                    {game.download_url && (
-                      <Button
-                        onClick={() => window.open(game.download_url, '_blank')}
-                        className="flex-1 rounded-xl bg-[var(--color-games)] text-white hover:bg-[var(--color-games)]/80"
-                      >
-                        <Download size={16} className="mr-2" />
-                        Pobierz
-                      </Button>
-                    )}
+                    {game.id !== undefined && <GameInstallControls gameId={game.id} title={game.title} compact />}
                   </div>
                 </CardContent>
               </Card>

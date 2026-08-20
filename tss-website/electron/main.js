@@ -4,6 +4,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const crypto = require('crypto');
+const gameManager = require('./game-manager');
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 // Single instance lock
@@ -1036,4 +1037,74 @@ ipcMain.handle('restart-app', () => {
   log('INFO', 'App restart requested');
   app.relaunch();
   app.exit();
+});
+
+// ---------------------------------------------------------------------------
+// Game distribution — see electron/game-manager.js for the actual engine.
+// This module never touches Supabase auth: the renderer already has an
+// authenticated session and hands over a flat, pre-signed file list.
+// ---------------------------------------------------------------------------
+
+function sendGameEvent(channel, payload) {
+  if (mainWindow) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
+ipcMain.handle('game-get-library', async () => {
+  try {
+    return { success: true, library: gameManager.getLibraryForUser(loadSession) };
+  } catch (error) {
+    log('ERROR', 'game-get-library failed', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('game-choose-install-dir', async (_, { suggestedFolderName }) => {
+  try {
+    return await gameManager.chooseInstallDir(suggestedFolderName);
+  } catch (error) {
+    log('ERROR', 'game-choose-install-dir failed', error.message);
+    return { canceled: true, error: error.message };
+  }
+});
+
+ipcMain.handle('game-sync-start', async (_, payload) => {
+  try {
+    // Runs to completion in the background; progress/result come via events
+    // (game-sync-progress/complete/error/cancelled) so this ack returns fast.
+    gameManager.syncEngine(loadSession, sendGameEvent, payload).catch((error) => {
+      log('ERROR', 'game-sync-start background failure', error.message);
+    });
+    return { success: true };
+  } catch (error) {
+    log('ERROR', 'game-sync-start failed', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('game-cancel-sync', async (_, { gameId }) => {
+  return { success: gameManager.cancelSync(gameId) };
+});
+
+ipcMain.handle('game-launch', async (_, { gameId }) => {
+  try {
+    return gameManager.launchGame(loadSession, sendGameEvent, gameId);
+  } catch (error) {
+    log('ERROR', 'game-launch failed', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('game-uninstall', async (_, { gameId }) => {
+  try {
+    return gameManager.uninstallGame(loadSession, sendGameEvent, gameId);
+  } catch (error) {
+    log('ERROR', 'game-uninstall failed', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('game-get-status', async (_, { gameId }) => {
+  return gameManager.getStatus(gameId);
 });

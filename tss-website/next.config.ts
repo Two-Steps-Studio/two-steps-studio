@@ -132,11 +132,6 @@ const nextConfig: NextConfig = {
         destination: '/ustawienia',
         permanent: true,
       },
-      {
-        source: '/games',
-        destination: '/',
-        permanent: true,
-      },
     ];
   },
   webpack: (config, { isServer }) => {

@@ -4,6 +4,7 @@ export const STORAGE_BUCKETS = {
   MUSIC_FILES: 'music-files',
   PODCAST_FILES: 'podcast-files',
   DEV_FILES: 'dev-files',
+  GAME_BUILDS: 'game-builds', // private: game binaries/manifests, signed URLs only
 } as const;
 
 // Allowed file types
@@ -19,4 +20,5 @@ export const FILE_SIZE_LIMITS = {
   VIDEO: 100 * 1024 * 1024, // 100MB
   DEV_FILE: 10 * 1024 * 1024, // 10MB per file
   DEV_PROJECT: 500 * 1024 * 1024, // 500MB per project
+  GAME_BUILD_FILE: 10 * 1024 * 1024 * 1024, // 10GB per individual build file
 } as const;
