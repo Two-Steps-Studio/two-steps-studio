@@ -1,6 +1,6 @@
 "use client";
 
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-translation";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

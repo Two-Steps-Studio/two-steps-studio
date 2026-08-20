@@ -1,0 +1,147 @@
+{
+  "settings": {
+    "title": "Ustawienia",
+    "subtitle": "Spersonalizuj swój interfejs Two Steps Studio.",
+    "appearance": "Wygląd",
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "system": "System",
+    "colorTheme": "Motyw Koloru",
+    "language": "Język / Language",
+    "notifications": "Powiadomienia i Preferencje",
+    "news": "Nowości i Ogłoszenia",
+    "newsDesc": "Informacje o nowych grach i projektach.",
+    "esport": "Aktualizacje E-sport",
+    "esportDesc": "Wyniki meczów i powiadomienia o turniejach.",
+    "dev": "DEV updates",
+    "devDesc": "Powiadomienia o nowych narzędziach i postępach w projektach.",
+    "themes": {
+      "default": "Morski (Domyślny)",
+      "cyberpunk": "Cyberpunk",
+      "midnight": "Midnight",
+      "nature": "Nature",
+      "gold": "Gold",
+      "sunset": "Sunset"
+    }
+  },
+  "nav": {
+    "home": "Strona główna",
+    "profile": "Profil",
+    "games": "Games",
+    "esport": "E-sport",
+    "studio": "Studio",
+    "dev": "Dev",
+    "notifications": "Powiadomienia",
+    "settings": "Ustawienia",
+    "login": "Zaloguj się",
+    "stats": "Statystyki",
+    "online": "Online",
+    "channels": "Kanały",
+    "mainMenu": "Menu Główne",
+    "searchPlaceholder": "Szukaj projektów, gier...",
+    "newProject": "Wiadomości",
+    "management": "Management"
+  },
+  "sections": {
+    "games": {
+      "subtitle": "Odkryj najnowsze tytuły i recenzje.",
+      "preview": "Podgląd Gry",
+      "title": "Tytuł Gry",
+      "desc": "Krótki opis gry i jej najważniejszych cech."
+    },
+    "esport": {
+      "subtitle": "Śledź rozgrywki i rankingi naszych drużyn.",
+      "upcoming": "Nadchodzące Mecze",
+      "today": "Dzisiaj",
+      "vs": "vs"
+    },
+    "records": {
+      "subtitle": "Nasze produkcje muzyczne i rekordy.",
+      "newRelease": "Nowe Wydanie",
+      "listenNow": "Słuchaj Teraz"
+    },
+    "dev": {
+      "subtitle": "Nasze projekty i narzędzia deweloperskie.",
+      "projects": "Projekty",
+      "status": "Status"
+    },
+    "codAnalyzer": {
+      "title": "COD Analyzer",
+      "desc": "Analityk taktyczny.",
+      "stats": "Dostępny"
+    }
+  },
+  "home": {
+    "newsTitle": "Nowości ze Studia",
+    "newsSubtitle": "Bądź na bieżąco z naszymi najnowszymi projektami i wydarzeniami.",
+    "readMore": "Czytaj więcej",
+    "viewAll": "Wszystkie wpisy",
+    "newsletterTitle": "Bądź w pętli",
+    "newsletterSubtitle": "Zapisz się do newslettera, aby otrzymywać powiadomienia o premierach i turniejach.",
+    "emailPlaceholder": "Twój adres email...",
+    "subscribe": "Zapisz się",
+    "subscribeSuccess": "Dziękujemy! Zostałeś zapisany.",
+    "communityTitle": "Nasza Społeczność",
+    "messagesToday": "Wiadomości dzisiaj",
+    "onlineNow": "Osób online",
+    "installApp": "Pobierz aplikację",
+    "installAppDesc": "Zainstaluj aplikację Two Steps Studio na swoim komputerze.",
+    "prototypeBadge": "PROTOTYP",
+    "prototypeVersion": "WERSJA PROTOTYPOWA"
+  },
+  "auth": {
+    "registerTitle": "Dołącz do nas",
+    "registerSubtitle": "Stwórz konto w Two Steps Studio.",
+    "fullName": "Imię i Nazwisko / Nick",
+    "fullNamePlaceholder": "Twoja Nazwa",
+    "email": "Email",
+    "emailPlaceholder": "twoj@email.com",
+    "password": "Hasło",
+    "passwordPlaceholder": "••••••••",
+    "registerButton": "ZAREJESTRUJ SIĘ",
+    "orContinueWith": "LUB KONTYNUUJ PRZEZ",
+    "alreadyHaveAccount": "Masz już konto?",
+    "loginLink": "ZALOGUJ SIĘ",
+    "registerSuccess": "Rejestracja pomyślna! Sprawdź email, aby potwierdzić konto.",
+    "registerError": "Błąd rejestracji",
+    "loginTitle": "Witaj Ponownie",
+    "loginSubtitle": "Zaloguj się, aby uzyskać dostęp do panelu Two Steps Studio.",
+    "loginButton": "ZALOGUJ SIĘ",
+    "forgotPassword": "Zapomniałeś?",
+    "noAccount": "Nie masz jeszcze konta?",
+    "registerLink": "ZAREJESTRUJ SIĘ",
+    "loginSuccess": "Zalogowano pomyślnie!",
+    "loginError": "Błąd logowania",
+    "oauthError": "Błąd logowania przez"
+  },
+  "profile": {
+    "level": "Poziom",
+    "rank": "Ranga",
+    "nextLevel": "Do następnego poziomu",
+    "memberSince": "Użytkownik od",
+    "personalInfo": "Informacje Osobiste",
+    "username": "Nazwa Użytkownika",
+    "saveChanges": "Zapisz Zmiany",
+    "recentActivity": "Ostatnia Aktywność",
+    "management": "Zarządzanie",
+    "dangerZone": "Strefa Niebezpieczna",
+    "logout": "Wyloguj Się",
+    "logoutDesc": "Bezpiecznie wyloguj się z konta."
+  },
+  "regulamin": {
+    "title": "Regulamin Two Steps Studio",
+    "subtitle": "Przeczytaj uważnie przed rejestracją konta.",
+    "accepted": "Regulamin zaakceptowany!",
+    "acceptError": "Błąd akceptacji regulaminu"
+  },
+  "rekrutacja": {
+    "title": "Rekrutacja do Studia",
+    "subtitle": "Dołącz do naszego zespołu!",
+    "email": "Email",
+    "name": "Imię i Nazwisko",
+    "emailPlaceholder": "twój@email.com",
+    "namePlaceholder": "Twój nick",
+    "discordRoles": "Wymagane role na Discordzie:",
+    "backToHome": "Wróć na stronę główną"
+  }
+}

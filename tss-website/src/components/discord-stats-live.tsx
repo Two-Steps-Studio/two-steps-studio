@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users, MessageSquare, Hash } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-translation";
 
 interface Stats {
   online_users: number;

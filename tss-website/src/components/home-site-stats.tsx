@@ -3,7 +3,7 @@
 import { useEffect, useState, memo } from "react";
 import { motion } from "framer-motion";
 import { Users, IdCard } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-translation";
 
 interface SiteStats {
   online_site: number;

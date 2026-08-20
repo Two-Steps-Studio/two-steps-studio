@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useLanguage } from "../hooks/use-language";
+import { useLanguage } from "../hooks/use-translation";
 import { Star, ArrowRight, Rocket, Gamepad2, Mic2, Code2, Trophy, Library, FileVideo } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";

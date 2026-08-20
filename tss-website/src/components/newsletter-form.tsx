@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-translation";
 
 export function NewsletterForm() {
   const { t } = useLanguage();

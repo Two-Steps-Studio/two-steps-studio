@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Monitor, Laptop, Gamepad2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { useLanguage } from "../hooks/use-language";
+import { useLanguage } from "../hooks/use-translation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function InstallPWA() {

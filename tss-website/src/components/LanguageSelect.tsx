@@ -9,7 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 interface LanguageSelectProps {

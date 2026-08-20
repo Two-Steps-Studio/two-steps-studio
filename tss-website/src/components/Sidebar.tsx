@@ -41,7 +41,7 @@ import { useSidebar } from "@/hooks/use-sidebar";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useSectionTheme } from "../hooks/use-section-theme";
-import { useLanguage } from "../hooks/use-language";
+import { useLanguage } from "../hooks/use-translation";
 import { useTheme } from "next-themes";
 import { BottomNavigation } from "./BottomNavigation";
 import { SidebarStats } from "./SidebarStats";

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, Tag } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-translation";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";

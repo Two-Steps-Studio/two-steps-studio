@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Upload, FileJson, Download, Trash2, CheckCircle, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,54 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useLanguage } from "@/hooks/use-language";
-import { importTranslations } from "@/hooks/use-language";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function TranslationManagementPage() {
-  const { t, availableLanguages, language } = useLanguage();
-  const [uploading, setUploading] = useState(false);
-  const [imported, setImported] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
-
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, data: string) => {
-    e.preventDefault();
-    setDragActive(false);
-
-    try {
-      setUploading(true);
-      setError(null);
-      await importTranslations(data);
-      setImported(true);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileUpload = async (file: File) => {
-    try {
-      setUploading(true);
-      setError(null);
-
-      const text = await file.text();
-      await importTranslations(text);
-      setImported(true);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setUploading(false);
-    }
-  };
+  const { availableLocales, locale } = useTranslation();
 
   return (
     <div className="min-h-screen bg-black/5 dark:bg-white/5 p-4 lg:p-8">
@@ -70,73 +23,10 @@ export default function TranslationManagementPage() {
               Zarządzanie Tłumaczeniami
             </h1>
             <p className="text-muted-foreground">
-              Dodaj własne tłumaczenia lub importuj pliki JSON
+              Podgląd struktury tłumaczeń i dostępnych języków w aplikacji.
             </p>
           </div>
         </div>
-
-        {/* Upload Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Import Tłumaczeń</CardTitle>
-            <CardDescription>
-              Przeciągnij plik JSON lub wybierz go z komputera
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={cn(
-                "border-2 border-dashed rounded-2xl p-8 text-center transition-all",
-                dragActive
-                  ? "border-[var(--color-general)] bg-[var(--color-general)]/10"
-                  : "border-white/20 hover:border-white/40",
-              )}
-              onDragEnter={() => setDragActive(true)}
-              onDragLeave={() => setDragActive(false)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => handleDrop(e, e.dataTransfer.getData("text/plain"))}
-            >
-              <Upload size={48} className="mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-bold mb-2">Przeciągnij plik JSON tutaj</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Format: JSON z strukturą BaseTranslations
-              </p>
-
-              <label
-                className={cn(
-                  "inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold cursor-pointer transition-all",
-                  "bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20",
-                  "text-white/80 hover:text-white",
-                )}
-              >
-                <FileJson size={18} />
-                Wybierz plik
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={(e) => handleFileUpload(e.target.files?.[0] || undefined)}
-                  className="hidden"
-                />
-              </label>
-            </div>
-
-            {error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {imported && (
-              <Alert className="mt-4 bg-[var(--color-general)]/10 border-[var(--color-general)]/30">
-                <CheckCircle className="h-4 w-4 text-[var(--color-general)]" />
-                <AlertDescription className="text-[var(--color-general)]">
-                  Tłumaczenie pomyślnie zaimportowane! Strona zostanie przeładowana.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Example Translation Template */}
         <Card>
@@ -306,17 +196,17 @@ export default function TranslationManagementPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {availableLanguages.map((lang) => (
+              {availableLocales.map((l) => (
                 <span
-                  key={lang}
+                  key={l}
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-bold border",
-                    language === lang
+                    locale === l
                       ? "bg-[var(--color-general)] text-white border-[var(--color-general)]"
                       : "bg-white/5 text-white/70 border-white/20 hover:border-white/40",
                   )}
                 >
-                  {lang.toUpperCase()}
+                  {l.toUpperCase()}
                 </span>
               ))}
             </div>
@@ -326,7 +216,7 @@ export default function TranslationManagementPage() {
         {/* Instructions */}
         <Card className="bg-[var(--color-general)]/5 border-[var(--color-general)]/20">
           <CardHeader>
-            <CardTitle>Instrukcja</CardTitle>
+            <CardTitle>Jak dodać nowe tłumaczenie</CardTitle>
           </CardHeader>
           <CardContent>
             <ol className="space-y-3 text-sm">
@@ -335,7 +225,8 @@ export default function TranslationManagementPage() {
                   1
                 </span>
                 <div>
-                  <strong>Pobierz szablon:</strong> Przygotuj plik JSON z tłumaczeniami
+                  <strong>Edytuj pliki locale:</strong> zaktualizuj <code>src/locales/pl.json</code>,
+                  <code> src/locales/en.json</code> i <code>src/locales/de.json</code>.
                 </div>
               </li>
               <li className="flex gap-3">
@@ -343,7 +234,8 @@ export default function TranslationManagementPage() {
                   2
                 </span>
                 <div>
-                  <strong>Uzupełnij tłumaczenia:</strong> Nadaj wartości dla każdego pola
+                  <strong>Sprawdź spójność:</strong> uruchom <code>npm run i18n:check</code>,
+                  aby zweryfikować, że wszystkie locale mają identyczną strukturę kluczy.
                 </div>
               </li>
               <li className="flex gap-3">
@@ -351,15 +243,8 @@ export default function TranslationManagementPage() {
                   3
                 </span>
                 <div>
-                  <strong>Importuj:</strong> Przeciągnij plik JSON do obszaru importu
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--color-general)] text-white flex items-center justify-center font-bold text-xs">
-                  4
-                </span>
-                <div>
-                  <strong>Użyj:</strong> Język zostanie dostępny w menu selektora
+                  <strong>Użyj w kodzie:</strong> <code>const &#123; t &#125; = useTranslation(); t(&quot;nav.home&quot;)</code>
+                  lub <code>t.nav.home</code> (kompatybilność wsteczna).
                 </div>
               </li>
             </ol>

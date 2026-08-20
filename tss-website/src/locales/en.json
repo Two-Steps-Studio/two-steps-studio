@@ -1,0 +1,147 @@
+{
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Personalize your Two Steps Studio interface.",
+    "appearance": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "colorTheme": "Color Theme",
+    "language": "Language / Język",
+    "notifications": "Notifications & Preferences",
+    "news": "News & Announcements",
+    "newsDesc": "Information about new games and projects.",
+    "esport": "e-sport updates",
+    "esportDesc": "Match results and tournament notifications.",
+    "dev": "DEV updates",
+    "devDesc": "Notifications about new tools and project progress.",
+    "themes": {
+      "default": "Teal (Default)",
+      "cyberpunk": "Cyberpunk",
+      "midnight": "Midnight",
+      "nature": "Nature",
+      "gold": "Gold",
+      "sunset": "Sunset"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "games": "Games",
+    "esport": "E-sport",
+    "studio": "Studio",
+    "dev": "Dev",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "login": "Login",
+    "stats": "Statistics",
+    "online": "Online",
+    "channels": "Channels",
+    "mainMenu": "Main Menu",
+    "searchPlaceholder": "Search projects, games...",
+    "newProject": "Messages",
+    "management": "Management"
+  },
+  "sections": {
+    "games": {
+      "subtitle": "Discover the latest titles and reviews.",
+      "preview": "Game Preview",
+      "title": "Game Title",
+      "desc": "Short description of the game and its main features."
+    },
+    "esport": {
+      "subtitle": "Track matches and rankings of our teams.",
+      "upcoming": "Upcoming Matches",
+      "today": "Today",
+      "vs": "vs"
+    },
+    "records": {
+      "subtitle": "Our music productions and records.",
+      "newRelease": "New Release",
+      "listenNow": "Listen Now"
+    },
+    "dev": {
+      "subtitle": "Our projects and development tools.",
+      "projects": "Projects",
+      "status": "Status"
+    },
+    "codAnalyzer": {
+      "title": "COD Analyzer",
+      "desc": "Tactical analyst.",
+      "stats": "Available"
+    }
+  },
+  "home": {
+    "newsTitle": "Studio News",
+    "newsSubtitle": "Stay updated with our latest projects and events.",
+    "readMore": "Read more",
+    "viewAll": "View all posts",
+    "newsletterTitle": "Stay in the loop",
+    "newsletterSubtitle": "Subscribe to our newsletter for launch updates and tournament news.",
+    "emailPlaceholder": "Your email address...",
+    "subscribe": "Subscribe",
+    "subscribeSuccess": "Thank you! You have been subscribed.",
+    "communityTitle": "Our Community",
+    "messagesToday": "Messages today",
+    "onlineNow": "Online now",
+    "installApp": "Download App",
+    "installAppDesc": "Install the Two Steps Studio app on your computer.",
+    "prototypeBadge": "PROTOTYPE",
+    "prototypeVersion": "PROTOTYPE VERSION"
+  },
+  "auth": {
+    "registerTitle": "Join us",
+    "registerSubtitle": "Create an account at Two Steps Studio.",
+    "fullName": "Full Name / Nickname",
+    "fullNamePlaceholder": "Your Name",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "registerButton": "SIGN UP",
+    "orContinueWith": "OR CONTINUE WITH",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginLink": "LOG IN",
+    "registerSuccess": "Registration successful! Check your email to confirm your account.",
+    "registerError": "Registration error",
+    "loginTitle": "Welcome Back",
+    "loginSubtitle": "Log in to access the Two Steps Studio panel.",
+    "loginButton": "LOG IN",
+    "forgotPassword": "Forgot?",
+    "noAccount": "Don't have an account yet?",
+    "registerLink": "SIGN UP",
+    "loginSuccess": "Logged in successfully!",
+    "loginError": "Login error",
+    "oauthError": "Login error via"
+  },
+  "profile": {
+    "level": "Level",
+    "rank": "Rank",
+    "nextLevel": "To Next Level",
+    "memberSince": "Member Since",
+    "personalInfo": "Personal Information",
+    "username": "Username",
+    "saveChanges": "Save Changes",
+    "recentActivity": "Recent Activity",
+    "management": "Management",
+    "dangerZone": "Danger Zone",
+    "logout": "Log Out",
+    "logoutDesc": "Safely sign out of your account."
+  },
+  "regulamin": {
+    "title": "Regulations",
+    "subtitle": "Read carefully before registering.",
+    "accepted": "Regulations accepted!",
+    "acceptError": "Error accepting regulations"
+  },
+  "rekrutacja": {
+    "title": "Studio Recruitment",
+    "subtitle": "Join our team!",
+    "email": "Email",
+    "name": "Name",
+    "emailPlaceholder": "your@email.com",
+    "namePlaceholder": "Your name",
+    "discordRoles": "Required Discord roles:",
+    "backToHome": "Back to home"
+  }
+}

@@ -63,7 +63,9 @@
       "Bash(findstr /i \"/api/\")",
       "Bash(/graphify . *)",
       "Bash(uv tool *)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(git commit *)",
+      "Bash(grep -nE \"^export const|^export interface|^};|^  \\\\},$\" \"C:/tss/tss-website/src/lib/translations.ts\")"
     ]
   },
   "enabledMcpjsonServers": [
