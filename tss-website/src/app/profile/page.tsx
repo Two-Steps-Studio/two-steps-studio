@@ -166,20 +166,29 @@ export default function ProfilePage() {
             // Set profile (but don't call setProfile twice for same event)
             setProfile(profileData);
 
-            // Subscribe AFTER setting initial state
-            if (channel && typeof channel.unsubscribe === 'function') {
-                await supabase.removeChannel(channel);
-            }
-            const freshChannel = supabase.channel(`profile-${discordId}`);
-            // Track the channel as soon as it's created, not only once
-            // subscribe() confirms — supabase.channel() dedupes by topic, so
-            // if this effect unmounts (React Strict Mode remounts every
-            // effect once in dev) before the SUBSCRIBED status arrives,
-            // `channel` below would still be null and cleanup would leave
-            // this channel behind. The next mount then calls
-            // supabase.channel() with the same topic, gets this same
-            // already-subscribing channel back, and its `.on()` call throws
-            // "cannot add postgres_changes callbacks ... after subscribe()".
+            // Subscribe AFTER setting initial state.
+            //
+            // The channel topic includes a random suffix so it can never
+            // collide with a previous mount's channel. This matters because
+            // supabase.channel(topic) dedupes by topic string across the
+            // whole app (shared client singleton) — if a channel for that
+            // exact topic already exists, .channel() hands back that SAME
+            // object instead of making a new one, and .on() throws on a
+            // channel that already had .subscribe() called.
+            //
+            // A same-named channel from a previous mount can still be
+            // *registered* when this runs: supabase.removeChannel() is
+            // async (it awaits a real unsubscribe round-trip to the
+            // server before deregistering the topic), so a fixed topic
+            // like `profile-${discordId}` was never actually safe — even
+            // assigning `channel` the instant it's created (a prior fix
+            // here) only closes the window where cleanup skips calling
+            // removeChannel at all; it can't make that async call finish
+            // before React Strict Mode's synchronous remount tries to
+            // reuse the same topic a moment later. A unique-per-mount
+            // topic sidesteps the whole race: there is never a second
+            // subscriber for the same topic to collide with.
+            const freshChannel = supabase.channel(`profile-${discordId}-${Math.random().toString(36).slice(2)}`);
             channel = freshChannel;
             freshChannel.on("postgres_changes", {
                 event: "UPDATE",  // Only UPDATE, not INSERT/DELETE for profile
@@ -278,7 +287,7 @@ export default function ProfilePage() {
                         <div className="relative group flex-shrink-0">
                             <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-[var(--color-general)] to-transparent opacity-60 blur-md" />
                             <Avatar className="h-48 w-48 ring-4 ring-[var(--color-general)]/20 border-2 border-[var(--color-general)]/30">
-                                <AvatarImage src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
+                                <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
                                 <AvatarFallback className="text-4xl bg-white text-[var(--text)] font-bold">{discordName?.[0]}</AvatarFallback>
                             </Avatar>
                             <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-[var(--text)] font-bold rounded-full" style={{ backgroundColor: roleInfo.color }}>
