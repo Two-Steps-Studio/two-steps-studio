@@ -171,6 +171,16 @@ export default function ProfilePage() {
                 await supabase.removeChannel(channel);
             }
             const freshChannel = supabase.channel(`profile-${discordId}`);
+            // Track the channel as soon as it's created, not only once
+            // subscribe() confirms — supabase.channel() dedupes by topic, so
+            // if this effect unmounts (React Strict Mode remounts every
+            // effect once in dev) before the SUBSCRIBED status arrives,
+            // `channel` below would still be null and cleanup would leave
+            // this channel behind. The next mount then calls
+            // supabase.channel() with the same topic, gets this same
+            // already-subscribing channel back, and its `.on()` call throws
+            // "cannot add postgres_changes callbacks ... after subscribe()".
+            channel = freshChannel;
             freshChannel.on("postgres_changes", {
                 event: "UPDATE",  // Only UPDATE, not INSERT/DELETE for profile
                 schema: "public",
@@ -182,11 +192,7 @@ export default function ProfilePage() {
                     if (!prev) return payload.new;
                     return { ...prev, ...payload.new };
                 });
-            }).subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    channel = freshChannel;
-                }
-            });
+            }).subscribe();
 
             setLoading(false);
         };
@@ -201,8 +207,23 @@ export default function ProfilePage() {
                 setAuthChecked(true);
                 await fetchData(session.user);
             } else if (event === 'INITIAL_SESSION' && !session) {
+                // Do NOT redirect here. /profile is already protected by
+                // proxy.ts, which verifies the session server-side (via
+                // supabase.auth.getUser()) before this page is ever sent to
+                // the browser — reaching this code at all proves a valid
+                // session exists. But the browser client's own session
+                // hydration from storage is async, and onAuthStateChange
+                // can fire this exact "no session yet" INITIAL_SESSION event
+                // before that hydration finishes, well before the real
+                // session arrives a moment later. Redirecting here raced
+                // that hydration: it sent an authenticated user to /login,
+                // whose middleware immediately bounced them back to
+                // /profile since they *are* signed in, which remounted this
+                // effect and repeated the race — an infinite reload loop
+                // that ended only when the rate limiter kicked in. The
+                // getSession() fallback below and the SIGNED_OUT branch
+                // above are sufficient without this.
                 setAuthChecked(true);
-                if (!window.location.search.includes("code=")) router.push("/login");
             }
         });
 
