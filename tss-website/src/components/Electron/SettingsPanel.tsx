@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useIsElectron, useAppInfo, useAppLogs, useAppControls, useWindowControls } from '@/hooks/useElectron';
+import { useIsElectron, useAppInfo, useAppLogs, useAppControls, useWindowControls, useAppSettings } from '@/hooks/useElectron';
+
+// Mirrors DEFAULT_SETTINGS in electron/main.js, which is what enforces them.
+const DEFAULT_SETTINGS = {
+  autoStart: false,
+  minimizeToTray: true,
+  notifications: true,
+  autoUpdate: true,
+  hardwareAcceleration: true,
+};
 
 export default function SettingsPanel() {
   const isElectron = useIsElectron();
@@ -10,19 +19,21 @@ export default function SettingsPanel() {
   const { restartApp } = useAppControls();
   const { minimizeWindow, maximizeWindow, closeWindow } = useWindowControls();
   
-  const [settings, setSettings] = useState({
-    autoStart: false,
-    minimizeToTray: true,
-    notifications: true,
-    autoUpdate: true,
-    hardwareAcceleration: true,
-  });
+  // Persisted in userData/settings.json through IPC; the main process applies
+  // them (login item, tray behaviour, notifications, updater).
+  const { settings, saveSettings, isLoading, requiresRestart } = useAppSettings(DEFAULT_SETTINGS);
 
   const [activeTab, setActiveTab] = useState('general');
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  const updateSetting = async (patch: Partial<typeof DEFAULT_SETTINGS>) => {
+    setSaveState('saving');
+    const result = await saveSettings(patch);
+    setSaveState(result && result.success === false ? 'error' : 'saved');
+  };
 
   const handleSaveSettings = () => {
-    localStorage.setItem('tss-settings', JSON.stringify(settings));
-    // In production, this would call the Electron API
+    void updateSetting(settings);
   };
 
   const handleClearCache = async () => {
@@ -99,7 +110,8 @@ export default function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.autoStart}
-              onChange={(e) => setSettings({ ...settings, autoStart: e.target.checked })}
+              disabled={isLoading}
+              onChange={(e) => void updateSetting({ autoStart: e.target.checked })}
               className="w-5 h-5 rounded"
             />
           </label>
@@ -112,7 +124,8 @@ export default function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.minimizeToTray}
-              onChange={(e) => setSettings({ ...settings, minimizeToTray: e.target.checked })}
+              disabled={isLoading}
+              onChange={(e) => void updateSetting({ minimizeToTray: e.target.checked })}
               className="w-5 h-5 rounded"
             />
           </label>
@@ -125,7 +138,8 @@ export default function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.notifications}
-              onChange={(e) => setSettings({ ...settings, notifications: e.target.checked })}
+              disabled={isLoading}
+              onChange={(e) => void updateSetting({ notifications: e.target.checked })}
               className="w-5 h-5 rounded"
             />
           </label>
@@ -138,17 +152,24 @@ export default function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.autoUpdate}
-              onChange={(e) => setSettings({ ...settings, autoUpdate: e.target.checked })}
+              disabled={isLoading}
+              onChange={(e) => void updateSetting({ autoUpdate: e.target.checked })}
               className="w-5 h-5 rounded"
             />
           </label>
 
           <button
             onClick={handleSaveSettings}
-            className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:opacity-90 transition"
+            disabled={saveState === 'saving'}
+            className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
           >
-            Zapisz ustawienia
+            {saveState === 'saving' ? 'Zapisywanie...' : 'Zapisz ustawienia'}
           </button>
+
+          <p aria-live="polite" className="text-sm text-center min-h-5">
+            {saveState === 'saved' && <span className="text-green-400">Ustawienia zapisane</span>}
+            {saveState === 'error' && <span className="text-red-400">Nie udało się zapisać ustawień</span>}
+          </p>
         </div>
       )}
 
@@ -162,10 +183,17 @@ export default function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.hardwareAcceleration}
-              onChange={(e) => setSettings({ ...settings, hardwareAcceleration: e.target.checked })}
+              disabled={isLoading}
+              onChange={(e) => void updateSetting({ hardwareAcceleration: e.target.checked })}
               className="w-5 h-5 rounded"
             />
           </label>
+
+          {requiresRestart && (
+            <p role="status" className="p-3 rounded-lg bg-amber-500/10 text-amber-300 text-sm">
+              Zmiana przyspieszenia sprzętowego zadziała po ponownym uruchomieniu aplikacji.
+            </p>
+          )}
 
           <div className="p-4 bg-gray-800 rounded-lg">
             <h3 className="text-white font-medium mb-2">Informacje o systemie</h3>

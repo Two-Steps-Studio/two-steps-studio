@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { ElectronAPI, UpdateInfo, DownloadProgress, SessionData, AppInfo } from '@/types/electron';
 
 /**
@@ -129,7 +129,12 @@ export function useAutoUpdater() {
 export function useAppSettings<T extends Record<string, any>>(defaultSettings: T) {
   const [settings, setSettings] = useState<T>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
+  const [requiresRestart, setRequiresRestart] = useState(false);
   const isElectron = useIsElectron();
+
+  // Held in a ref so callers can pass an inline object literal without the
+  // load effect re-running on every render.
+  const defaultsRef = useRef(defaultSettings);
 
   useEffect(() => {
     if (!isElectron) {
@@ -137,24 +142,46 @@ export function useAppSettings<T extends Record<string, any>>(defaultSettings: T
       return;
     }
 
-    window.electron.loadSettings().then((loadedSettings) => {
-      if (loadedSettings && Object.keys(loadedSettings).length > 0) {
-        setSettings({ ...defaultSettings, ...loadedSettings });
+    let cancelled = false;
+    window.electron
+      .loadSettings()
+      .then((loadedSettings) => {
+        if (cancelled) return;
+        if (loadedSettings && Object.keys(loadedSettings).length > 0) {
+          setSettings({ ...defaultsRef.current, ...loadedSettings });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isElectron]);
+
+  const saveSettings = useCallback(
+    async (newSettings: Partial<T>) => {
+      const updatedSettings = { ...settings, ...newSettings };
+      setSettings(updatedSettings);
+
+      if (!isElectron) return { success: false as const };
+
+      const result = await window.electron.saveSettings(updatedSettings);
+      if (result?.requiresRestart) {
+        setRequiresRestart(true);
       }
-      setIsLoading(false);
-    });
-  }, [defaultSettings, isElectron]);
+      // The main process is the source of truth: it merges with its own
+      // defaults and drops anything it does not recognise.
+      if (result?.settings) {
+        setSettings({ ...defaultsRef.current, ...result.settings } as T);
+      }
+      return result;
+    },
+    [settings, isElectron]
+  );
 
-  const saveSettings = useCallback(async (newSettings: Partial<T>) => {
-    const updatedSettings = { ...settings, ...newSettings };
-    setSettings(updatedSettings);
-
-    if (isElectron) {
-      await window.electron.saveSettings(updatedSettings);
-    }
-  }, [settings, isElectron]);
-
-  return { settings, saveSettings, isLoading };
+  return { settings, saveSettings, isLoading, requiresRestart };
 }
 
 /**

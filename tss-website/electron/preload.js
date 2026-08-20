@@ -65,8 +65,11 @@ contextBridge.exposeInMainWorld('electron', {
   saveSettings: (settings) => {
     // Validate settings object
     if (typeof settings === 'object' && settings !== null) {
-      ipcRenderer.invoke('save-settings', settings);
+      // Returned so the renderer can await the write and read back the merged
+      // result (including whether a restart is required).
+      return ipcRenderer.invoke('save-settings', settings);
     }
+    return Promise.resolve({ success: false, error: 'Invalid settings payload' });
   },
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   

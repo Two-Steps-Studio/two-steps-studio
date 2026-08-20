@@ -44,7 +44,13 @@ export interface ElectronAPI {
   getAppPath: () => Promise<string>;
   
   // Settings
-  saveSettings: (settings: Record<string, any>) => Promise<{ success: boolean; error?: string }>;
+  saveSettings: (settings: Record<string, any>) => Promise<{
+    success: boolean;
+    error?: string;
+    settings?: Record<string, any>;
+    /** hardwareAcceleration only takes effect on the next launch. */
+    requiresRestart?: boolean;
+  }>;
   loadSettings: () => Promise<Record<string, any>>;
   
   // Session management

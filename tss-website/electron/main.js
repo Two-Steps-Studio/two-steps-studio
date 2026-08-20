@@ -23,6 +23,59 @@ let tray = null;
 const logFile = path.join(app.getPath('userData'), 'app.log');
 const errorLogFile = path.join(app.getPath('userData'), 'error.log');
 
+// User settings (surfaced by the first-run wizard and the settings panel).
+// Persisted in userData/settings.json and applied to the main process here —
+// the renderer only ever reads and writes them, it cannot enforce them.
+const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
+const DEFAULT_SETTINGS = {
+  autoStart: false,
+  minimizeToTray: true,
+  notifications: true,
+  autoUpdate: true,
+  hardwareAcceleration: true,
+};
+let appSettings = { ...DEFAULT_SETTINGS };
+// Set while quitting so the minimize-to-tray close handler lets the app exit.
+let isQuitting = false;
+
+function readSettings() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      // Strip a UTF-8 BOM: editors and PowerShell's Set-Content add one, and
+      // JSON.parse rejects it, which would silently drop every saved setting.
+      const raw = fs.readFileSync(SETTINGS_FILE, 'utf-8').replace(/^﻿/, '');
+      const stored = JSON.parse(raw);
+      return { ...DEFAULT_SETTINGS, ...stored };
+    }
+  } catch (error) {
+    // Cannot use log() here: it may run before the log file path is usable.
+    console.error('Failed to read settings, falling back to defaults:', error.message);
+  }
+  return { ...DEFAULT_SETTINGS };
+}
+
+function applySettings() {
+  // Start with Windows. Only meaningful for an installed build — pointing the
+  // login item at a dev-mode electron.exe would launch the wrong thing.
+  if (app.isPackaged) {
+    try {
+      app.setLoginItemSettings({ openAtLogin: appSettings.autoStart === true, path: process.execPath });
+    } catch (error) {
+      log('ERROR', 'Failed to apply auto-start setting', error.message);
+    }
+  }
+
+  // Whether the updater pulls a new version down on its own. The manual
+  // "download update" IPC call still works either way.
+  autoUpdater.autoDownload = appSettings.autoUpdate === true;
+}
+
+// Must be decided before the app is ready; Electron ignores it afterwards.
+appSettings = readSettings();
+if (appSettings.hardwareAcceleration === false) {
+  app.disableHardwareAcceleration();
+}
+
 function log(level, message, data = null) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] [${level}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`;
@@ -240,6 +293,7 @@ function createTray() {
       {
         label: 'Zamknij',
         click: () => {
+          isQuitting = true;
           app.quit();
         }
       }
@@ -335,6 +389,16 @@ function createWindow() {
     }
   });
 
+  // Minimize to tray keeps the app alive on window close; the tray menu and
+  // before-quit both set isQuitting so a real exit is never blocked.
+  mainWindow.on('close', (event) => {
+    if (appSettings.minimizeToTray !== false && !isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+      log('INFO', 'Window hidden to tray');
+    }
+  });
+
   mainWindow.on('closed', () => {
     log('INFO', 'Window closed');
     mainWindow = null;
@@ -414,6 +478,9 @@ function createWindow() {
 
 function showNotification(title, body, icon = null) {
   try {
+    if (appSettings.notifications === false) {
+      return;
+    }
     if (Notification.isSupported()) {
       const iconPath = icon || resolveAppAsset('assets/Logo/Glowne/Two Steps Studio Bez Tła.png');
       const notification = new Notification({
@@ -464,6 +531,7 @@ registerProtocols();
 
 app.whenReady().then(() => {
   log('INFO', 'App starting...');
+  applySettings();
   createWindow();
   createTray();
 
@@ -504,6 +572,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  isQuitting = true;
   log('INFO', 'App quitting');
   if (nextServer) {
     nextServer.kill();
@@ -591,6 +660,7 @@ autoUpdater.setFeedURL({
   url: 'https://releases.twostepsstudio.com/updates'
 });
 
+// Overwritten by applySettings() from the persisted autoUpdate preference.
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 autoUpdater.allowPrerelease = false;
@@ -661,6 +731,10 @@ autoUpdater.on('update-downloaded', (info) => {
 // Check for updates on startup with delay
 if (!isDev) {
   setTimeout(() => {
+    if (appSettings.autoUpdate === false) {
+      log('INFO', 'Skipping startup update check (disabled in settings)');
+      return;
+    }
     autoUpdater.checkForUpdates().catch(error => {
       log('ERROR', 'Initial update check failed', error.message);
     });
@@ -784,10 +858,31 @@ ipcMain.handle('clear-logs', async () => {
 
 ipcMain.handle('save-settings', async (_, settings) => {
   try {
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-    log('INFO', 'Settings saved');
-    return { success: true };
+    if (typeof settings !== 'object' || settings === null) {
+      return { success: false, error: 'Invalid settings payload' };
+    }
+
+    // Only accept known keys, and only booleans — the renderer is not trusted
+    // to decide what lives in this file.
+    const incoming = {};
+    for (const key of Object.keys(DEFAULT_SETTINGS)) {
+      if (typeof settings[key] === 'boolean') {
+        incoming[key] = settings[key];
+      }
+    }
+
+    const previous = appSettings;
+    appSettings = { ...appSettings, ...incoming };
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(appSettings, null, 2));
+    applySettings();
+    log('INFO', 'Settings saved', appSettings);
+
+    return {
+      success: true,
+      settings: appSettings,
+      // Hardware acceleration can only be toggled before the app is ready.
+      requiresRestart: appSettings.hardwareAcceleration !== previous.hardwareAcceleration,
+    };
   } catch (error) {
     log('ERROR', 'Failed to save settings', error.message);
     return { success: false, error: error.message };
@@ -795,17 +890,9 @@ ipcMain.handle('save-settings', async (_, settings) => {
 });
 
 ipcMain.handle('load-settings', async () => {
-  try {
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-    if (fs.existsSync(settingsPath)) {
-      const data = fs.readFileSync(settingsPath, 'utf-8');
-      return JSON.parse(data);
-    }
-    return {};
-  } catch (error) {
-    log('ERROR', 'Failed to load settings', error.message);
-    return {};
-  }
+  // appSettings is the merged view of defaults + settings.json, and is the
+  // same object the main process actually enforces.
+  return { ...appSettings };
 });
 
 ipcMain.on('show-notification', (_, { title, body, icon }) => {
