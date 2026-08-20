@@ -59,10 +59,10 @@ export default function SettingsPanel() {
   if (!isElectron) return null;
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+    <div className="bg-[var(--bg)] rounded-xl p-6 border border-[var(--bg)]">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">Ustawienia</h2>
-        <div className="text-sm text-gray-400">
+        <h2 className="text-2xl font-bold text-[var(--text)]">Ustawienia</h2>
+        <div className="text-sm text-[var(--text)]">
           Wersja {appInfo?.version || '1.0.0'}
         </div>
       </div>
@@ -72,8 +72,8 @@ export default function SettingsPanel() {
           onClick={() => setActiveTab('general')}
           className={`px-4 py-2 rounded-lg transition ${
             activeTab === 'general'
-              ? 'bg-purple-500 text-white'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              ? 'bg-[var(--bg)] text-[var(--text)]'
+              : 'bg-[var(--bg)] text-[var(--text)]'
           }`}
         >
           Ogólne
@@ -82,8 +82,8 @@ export default function SettingsPanel() {
           onClick={() => setActiveTab('advanced')}
           className={`px-4 py-2 rounded-lg transition ${
             activeTab === 'advanced'
-              ? 'bg-purple-500 text-white'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              ? 'bg-[var(--bg)] text-[var(--text)]'
+              : 'bg-[var(--bg)] text-[var(--text)] hover:bg-gray-700'
           }`}
         >
           Zaawansowane
@@ -92,8 +92,8 @@ export default function SettingsPanel() {
           onClick={() => setActiveTab('diagnostics')}
           className={`px-4 py-2 rounded-lg transition ${
             activeTab === 'diagnostics'
-              ? 'bg-purple-500 text-white'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              ? 'bg-[var(--bg)] text-[var(--text)]'
+              : 'bg-[var(--bg)] text-[var(--text)] hover:bg-gray-700'
           }`}
         >
           Diagnostyka
@@ -102,10 +102,10 @@ export default function SettingsPanel() {
 
       {activeTab === 'general' && (
         <div className="space-y-4">
-          <label className="flex items-center justify-between p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-750 transition">
+          <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-white font-medium">Uruchamiaj przy starcie Windows</span>
-              <p className="text-gray-400 text-sm">Aplikacja będzie uruchamiana automatycznie</p>
+              <span className="text-[var(--text)] font-medium">Uruchamiaj przy starcie Windows</span>
+              <p className="text-[var(--text)] text-sm">Aplikacja będzie uruchamiana automatycznie</p>
             </div>
             <input
               type="checkbox"
@@ -116,10 +116,10 @@ export default function SettingsPanel() {
             />
           </label>
 
-          <label className="flex items-center justify-between p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-750 transition">
+          <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-white font-medium">Minimalizuj do tray</span>
-              <p className="text-gray-400 text-sm">Aplikacja będzie działać w tle po zamknięciu</p>
+              <span className="text-[var(--text)] font-medium">Minimalizuj do tray</span>
+              <p className="text-[var(--text)] text-sm">Aplikacja będzie działać w tle po zamknięciu</p>
             </div>
             <input
               type="checkbox"
@@ -130,10 +130,10 @@ export default function SettingsPanel() {
             />
           </label>
 
-          <label className="flex items-center justify-between p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-750 transition">
+          <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-white font-medium">Powiadomienia systemowe</span>
-              <p className="text-gray-400 text-sm">Otrzymuj powiadomienia o aktualizacjach</p>
+              <span className="text-[var(--text)] font-medium">Powiadomienia systemowe</span>
+              <p className="text-[var(--text)] text-sm">Otrzymuj powiadomienia o aktualizacjach</p>
             </div>
             <input
               type="checkbox"
@@ -144,10 +144,10 @@ export default function SettingsPanel() {
             />
           </label>
 
-          <label className="flex items-center justify-between p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-750 transition">
+          <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-white font-medium">Automatyczne aktualizacje</span>
-              <p className="text-gray-400 text-sm">Pobieraj i instaluj aktualizacje automatycznie</p>
+              <span className="text-[var(--text)] font-medium">Automatyczne aktualizacje</span>
+              <p className="text-[var(--text)] text-sm">Pobieraj i instaluj aktualizacje automatycznie</p>
             </div>
             <input
               type="checkbox"
@@ -161,7 +161,7 @@ export default function SettingsPanel() {
           <button
             onClick={handleSaveSettings}
             disabled={saveState === 'saving'}
-            className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
+            className="w-full py-3bg-[var(--bg)] text-[var(--text)] font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
           >
             {saveState === 'saving' ? 'Zapisywanie...' : 'Zapisz ustawienia'}
           </button>
@@ -177,8 +177,8 @@ export default function SettingsPanel() {
         <div className="space-y-4">
           <label className="flex items-center justify-between p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-white font-medium">Przyspieszenie sprzętowe</span>
-              <p className="text-gray-400 text-sm">Użyj GPU dla lepszej wydajności</p>
+              <span className="text-[var(--text)] font-medium">Przyspieszenie sprzętowe</span>
+              <p className="text-[var(--text)] text-sm">Użyj GPU dla lepszej wydajności</p>
             </div>
             <input
               type="checkbox"
@@ -190,14 +190,14 @@ export default function SettingsPanel() {
           </label>
 
           {requiresRestart && (
-            <p role="status" className="p-3 rounded-lg bg-amber-500/10 text-amber-300 text-sm">
+            <p role="status" className="p-3 rounded-lg bg-[var(--bg)] text-amber-300 text-sm">
               Zmiana przyspieszenia sprzętowego zadziała po ponownym uruchomieniu aplikacji.
             </p>
           )}
 
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <h3 className="text-white font-medium mb-2">Informacje o systemie</h3>
-            <div className="space-y-1 text-sm text-gray-400">
+          <div className="p-4 bg-[var(--bg)] rounded-lg">
+            <h3 className="text-[var(--text)] font-medium mb-2">Informacje o systemie</h3>
+            <div className="space-y-1 text-sm text-[var(--text)]">
               <p>Platforma: {appInfo?.platform}</p>
               <p>Architektura: {appInfo?.arch}</p>
               <p>Electron: {appInfo?.electronVersion}</p>
@@ -208,14 +208,14 @@ export default function SettingsPanel() {
 
           <button
             onClick={handleClearCache}
-            className="w-full py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+            className="w-full py-3 bg-red-500 text-[var(--text)] font-semibold rounded-lg hover:bg-red-600 transition"
           >
             Wyczyść cache
           </button>
 
           <button
             onClick={restartApp}
-            className="w-full py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition"
+            className="w-full py-3 bg-[var(--bg)] text-[var(--text)] font-semibold rounded-lg hover:bg-gray-600 transition"
           >
             Uruchom ponownie aplikację
           </button>
@@ -224,9 +224,9 @@ export default function SettingsPanel() {
 
       {activeTab === 'diagnostics' && (
         <div className="space-y-4">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <h3 className="text-white font-medium mb-2">Logi aplikacji</h3>
-            <div className="bg-gray-900 rounded p-4 h-64 overflow-y-auto text-xs text-gray-400 font-mono">
+          <div className="p-4 bg-[var(--bg)] rounded-lg">
+            <h3 className="text-[var(--text)] font-medium mb-2">Logi aplikacji</h3>
+            <div className="bg-[var(--bg)] text-[var(--text)] rounded p-4 h-64 overflow-y-auto text-xs font-mono">
               {logs || 'Brak logów. Kliknij "Pobierz logi" aby wyświetlić.'}
             </div>
           </div>
@@ -234,36 +234,36 @@ export default function SettingsPanel() {
           <div className="flex gap-4">
             <button
               onClick={handleExportLogs}
-              className="flex-1 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
+              className="flex-1 py-3 bg-blue-500 text-[var(--text)] font-semibold rounded-lg hover:bg-blue-600 transition"
             >
               Pobierz logi
             </button>
             <button
               onClick={clearLogs}
-              className="flex-1 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+              className="flex-1 py-3 bg-red-500 text-[var(--text)] font-semibold rounded-lg hover:bg-red-600 transition"
             >
               Wyczyść logi
             </button>
           </div>
 
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <h3 className="text-white font-medium mb-2">Testy okna</h3>
+          <div className="p-4 bg-[var(--bg)] rounded-lg">
+            <h3 className="text-[var(--text)] font-medium mb-2">Testy okna</h3>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={minimizeWindow}
-                className="py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition"
+                className="py-2 bg-[var(--bg)] text-[var(--text)] rounded hover:bg-gray-600 transition"
               >
                 Minimalizuj
               </button>
               <button
                 onClick={maximizeWindow}
-                className="py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition"
+                className="py-2 bg-[var(--bg)] text-[var(--text)] rounded hover:bg-gray-600 transition"
               >
                 Maksymalizuj
               </button>
               <button
                 onClick={closeWindow}
-                className="py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                className="py-2 bg-red-500 text-[var(--text)] rounded hover:bg-red-600 transition"
               >
                 Zamknij
               </button>
