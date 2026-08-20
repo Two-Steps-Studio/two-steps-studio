@@ -6,7 +6,13 @@ const isElectron = process.env.ELECTRON === 'true';
 
 const nextConfig: NextConfig = {
   turbopack: {},
-  assetPrefix: isElectron ? './' : undefined,
+  // The desktop build ships a self-contained Node server (`.next/standalone`)
+  // that Electron boots with its own bundled Node, so the packaged app needs
+  // neither a Node install on the user's machine nor the full node_modules tree.
+  output: isElectron ? 'standalone' : undefined,
+  // C:/tss has its own package.json + lockfile, so Next would otherwise infer
+  // the monorepo root and nest the output under .next/standalone/tss-website.
+  outputFileTracingRoot: __dirname,
   images: {
     unoptimized: isElectron,
     remotePatterns: [

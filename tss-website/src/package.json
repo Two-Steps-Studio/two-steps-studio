@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "react-circular-progressbar": "^2.2.0",
-    "react-d3-tree": "^3.6.6",
-    "resend": "^6.12.2"
-  }
-}

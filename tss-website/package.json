@@ -25,16 +25,17 @@
     "lint:prettier:fix": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "electron": "cross-env ELECTRON=true electron .",
     "electron:dev": "concurrently \"cross-env ELECTRON=true npm run dev:electron\" \"wait-on http://localhost:3000 && cross-env ELECTRON=true electron .\"",
-    "electron:build": "npm run build && electron-builder",
-    "electron:build:win": "npm run build && electron-builder --win",
-    "electron:build:win:nsis": "npm run build && electron-builder --win --x64 --config.nsis.oneClick=false",
-    "electron:build:win:portable": "npm run build && electron-builder --win portable",
-    "electron:build:mac": "npm run build && electron-builder --mac",
-    "electron:build:linux": "npm run build && electron-builder --linux",
-    "electron:release": "npm run build && electron-builder --publish always",
-    "electron:release:win": "npm run build && electron-builder --win --publish always",
+    "electron:build": "npm run build:electron && electron-builder --config electron-builder.config.cjs",
+    "electron:build:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs --win",
+    "electron:build:win:nsis": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs --win nsis",
+    "electron:build:win:portable": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs --win portable",
+    "electron:build:mac": "npm run build:electron && electron-builder --config electron-builder.config.cjs --mac",
+    "electron:build:linux": "npm run build:electron && electron-builder --config electron-builder.config.cjs --linux",
+    "electron:release": "npm run build:electron && electron-builder --config electron-builder.config.cjs --publish always",
+    "electron:release:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs --win --publish always",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "build:electron": "cross-env ELECTRON=true next build"
   },
   "dependencies": {
     "@babel/parser": "^7.28.5",
@@ -83,7 +84,6 @@
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.8.1",
     "atmn": "^0.0.28",
-    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -92,6 +92,7 @@
     "dotted-map": "^2.2.3",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.44.7",
+    "electron-updater": "^6.3.0",
     "embla-carousel-auto-scroll": "^8.6.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
@@ -136,8 +137,8 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^5.2.1",
     "@eslint/eslintrc": "^3.3.1",
-    "@playwright/test": "^1.62.1",
     "@next/bundle-analyzer": "16.3.1",
+    "@playwright/test": "^1.62.1",
     "@storybook/addon-a11y": "^10.5.5",
     "@storybook/addon-docs": "^10.5.5",
     "@storybook/addon-onboarding": "^10.5.5",
@@ -154,8 +155,7 @@
     "concurrently": "^9.1.0",
     "cross-env": "^7.0.3",
     "electron": "^35.0.0",
-    "electron-builder": "^26.8.1",
-    "electron-updater": "^6.3.0",
+    "electron-builder": "^26.15.7",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.3.1",
     "eslint-config-prettier": "^9.1.0",
@@ -170,84 +170,5 @@
     "vite": "^8.2.0",
     "vitest": "^4.1.10",
     "wait-on": "^8.0.5"
-  },
-  "build": {
-    "appId": "com.twostepsstudio.app",
-    "productName": "Two Steps Studio",
-    "directories": {
-      "output": "dist-electron",
-      "buildResources": "electron-builder-resources"
-    },
-    "files": [
-      ".next/**/*",
-      "public/**/*",
-      "node_modules/**/*",
-      "package.json",
-      "electron/**/*"
-    ],
-    "asarUnpack": [
-      "electron/**/*",
-      "node_modules/**/bcrypt/**/*"
-    ],
-    "extraMetadata": {
-      "main": "electron/main.js"
-    },
-    "protocols": [
-      {
-        "name": "Two Steps Studio",
-        "schemes": [
-          "tss"
-        ],
-        "role": "Viewer"
-      }
-    ],
-    "publish": {
-      "provider": "generic",
-      "url": "https://releases.twostepsstudio.com/updates"
-    },
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "electron-builder-resources/icon.ico",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "allowElevation": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Two Steps Studio",
-      "uninstallDisplayName": "Two Steps Studio",
-      "deleteAppDataOnUninstall": false,
-      "runAfterFinish": true,
-      "installerIcon": "electron-builder-resources/icon.ico",
-      "uninstallerIcon": "electron-builder-resources/icon.ico",
-      "license": "electron-builder-resources/LICENSE.txt",
-      "perMachine": false,
-      "packElevateHelper": true,
-      "installerHeaderIcon": "electron-builder-resources/icon.ico",
-      "installerSidebar": "electron-builder-resources/icon.ico",
-      "displayLanguageSelector": false,
-      "language": "1045",
-      "multiLanguageInstaller": false,
-      "include": "electron-builder-resources/installer.nsh",
-      "script": "electron-builder-resources/installer.nsh"
-    },
-    "portable": {
-      "artifactName": "${productName}-${version}-portable.${ext}"
-    }
   }
 }
