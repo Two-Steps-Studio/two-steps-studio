@@ -17,10 +17,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+  // the Supabase Auth UUID. user.id never matched the real row for a
+  // Discord-linked account, so the "create if missing" fallback below was
+  // silently creating a duplicate, disconnected profile row per user keyed
+  // by their auth UUID — every visibility toggle saved here updated that
+  // phantom row, with no effect on the real profile the Discord bot and
+  // proxy.ts's category-visibility gate actually read.
+  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+
   let { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("games_visible, records_visible, dev_visible, project_limit, joined_projects_limit, subscription_plan")
-    .eq("id", user.id)
+    .eq("id", discordId)
     .maybeSingle();
 
   if (profileError) {
@@ -29,12 +38,12 @@ export async function GET(request: Request) {
   }
 
   if (!profile) {
-    console.error("Profile not found for user:", user.id);
+    console.error("Profile not found for user:", discordId);
     // Create profile if it doesn't exist
     const { data: newProfile, error: createError } = await supabase
       .from("profiles")
       .insert({
-        id: user.id,
+        id: discordId,
         games_visible: true,
         records_visible: true,
         dev_visible: true,

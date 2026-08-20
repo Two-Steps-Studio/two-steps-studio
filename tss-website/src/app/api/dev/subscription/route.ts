@@ -19,11 +19,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+  // the Supabase Auth UUID — user.id never matches the real row for a
+  // Discord-linked account.
+  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+
   // Get user's subscription info
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, username, avatar_url, project_limit, subscription_plan, subscription_status, subscription_expires_at")
-    .eq("id", user.id)
+    .eq("id", discordId)
     .single();
 
   if (profileError || !profile) {

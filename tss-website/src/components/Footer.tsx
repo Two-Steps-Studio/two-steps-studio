@@ -1,4 +1,5 @@
 import React from "react";
+import packageJson from "../../package.json";
 
 export function Footer() {
 
@@ -22,7 +23,7 @@ export function Footer() {
                     © Two Steps Studio 2026 — Create. Build. Inspire.
                 </p>
                 <p className="text-[10px] text-zinc-600 font-medium mt-0.5 tracking-widest uppercase">
-                    Beta · v0.1
+                    v{packageJson.version}
                 </p>
             </div>
 

@@ -50,10 +50,14 @@ export async function PATCH(
   // For accept/reject, check if user is the invite recipient
   if (action === 'accept' || action === 'reject') {
     const userEmail = user.email;
+    // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+    // the Supabase Auth UUID — user.id never matches the real row for a
+    // Discord-linked account.
+    const discordId = (user.user_metadata as any)?.provider_id || user.id;
     const { data: profile } = await supabase
       .from("profiles")
       .select("username, joined_projects_limit")
-      .eq("id", user.id)
+      .eq("id", discordId)
       .single();
 
     if (invite.email !== userEmail && invite.username !== profile?.username) {

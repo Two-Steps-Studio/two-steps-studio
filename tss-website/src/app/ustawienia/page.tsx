@@ -13,6 +13,7 @@ import { setNotifStorage, setUiStorage } from "@/lib/storage";
 import { getThemeSelectedClass, getThemeUnselectedClass } from "@/lib/theme-utilities";
 import { useIsElectron } from "@/hooks/useElectron";
 import SettingsPanel from "@/components/Electron/SettingsPanel";
+import packageJson from "../../../package.json";
 
 type Prefs = {
   animations: boolean;
@@ -545,42 +546,7 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="rounded-xl glass bg-white/0 dark:bg-black/40 border-2 border-[var(--color-general)]/30">
-          <CardHeader>
-            <CardTitle className="text-[var(--text)]">Limity projektów</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-xl border-[var(--border-color)] bg-[var(--bg)]/50">
-              <div className="flex items-center justify-between mb-2">
-                <div className="font-medium">Twoje projekty</div>
-                <Badge className="bg-[var(--color-general)]/15 text-[var(--color-general)] px-3 py-1 rounded-xl border-0 text-xs">
-                  {projectLimits.own_projects.current} / {projectLimits.own_projects.limit}
-                </Badge>
-              </div>
-              <div className="w-full bg-[var(--border-color)] rounded-full h-2">
-                <div 
-                  className="bg-[var(--color-general)] h-2 rounded-full transition-all" 
-                  style={{ width: `${(projectLimits.own_projects.current / projectLimits.own_projects.limit) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div className="p-4 rounded-xl border-[var(--border-color)] bg-[var(--bg)]/50">
-              <div className="flex items-center justify-between mb-2">
-                <div className="font-medium">Projekty z dostępem</div>
-                <Badge className="bg-[var(--color-general)]/15 text-[var(--color-general)] px-3 py-1 rounded-xl border-0 text-xs">
-                  {projectLimits.joined_projects.current} / {projectLimits.joined_projects.limit}
-                </Badge>
-              </div>
-              <div className="w-full bg-[var(--border-color)] rounded-full h-2">
-                <div 
-                  className="bg-[var(--color-general)] h-2 rounded-full transition-all" 
-                  style={{ width: `${(projectLimits.joined_projects.current / projectLimits.joined_projects.limit) * 100}%` }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        
       </div>
 
       <div className="mt-6">
@@ -592,14 +558,11 @@ export default function SettingsPage() {
               <div className="flex flex-col">
                 <span className="text-xs font-mono uppercase tracking-widest text-zinc-500">Wersja aplikacji</span>
                 <span className="text-2xl font-black font-mono text-[var(--text)]">
-            Beta{" "}
-                    <span className="text-[var(--color-general)]">0.1</span>
+                    <span className="text-[var(--color-general)]">v{packageJson.version}</span>
           </span>
               </div>
             </div>
-            <Badge className="bg-[var(--color-general)]/15 text-[var(--color-general)] px-4 py-2 rounded-2xl border-0 text-sm font-black tracking-widest">
-              BETA
-            </Badge>
+
           </CardContent>
         </Card>
       </div>

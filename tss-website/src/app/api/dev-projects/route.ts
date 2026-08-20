@@ -111,11 +111,17 @@ export async function POST(request: Request) {
   const body: CreateProjectData = await request.json();
   const { name, description, description_markdown, color, project_type, planned_end_date } = body;
 
+  // profiles.id is the Discord snowflake (user_metadata.provider_id), not
+  // the Supabase Auth UUID — user.id never matches the real row for a
+  // Discord-linked account. (dev_projects.owner_id below is a separate,
+  // self-consistent key space keyed by the auth UUID; leave that alone.)
+  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+
   // Check user's project limits
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("project_limit, joined_projects_limit")
-    .eq("id", user.id)
+    .eq("id", discordId)
     .single();
 
   if (profileError || !profile) {

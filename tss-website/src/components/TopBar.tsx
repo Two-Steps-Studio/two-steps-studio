@@ -74,10 +74,17 @@ export function TopBar({ className }: { className?: string }) {
       setDisplayName(user.user_metadata?.full_name || emailName);
       const metaAvatar = (user.user_metadata as any)?.avatar_url || (user.user_metadata as any)?.picture || null;
       if (metaAvatar) setAvatarUrl(metaAvatar);
+      // profiles.id is the Discord snowflake (user_metadata.provider_id),
+      // not the Supabase Auth UUID (user.id) — those are two different
+      // values for any Discord-linked account. Querying by user.id matched
+      // a different, empty row instead of the real profile, so the avatar
+      // set through the app's own upload (which writes to profiles.avatar_url
+      // keyed by the Discord id) never showed here.
+      const discordId = (user.user_metadata as any)?.provider_id || user.id;
       const { data, error } = await supabase
           .from("profiles")
           .select("avatar_url,username,pln_balance")
-          .eq("id", user.id)
+          .eq("id", discordId)
           .maybeSingle();
       // Handle error (PGRST116 = 0 rows, or other errors)
       if (error || !data) {

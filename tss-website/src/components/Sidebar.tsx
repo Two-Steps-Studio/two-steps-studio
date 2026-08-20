@@ -10,6 +10,7 @@ import {
   Home,
   HomeIcon,
   User,
+  Users,
   Settings,
   Bell,
   Gamepad,
@@ -34,6 +35,7 @@ import {
   NotebookText,
   CalendarFold,
   FileText, Map, CheckSquare, FolderKanban, Download,
+  Briefcase,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "../lib/utils";
@@ -155,8 +157,8 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
     ] : []),
     ...(categoryVisibility.dev ? [{
       id: "dev", type: "expandable", href: "/dev", label: t.nav.dev || "Dev", icon: Code, items: [
-        { href: "/dev/about", label: "About Us", icon: Book },
-        { href: "/dev/recruitment", label: "Recruitment", icon: Book },  
+        { href: "/dev/about", label: "About Us", icon: Users },
+        { href: "/dev/recruitment", label: "Recruitment", icon: Briefcase },
       ]}
     ] : []),
     { id: "notifications", type: "single", href: "/notifications", label: t.nav.notifications || "Powiadomienia", icon: Bell, ariaCurrent: getAriaCurrent("/ankiety/rating") },

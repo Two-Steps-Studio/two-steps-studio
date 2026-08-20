@@ -75,7 +75,13 @@ export default function ProfileForm({
 
       if (!res.ok) {
         // Fallback to direct upload (bucket is now private)
-        const filePath = `${discordId}/${Date.now()}-${file.name}`;
+        // Never use the original filename as (part of) the storage key:
+        // Supabase Storage rejects characters like `~` and `[`/`]`, which
+        // show up in filenames straight from phone/TikTok/etc. downloads
+        // (e.g. "...~tplv-tiktokx-cropcenter_1080_1080.jpeg") and made
+        // every such upload fail with "Invalid key: ...".
+        const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const filePath = `${discordId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
         const { error: uploadError } = await supabase.storage
           .from("avatars")
           .upload(filePath, file, { upsert: true });

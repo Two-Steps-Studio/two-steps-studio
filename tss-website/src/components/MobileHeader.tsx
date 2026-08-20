@@ -51,10 +51,14 @@ export function MobileHeader() {
       const metaAvatar = (user.user_metadata as any)?.avatar_url || (user.user_metadata as any)?.picture || null;
       if (metaAvatar) setAvatarUrl(metaAvatar);
 
+      // profiles.id is the Discord snowflake (user_metadata.provider_id),
+      // not the Supabase Auth UUID (user.id) — querying by user.id matched
+      // a different, empty row instead of the real profile.
+      const discordId = (user.user_metadata as any)?.provider_id || user.id;
       const { data } = await supabase
         .from("profiles")
         .select("avatar_url,username")
-        .eq("id", user.id)
+        .eq("id", discordId)
         .maybeSingle();
       if (data?.avatar_url) setAvatarUrl(data.avatar_url);
       if (data?.username) setDisplayName(data.username);
@@ -64,12 +68,20 @@ export function MobileHeader() {
 
   useEffect(() => {
     if (!user) return;
+    const discordId = (user.user_metadata as any)?.provider_id || user.id;
 
+    // Unique-per-mount topic: supabase.channel(topic) dedupes by topic
+    // string across the whole app, and supabase.removeChannel() is async
+    // (it awaits a real unsubscribe round-trip before deregistering the
+    // topic) — so a fixed topic risks a remount reusing a still-registered
+    // channel from the previous mount and throwing on .on() after
+    // .subscribe(). See src/app/profile/page.tsx for the same fix with the
+    // full explanation.
     const channel = supabase
-      .channel("profile_changes:" + user.id)
+      .channel(`profile_changes:${discordId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "profiles", filter: `id=eq.${user.id}` },
+        { event: "*", schema: "public", table: "profiles", filter: `id=eq.${discordId}` },
         (payload: any) => {
           const row = payload.new || payload.old || {};
           if (row.avatar_url) setAvatarUrl(row.avatar_url);

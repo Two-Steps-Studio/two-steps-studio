@@ -65,7 +65,13 @@ export async function POST(req: Request) {
     }
   }
 
-  const path = `${userId}/${Date.now()}-${file.name}`;
+  // Never use the original filename as (part of) the storage key: Supabase
+  // Storage's key validation rejects characters like `~` and `[`/`]`, which
+  // show up in filenames straight from phone/TikTok/etc. downloads (e.g.
+  // "...~tplv-tiktokx-cropcenter_1080_1080.jpeg") and made every such
+  // upload fail with "Invalid key: ...". The extension is already validated
+  // above; that's the only part of the original name worth keeping.
+  const path = `${userId}/${Date.now()}-${crypto.randomUUID()}.${validation.extension}`;
   const { error: uploadError } = await supabaseAdmin.storage.from("avatars").upload(path, file, {
     upsert: true,
     contentType: file.type,
