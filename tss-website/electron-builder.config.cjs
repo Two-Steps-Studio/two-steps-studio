@@ -101,7 +101,9 @@ module.exports = {
       { target: 'portable', arch: ['x64'] },
     ],
     icon: 'electron-builder-resources/icon.ico',
-    artifactName: '${productName}-${version}-${arch}.${ext}',
+    // Hyphenated, no spaces: these filenames end up in download URLs (GitHub
+    // Releases rewrites spaces to dots, which breaks any hardcoded link).
+    artifactName: 'two-steps-studio-${version}-${arch}.${ext}',
   },
   nsis: {
     oneClick: false,
@@ -130,6 +132,6 @@ module.exports = {
     include: 'electron-builder-resources/installer.nsh',
   },
   portable: {
-    artifactName: '${productName}-${version}-portable.${ext}',
+    artifactName: 'two-steps-studio-${version}-portable.${ext}',
   },
 };

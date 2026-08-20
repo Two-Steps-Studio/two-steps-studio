@@ -13,7 +13,12 @@
  *   4. Writes latest.json, which /api/desktop/release serves to the page.
  *
  * Options
- *   --installer-url <url>  Use this URL instead of uploading the installer.
+ *   --github <tag>         Point the manifest at a GitHub release. Derives each
+ *                          asset URL from the tag and verifies with a HEAD
+ *                          request before publishing, so the page never links
+ *                          to an asset that was not uploaded.
+ *   --repo <owner/name>    Repository for --github (default: the git remote).
+ *   --installer-url <url>  Use this exact URL instead of uploading the installer.
  *   --portable-url <url>   Same for the portable build.
  *   --notes <path>         Newline-separated changelog lines (default:
  *                          electron-builder-resources/RELEASE_NOTES.md).
@@ -41,9 +46,44 @@ function parseArgs(argv) {
     else if (key === "--installer-url") args.installerUrl = argv[++i];
     else if (key === "--portable-url") args.portableUrl = argv[++i];
     else if (key === "--notes") args.notesPath = argv[++i];
+    else if (key === "--github") args.githubTag = argv[++i];
+    else if (key === "--repo") args.repo = argv[++i];
     else if (key === "--help" || key === "-h") args.help = true;
   }
   return args;
+}
+
+function detectRepo() {
+  const configPath = path.join(projectRoot, "..", ".git", "config");
+  if (!fs.existsSync(configPath)) return null;
+  const match = fs
+    .readFileSync(configPath, "utf8")
+    .match(/github\.com[:/]([\w.-]+\/[\w.-]+?)(?:\.git)?\s*$/m);
+  return match ? match[1] : null;
+}
+
+/**
+ * GitHub rewrites spaces in uploaded asset names to dots, so the local
+ * filename is not always the released one. Try both and keep whichever the
+ * server actually serves.
+ */
+async function resolveGithubAssetUrl(repo, tag, filename) {
+  const candidates = [...new Set([filename, filename.replace(/ /g, ".")])];
+  for (const candidate of candidates) {
+    const url = `https://github.com/${repo}/releases/download/${encodeURIComponent(
+      tag
+    )}/${encodeURIComponent(candidate)}`;
+    try {
+      const response = await fetch(url, { method: "HEAD", redirect: "follow" });
+      if (response.ok) return url;
+    } catch {
+      // Network error is indistinguishable from a missing asset here; keep trying.
+    }
+  }
+  throw new Error(
+    `No downloadable asset named "${filename}" on ${repo}@${tag}.\n` +
+      `Upload it to that release first: https://github.com/${repo}/releases/tag/${tag}`
+  );
 }
 
 function loadEnv() {
@@ -153,11 +193,23 @@ async function main() {
   const overrideUrls = { installer: args.installerUrl, portable: args.portableUrl };
   const published = [];
 
+  const repo = args.githubTag ? args.repo ?? detectRepo() : null;
+  if (args.githubTag && !repo) {
+    throw new Error("Could not detect the GitHub repository — pass --repo owner/name");
+  }
+
   for (const artifact of artifacts) {
     const override = overrideUrls[artifact.kind];
     if (override) {
       console.log(`\n${artifact.kind}: using provided URL, not uploading`);
       published.push({ ...artifact, url: override });
+      continue;
+    }
+
+    if (args.githubTag) {
+      const url = await resolveGithubAssetUrl(repo, args.githubTag, artifact.filename);
+      console.log(`\n${artifact.kind}: verified on GitHub\n  -> ${url}`);
+      published.push({ ...artifact, url });
       continue;
     }
 
