@@ -13,6 +13,7 @@ import { setNotifStorage, setUiStorage } from "@/lib/storage";
 import { getThemeSelectedClass, getThemeUnselectedClass } from "@/lib/theme-utilities";
 import { useIsElectron } from "@/hooks/useElectron";
 import SettingsPanel from "@/components/Electron/SettingsPanel";
+import UpdaterPanel from "@/components/Electron/UpdaterPanel";
 import packageJson from "../../../package.json";
 
 type Prefs = {
@@ -551,7 +552,13 @@ export default function SettingsPage() {
 
       <div className="mt-6">
         {isElectron && <SettingsPanel />}
-        
+
+        {isElectron && (
+          <div className="mt-6">
+            <UpdaterPanel />
+          </div>
+        )}
+
         <Card className="rounded-xl glass bg-white/0 dark:bg-black/40 border-2 border-[var(--color-general)]/30">
           <CardContent className="flex items-center justify-between px-8 py-6">
             <div className="flex items-center gap-4">

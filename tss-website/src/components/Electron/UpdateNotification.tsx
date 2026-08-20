@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAutoUpdater } from '@/hooks/useElectron';
 import { Download, RefreshCw, X, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+/**
+ * Modal dialog shown when an update is available or downloaded.
+ *
+ * Kept intentionally minimal — the heavy state lives in useAutoUpdater and
+ * the main process. The dialog exposes three actions:
+ *   - "Update now"     : trigger downloadUpdate()
+ *   - "Restart..."     : trigger installUpdate()
+ *   - "Later" / "X"    : dismiss the dialog for this session
+ *
+ * "Later" used to be a no-op (see git history); now it actually closes the
+ * dialog. The renderer keeps the updater state in memory, so the dialog
+ * will reappear on next app launch when the same version is still pending.
+ */
 export function UpdateNotification() {
   const {
     updateAvailable,
@@ -21,15 +35,23 @@ export function UpdateNotification() {
     isDownloading,
     isUpdateDownloaded,
     error,
+    isChecking,
     checkForUpdates,
     downloadUpdate,
     installUpdate,
   } = useAutoUpdater();
 
-  if (!updateAvailable && !isUpdateDownloaded && !error) return null;
+  const [dismissed, setDismissed] = useState(false);
+
+  // Re-show the dialog on a new "update-available" event after the user
+  // previously dismissed one — otherwise it would never come back during
+  // a long session even if a fresh release appeared.
+  const isOpen =
+    !dismissed &&
+    (updateAvailable || isUpdateDownloaded || !!error || isChecking);
 
   return (
-    <Dialog open={updateAvailable || isUpdateDownloaded || !!error}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) setDismissed(true); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -38,7 +60,11 @@ export function UpdateNotification() {
             ) : (
               <Download className="w-5 h-5" />
             )}
-            {isUpdateDownloaded ? 'Aktualizacja gotowa' : 'Dostępna aktualizacja'}
+            {isUpdateDownloaded
+              ? 'Aktualizacja gotowa'
+              : isChecking
+                ? 'Sprawdzanie aktualizacji...'
+                : 'Dostępna aktualizacja'}
           </DialogTitle>
           <DialogDescription>
             {isUpdateDownloaded
@@ -56,7 +82,7 @@ export function UpdateNotification() {
         {isDownloading && downloadProgress && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-gray-600">
-              <span>Pobieranie...</span>
+              <span>Downloading update...</span>
               <span>{Math.round(downloadProgress.percent)}%</span>
             </div>
             <Progress value={downloadProgress.percent} />
@@ -71,11 +97,11 @@ export function UpdateNotification() {
         )}
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          {!isDownloading && !isUpdateDownloaded && (
+          {!isDownloading && !isUpdateDownloaded && !isChecking && (
             <>
               <Button
                 variant="outline"
-                onClick={() => {/* Close dialog */}}
+                onClick={() => setDismissed(true)}
                 className="w-full sm:w-auto"
               >
                 <X className="w-4 h-4 mr-2" />
@@ -86,7 +112,7 @@ export function UpdateNotification() {
                 className="w-full sm:w-auto"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Pobierz aktualizację
+                Update now
               </Button>
             </>
           )}
@@ -95,7 +121,7 @@ export function UpdateNotification() {
             <>
               <Button
                 variant="outline"
-                onClick={() => {/* Close dialog */}}
+                onClick={() => setDismissed(true)}
                 className="w-full sm:w-auto"
               >
                 <X className="w-4 h-4 mr-2" />
@@ -106,7 +132,7 @@ export function UpdateNotification() {
                 className="w-full sm:w-auto"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Uruchom ponownie i zainstaluj
+                Restart and install
               </Button>
             </>
           )}

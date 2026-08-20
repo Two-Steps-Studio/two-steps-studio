@@ -1,10 +1,10 @@
 const { app, BrowserWindow, shell, ipcMain, Notification, nativeImage, session, protocol, Tray, Menu, globalShortcut } = require('electron');
-const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const crypto = require('crypto');
 const gameManager = require('./game-manager');
+const updater = require('./updater');
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 // Single instance lock
@@ -68,7 +68,7 @@ function applySettings() {
 
   // Whether the updater pulls a new version down on its own. The manual
   // "download update" IPC call still works either way.
-  autoUpdater.autoDownload = appSettings.autoUpdate === true;
+  updater.configure({ autoDownload: appSettings.autoUpdate === true });
 }
 
 // Must be decided before the app is ready; Electron ignores it afterwards.
@@ -655,91 +655,60 @@ app.on('web-contents-created', (_, contents) => {
   }
 });
 
-// Auto-updater configuration
-autoUpdater.setFeedURL({
-  provider: 'generic',
-  url: 'https://releases.twostepsstudio.com/updates'
-});
+// ---------------------------------------------------------------------------
+// Auto-updater — driven by electron/updater.js. The module wires GitHub
+// Releases as the only feed, runs the SemVer comparison, coalesces
+// concurrent checks, and emits all updater events to the renderer via a
+// single send() callback supplied here. The renderer never talks to
+// electron-updater directly.
+// ---------------------------------------------------------------------------
 
-// Overwritten by applySettings() from the persisted autoUpdate preference.
-autoUpdater.autoDownload = false;
-autoUpdater.autoInstallOnAppQuit = true;
-autoUpdater.allowPrerelease = false;
+function sendUpdate(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
 
-// SHA256 verification for update files
-autoUpdater.on('update-available', (info) => {
-  log('INFO', 'Update available, verifying SHA256...', info);
-  
-  // Verify SHA256 if provided
-  if (info.files && info.files.length > 0) {
-    const file = info.files[0];
-    if (file.sha512) {
-      log('INFO', 'SHA512 hash available for verification', { sha512: file.sha512.substring(0, 16) + '...' });
-    }
-  }
-  
-  updateAvailable = true;
-  if (mainWindow) {
-    mainWindow.webContents.send('update-available', info);
-  }
-  
-  showNotification('Dostępna aktualizacja', `Nowa wersja ${info.version} jest dostępna!`);
-});
+function initUpdater() {
+  updater.init({
+    log,
+    send: sendUpdate,
+    getMainWindow: () => mainWindow,
+    app,
+    // env override so the same compiled binary can be flipped between
+    // stable / beta / nightly by changing TSS_UPDATE_CHANNEL at build time.
+    channel: process.env.TSS_UPDATE_CHANNEL || updater.DEFAULT_CHANNEL,
+  });
 
-autoUpdater.on('update-not-available', (info) => {
-  log('INFO', 'Update not available', info);
-  updateAvailable = false;
-  if (mainWindow) {
-    mainWindow.webContents.send('update-not-available', info);
-  }
-});
+  updater.configure({ autoDownload: appSettings.autoUpdate === true });
+  updater.schedulePeriodicCheck({ log, send: sendUpdate, getMainWindow: () => mainWindow, app });
 
-autoUpdater.on('error', (err) => {
-  log('ERROR', 'Update error', err.message);
-  if (mainWindow) {
-    mainWindow.webContents.send('update-error', err);
-  }
-  
-  // Handle specific error scenarios
-  if (err.message.includes('ERR_UPDATER_CHANNEL_FILE_NOT_FOUND')) {
-    log('ERROR', 'Update channel file not found - update server may be down');
-    showNotification('Błąd aktualizacji', 'Serwer aktualizacji jest niedostępny. Spróbuj ponownie później.');
-  } else if (err.message.includes('ERR_UPDATER_INVALID_SIGNATURE')) {
-    log('ERROR', 'Update file signature invalid - possible security issue');
-    showNotification('Błąd aktualizacji', 'Plik aktualizacji ma nieprawidłowy podpis. Aktualizacja zablokowana.');
-  } else if (err.message.includes('ERR_UPDATER_HASH_MISMATCH')) {
-    log('ERROR', 'Update file hash mismatch - file corrupted');
-    showNotification('Błąd aktualizacji', 'Plik aktualizacji jest uszkodzony. Spróbuj ponownie.');
-  }
-});
+  // A successful "available" event flips the tray menu entry so a
+  // user who already dismissed the dialog can re-trigger it from there.
+  updater.bus.on('update-available', (info) => {
+    updateAvailable = true;
+    showNotification('Dostępna aktualizacja', `Nowa wersja ${info && info.version} jest dostępna!`);
+  });
+  updater.bus.on('update-not-available', () => {
+    updateAvailable = false;
+  });
+}
 
-autoUpdater.on('download-progress', (progress) => {
-  log('INFO', 'Download progress', progress);
-  if (mainWindow) {
-    mainWindow.webContents.send('update-download-progress', progress);
-  }
-});
-
-autoUpdater.on('update-downloaded', (info) => {
-  log('INFO', 'Update downloaded', info);
-  if (mainWindow) {
-    mainWindow.webContents.send('update-downloaded', info);
-  }
-  
-  showNotification('Aktualizacja gotowa', 'Aktualizacja została pobrana. Zostanie zainstalowana po ponownym uruchomieniu.');
-});
-
-// Check for updates on startup with delay
 if (!isDev) {
+  initUpdater();
+
+  // Initial check after the window has had a chance to attach its
+  // update listeners. Doing this 30s after startup keeps the very first
+  // launch feeling snappy on slow networks.
   setTimeout(() => {
     if (appSettings.autoUpdate === false) {
-      log('INFO', 'Skipping startup update check (disabled in settings)');
+      log('INFO', '[Updater] Skipping startup update check (autoUpdate disabled)');
       return;
     }
-    autoUpdater.checkForUpdates().catch(error => {
-      log('ERROR', 'Initial update check failed', error.message);
+    updater.checkForUpdates({ log, send: sendUpdate, getMainWindow: () => mainWindow, app }).catch((error) => {
+      log('ERROR', `[Updater] Initial check crashed: ${error && error.message ? error.message : error}`);
     });
-  }, 30000); // Check 30 seconds after startup
+  }, 30000);
 }
 
 // IPC handlers with validation and error handling
@@ -765,20 +734,25 @@ ipcMain.handle('get-app-info', () => {
 
 ipcMain.handle('check-for-updates', async () => {
   try {
-    log('INFO', 'Manual update check requested');
-    await autoUpdater.checkForUpdates();
-    return { success: true, hasUpdate: updateAvailable };
+    log('INFO', '[Updater] Manual update check requested');
+    const result = await updater.checkForUpdates({ log, send: sendUpdate, getMainWindow: () => mainWindow, app });
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+    return { success: true, hasUpdate: !!result.updateAvailable, updateInfo: result.updateInfo };
   } catch (error) {
-    log('ERROR', 'Manual update check failed', error.message);
+    log('ERROR', `[Updater] Manual update check failed: ${error.message}`);
     return { success: false, error: error.message };
   }
 });
 
 ipcMain.handle('download-update', async () => {
   try {
-    log('INFO', 'Update download requested');
-    
-    // Check if online before downloading
+    log('INFO', '[Updater] Manual download requested');
+
+    // A short offline probe prevents a confusing "downloaded 0 bytes" path
+    // when the user clicked Update while disconnected. Fail fast, surface
+    // the reason to the renderer.
     const net = require('net');
     const isOnline = await new Promise((resolve) => {
       const socket = new net.Socket();
@@ -786,46 +760,33 @@ ipcMain.handle('download-update', async () => {
         socket.destroy();
         resolve(false);
       }, 3000);
-      
+
       socket.connect(80, '8.8.8.8', () => {
         clearTimeout(timeout);
         socket.destroy();
         resolve(true);
       });
-      
+
       socket.on('error', () => {
         clearTimeout(timeout);
         resolve(false);
       });
     });
-    
+
     if (!isOnline) {
       throw new Error('Brak połączenia z internetem. Nie można pobrać aktualizacji.');
     }
-    
-    await autoUpdater.downloadUpdate();
-    return { success: true };
+
+    const result = await updater.downloadUpdate({ log });
+    return result;
   } catch (error) {
-    log('ERROR', 'Update download failed', error.message);
+    log('ERROR', `[Updater] Manual download failed: ${error.message}`);
     return { success: false, error: error.message };
   }
 });
 
 ipcMain.handle('install-update', () => {
-  log('INFO', 'Update install requested');
-  
-  // Save current state before update
-  try {
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-    const settings = fs.readFileSync(settingsPath, 'utf-8');
-    const backupPath = path.join(app.getPath('userData'), 'settings.backup.json');
-    fs.writeFileSync(backupPath, settings);
-    log('INFO', 'Settings backed up before update');
-  } catch (error) {
-    log('WARN', 'Failed to backup settings before update', error.message);
-  }
-  
-  autoUpdater.quitAndInstall();
+  updater.installUpdate({ log, app });
 });
 
 ipcMain.handle('get-app-path', () => {

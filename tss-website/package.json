@@ -109,6 +109,7 @@
     "orchids-visual-edits": "^1.0.13",
     "qss": "^3.0.0",
     "react": "^19.0.0",
+    "semver": "^7.6.3",
     "react-d3-tree": "^3.6.6",
     "react-day-picker": "^9.8.0",
     "react-dom": "^19.0.0",

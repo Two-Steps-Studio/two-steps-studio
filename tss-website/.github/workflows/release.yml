@@ -1,0 +1,136 @@
+name: Release
+
+# Triggers:
+#   - push of a vX.Y.Z tag     → automatic release build & publish
+#   - workflow_dispatch        → manual build (no publish), for smoke-testing
+#                                the pipeline without cutting a real tag.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Optional reason recorded in the workflow run'
+        required: false
+        default: 'manual'
+
+# Required secrets (set them under Settings → Secrets and variables → Actions):
+#   GH_TOKEN        — Classic PAT with `repo` scope. Used by electron-builder
+#                     to upload release artefacts. The default GITHUB_TOKEN is
+#                     not enough: it cannot trigger another workflow run, and
+#                     electron-builder needs write access on releases.
+#   CSC_LINK        — (Optional, macOS only) base64-encoded .p12 from Apple
+#                     Developer ID. Without it macOS builds run unsigned.
+#   CSC_KEY_PASSWORD — (Optional, macOS only) password for the .p12.
+#   CSC_KEY_ID      — (Optional, macOS only) Apple notarisation key id.
+#   CSC_ISSUER_ID   — (Optional, macOS only) Apple issuer id.
+#   CSC_BUNDLE_ID   — (Optional, macOS only) Apple bundle id.
+#
+# Windows code-signing (not configured in this file yet):
+#   To sign Windows installers in CI you need an EV certificate in
+#   Azure Trusted Signing (or a traditional Authenticode cert).
+#   electron-builder supports both; the relevant keys in the config would be
+#   win.certificateSubjectName / win.certificateSha1 or
+#   win.azure.trustedSigning. None of these are wired up here because they
+#   depend on the cert type the project will adopt — wire them up before
+#   turning on production releases.
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build & publish ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    # Only run on tag pushes OR manual dispatch — never on plain pushes.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            build_args: '--win --x64'
+            artifact_glob: |
+              two-steps-studio-*.exe
+          - os: macos-latest
+            build_args: '--mac --x64 --arm64'
+            artifact_glob: |
+              two-steps-studio-*.dmg
+              two-steps-studio-*.zip
+          - os: ubuntu-latest
+            build_args: '--linux --x64'
+            artifact_glob: |
+              two-steps-studio-*.AppImage
+              two-steps-studio-*.deb
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Tags alone are not enough — we need the full history so
+          # electron-builder can compute SemVer ordering correctly.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'tss-website/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: tss-website
+        run: npm ci
+
+      - name: Build Next.js standalone server
+        working-directory: tss-website
+        env:
+          ELECTRON: 'true'
+        run: npm run build:electron
+
+      # `electron-builder --publish always` does two things in one step:
+      #   1. Packages the installers listed in electron-builder.config.cjs.
+      #   2. Creates / updates the GitHub Release and uploads the artefacts
+      #      + latest.yml / latest-mac.yml / latest-linux.yml manifests that
+      #      electron-updater reads at runtime.
+      # The `tag_name` is set explicitly so a `v` prefix in the ref is
+      # stripped: GitHub Release tag must be exactly `1.2.3`, not `v1.2.3`,
+      # because electron-updater matches it against package.json version.
+      - name: Build & publish (electron-builder)
+        if: github.event_name == 'push'
+        working-directory: tss-website
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          TSS_BUILD_OUT: release-artifacts
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME#v}"
+          echo "Publishing release tag: ${TAG_NAME}"
+          npx electron-builder --config electron-builder.config.cjs \
+            ${{ matrix.build_args }} \
+            --publish always \
+            --config.publish[0].tag=${TAG_NAME} \
+            --config.publish[0].releaseType=release
+
+      # Manual workflow runs skip publish so we can smoke-test the build
+      # pipeline without accidentally cutting a release.
+      - name: Build only (manual run)
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: tss-website
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          TSS_BUILD_OUT: release-artifacts
+        run: |
+          npx electron-builder --config electron-builder.config.cjs \
+            ${{ matrix.build_args }} \
+            --publish never
+
+      - name: Upload build artefacts
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tss-desktop-${{ matrix.os }}
+          path: |
+            tss-website/release-artifacts/${{ matrix.artifact_glob }}
+          if-no-files-found: warn

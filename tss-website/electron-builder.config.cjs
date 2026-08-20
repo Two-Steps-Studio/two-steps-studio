@@ -25,6 +25,9 @@ const ELECTRON_UPDATER_RUNTIME_DEPS = [
   'tiny-typed-emitter',
   'universalify',
 ];
+// `electron/updater.js` also requires semver directly. It is already
+// present transitively via electron-updater; listing it again is harmless
+// and makes the dependency explicit for future maintainers.
 
 module.exports = {
   appId: 'com.twostepsstudio.app',
@@ -91,10 +94,27 @@ module.exports = {
       role: 'Viewer',
     },
   ],
-  publish: {
-    provider: 'generic',
-    url: 'https://releases.twostepsstudio.com/updates',
-  },
+  publish: [
+    {
+      // Primary channel — every tagged GitHub Release is uploaded here.
+      // Coordinates come from electron/updater.js so the runtime feed and
+      // the build-time publish target can never drift.
+      provider: 'github',
+      owner: 'twostepsstudio',
+      repo: 'tss-desktop',
+      channel: 'latest',
+      // `releaseType` defaults to "release" (i.e. stable only). Prerelease
+      // artefacts land on the same repo but tagged as Pre-release, so they
+      // don't show up as the latest update unless the user's channel is
+      // configured to follow them.
+      releaseType: 'release',
+      publishAutoUpdate: true,
+    },
+    // To enable a beta channel later, append a second entry here with
+    //   channel: 'beta', releaseType: 'prerelease'
+    // and ship the matching GitHub Release tagged as a Pre-release. The
+    // runtime side already accepts the channel name from env / setting.
+  ],
   win: {
     target: [
       { target: 'nsis', arch: ['x64'] },
