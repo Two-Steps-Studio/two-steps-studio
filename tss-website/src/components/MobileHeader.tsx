@@ -42,8 +42,22 @@ export function MobileHeader() {
     const loadProfile = async () => {
       const emailName = (user.email ?? "").split("@")[0] || "";
       setDisplayName(user.user_metadata?.full_name || emailName);
-      const metaAvatar = (user.user_metadata as any)?.avatar_url || null;
-      setAvatarUrl(metaAvatar);
+      // Auth metadata only ever holds an OAuth-provided picture. The app's
+      // own avatar upload (api/avatars/upload) writes solely to the
+      // `profiles` row, never to metadata — so metadata-only was blank for
+      // anyone who set an avatar through the app itself. Seed from metadata
+      // for an instant paint, then overwrite with the real row once it loads
+      // (mirrors TopBar, which already does this).
+      const metaAvatar = (user.user_metadata as any)?.avatar_url || (user.user_metadata as any)?.picture || null;
+      if (metaAvatar) setAvatarUrl(metaAvatar);
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url,username")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+      if (data?.username) setDisplayName(data.username);
     };
     loadProfile();
   }, [user]);

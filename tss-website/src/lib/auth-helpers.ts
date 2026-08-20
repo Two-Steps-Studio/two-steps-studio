@@ -31,10 +31,17 @@ export interface OwnershipCheck {
 // ERROR RESPONSES
 // ============================================
 
+// Factories, not pre-built Response objects: a Response body can only be
+// read once. Building these at module load meant one shared instance was
+// reused across every request for the lifetime of the server process — the
+// first 401/403/503 anywhere in the app consumed its body, and every
+// subsequent one (even on a completely different route) shipped an empty
+// body with a `Content-Type: application/json` header, which callers doing
+// `res.json()` saw as "Unexpected end of JSON input".
 const ERROR_RESPONSES = {
-  UNAUTHORIZED: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-  FORBIDDEN: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-  SERVICE_DISABLED: NextResponse.json({ error: "Service disabled" }, { status: 503 }),
+  UNAUTHORIZED: () => NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+  FORBIDDEN: () => NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+  SERVICE_DISABLED: () => NextResponse.json({ error: "Service disabled" }, { status: 503 }),
 };
 
 // ============================================
@@ -50,13 +57,13 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
   try {
     supabase = await createClient();
   } catch {
-    return ERROR_RESPONSES.SERVICE_DISABLED;
+    return ERROR_RESPONSES.SERVICE_DISABLED();
   }
 
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   
   if (userError || !user) {
-    return ERROR_RESPONSES.UNAUTHORIZED;
+    return ERROR_RESPONSES.UNAUTHORIZED();
   }
 
   // Fetch user profile
@@ -113,7 +120,7 @@ export function requireRole(auth: AuthContext | NextResponse, requiredRole: Glob
 
   if (userRoleLevel < requiredRoleLevel) {
     console.error(`[SECURITY] User ${auth.user.id} attempted to access ${requiredRole} resource with roles:`, auth.roles);
-    return ERROR_RESPONSES.FORBIDDEN;
+    return ERROR_RESPONSES.FORBIDDEN();
   }
 
   return null;
@@ -137,7 +144,7 @@ export function requireAdmin(auth: AuthContext | NextResponse): NextResponse | n
   // Check if user has ADMIN or OWNER role
   if (!auth.roles.includes('ADMIN') && !auth.roles.includes('OWNER')) {
     console.error(`[SECURITY] User ${auth.user.id} attempted to access admin resource with roles:`, auth.roles);
-    return ERROR_RESPONSES.FORBIDDEN;
+    return ERROR_RESPONSES.FORBIDDEN();
   }
 
   return null;
@@ -168,7 +175,7 @@ export async function requireOwnership(
   try {
     supabase = await createClient();
   } catch {
-    return ERROR_RESPONSES.SERVICE_DISABLED;
+    return ERROR_RESPONSES.SERVICE_DISABLED();
   }
 
   // Map resource types to Supabase tables
@@ -182,7 +189,7 @@ export async function requireOwnership(
   const tableName = RESOURCE_TABLES[resourceType];
   if (!tableName) {
     console.error(`[SECURITY] Unknown resource type: ${resourceType}`);
-    return ERROR_RESPONSES.FORBIDDEN;
+    return ERROR_RESPONSES.FORBIDDEN();
   }
 
   const { data: resource } = await supabase
@@ -195,7 +202,7 @@ export async function requireOwnership(
 
   if (!isOwner) {
     console.error(`[SECURITY] User ${auth.user.id} attempted to access ${resourceType} ${resourceId} without ownership`);
-    return ERROR_RESPONSES.FORBIDDEN;
+    return ERROR_RESPONSES.FORBIDDEN();
   }
 
   return null;
