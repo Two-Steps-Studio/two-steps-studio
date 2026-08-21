@@ -1,6 +1,7 @@
 
 import type { Metadata } from "next";
 import { validateEnv } from "@/lib/env-validation";
+import { Analytics } from "@vercel/analytics/next";
 import { Space_Grotesk, Outfit } from "next/font/google";
 import "./globals.css";
 import { VisualEditsMessenger } from "orchids-visual-edits";
@@ -124,6 +125,7 @@ export default function RootLayout({
         <ServiceWorkerRegister />
         <InstallPrompt />
         <VisualEditsMessenger />
+        <Analytics />
       </body>
     </html>
   );
