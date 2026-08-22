@@ -15,10 +15,6 @@ export async function GET(request: Request) {
     );
   }
 
-  // SECURITY: Require authentication for all game operations
-  const auth = await requireAuth();
-  if (isAuthError(auth)) return auth;
-
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -62,10 +58,29 @@ export async function GET(request: Request) {
         );
       }
 
+      // A published, public game is visible to anyone (the /games/[id]
+      // detail page has no login wall). Anything else -- draft, private,
+      // unlisted, archived -- still requires a session.
+      const isPubliclyVisible = data.visibility === 'public' && data.status === 'published';
+      if (!isPubliclyVisible) {
+        const auth = await requireAuth();
+        if (isAuthError(auth)) return auth;
+      }
+
       return NextResponse.json({
         success: true,
         data: data as GameWithDetails,
       });
+    }
+
+    // The public catalog (/games, /games/shop) fetches with
+    // visibility=public, which the query below already scopes to public
+    // rows -- no session needed to read those. Any other listing (e.g. the
+    // unfiltered /dev/games admin panel, which also returns drafts/private
+    // games) still requires one.
+    if (visibility !== 'public') {
+      const auth = await requireAuth();
+      if (isAuthError(auth)) return auth;
     }
 
     // Otherwise fetch all games with filters

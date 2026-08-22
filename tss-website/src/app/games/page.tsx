@@ -9,6 +9,7 @@ import { Gamepad2, Search, Filter, Calendar, Download, Eye } from "lucide-react"
 import { toast } from "sonner";
 import Link from "next/link";
 import { GameInstallControls } from "@/components/Games/GameInstallControls";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import type { Game, GameCategory, GameStatus } from "@/types/games-records";
 
 const CATEGORIES: GameCategory[] = ['action', 'adventure', 'rpg', 'strategy', 'simulation', 'sports', 'racing', 'puzzle', 'horror', 'indie', 'other'];
@@ -90,6 +91,8 @@ export default function GamesPage() {
     return 0;
   });
 
+  const featuredGames = games.filter((game) => game.featured).slice(0, 5);
+
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       {/* Hero Section */}
@@ -130,6 +133,43 @@ export default function GamesPage() {
           </a>
         ))}
       </div>
+
+      {/* Featured Games Carousel */}
+      {featuredGames.length > 0 && (
+        <div className="mb-12">
+          <h2 className="mb-4 text-2xl font-bold text-white font-[family-name:var(--font-space)]">
+            Polecane
+          </h2>
+          <Carousel opts={{ loop: true, align: "start" }} className="w-full">
+            <CarouselContent>
+              {featuredGames.map((game) => (
+                <CarouselItem key={game.id} className="basis-1/3">
+                  <Link href={`/games/${game.id}`} className="group block">
+                    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/5">
+                      {game.thumbnail_url ? (
+                        <img
+                          src={game.thumbnail_url}
+                          alt={game.title}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <Gamepad2 className="h-10 w-10 text-zinc-600" />
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3">
+                        <p className="truncate text-sm font-bold text-white">{game.title}</p>
+                      </div>
+                    </div>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="mb-8 space-y-4">
@@ -202,11 +242,11 @@ export default function GamesPage() {
 
       {/* Games List */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {[...Array(10)].map((_, i) => (
             <Card
               key={i}
-              className="rounded-[2rem] bg-black/40 border border-white/10 animate-pulse h-64"
+              className="rounded-[2rem] bg-black/40 border border-white/10 animate-pulse h-96"
             />
           ))}
         </div>
@@ -223,14 +263,14 @@ export default function GamesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filteredGames.map((game) => (
             <Card
               key={game.id}
               className="group relative overflow-hidden rounded-[2rem] bg-black/40 border border-white/10 hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
             >
               {game.thumbnail_url && (
-                <div className="h-48 overflow-hidden bg-white/5">
+                <div className="aspect-[2/3] w-full overflow-hidden bg-white/5">
                   <img
                     src={game.thumbnail_url}
                     alt={game.title}

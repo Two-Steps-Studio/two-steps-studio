@@ -530,7 +530,9 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
               
               {/* Thumbnail Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Miniatura</label>
+                <label className="text-xs text-muted-foreground">
+                  Miniatura — okładka w proporcji 2:3 (szer:wys), np. 400×600px. Większe obrazy zostaną przeskalowane i przycięte do tej proporcji.
+                </label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -554,7 +556,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                   </Button>
                 </div>
                 {formData.thumbnail_url && (
-                  <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative w-20 aspect-[2/3] rounded-lg overflow-hidden border border-white/10">
                     <img src={formData.thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
                     <Button
                       type="button"
