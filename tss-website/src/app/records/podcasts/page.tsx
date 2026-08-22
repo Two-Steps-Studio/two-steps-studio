@@ -49,19 +49,25 @@ export default function PodcastyPage() {
   const seasons = Array.from(new Set(podcasts.map((p) => p.season))).sort((a, b) => a - b);
 
   return (
-    <div className="container mx-auto p-6 mt-20 max-w-7xl">
-      <div className="relative mb-16 p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-records)]/20 via-transparent to-transparent opacity-50" />
-        <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
+      <div className="container mx-auto p-6 mt-20 max-w-7xl">
+        {/* Hero Section */}
+        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+          <img
+              src="/assets/HeroSection/records-podcast.avif"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-records)]/20 via-transparent to-transparent opacity-50" />
+          <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
-        <div className="relative z-10 space-y-4">
+        <div className="relative z-10 space-y-4 text-center">
           <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] hover:bg-[var(--color-records)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
             Two Steps Studio
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
            <span className="text-[var(--color-records)]">Podcasty</span>
           </h1>
-          <p className="text-zinc-400 max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
+          <p className="text-white max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
             Posłuchaj podcastów i rozmów z naszego studia.
           </p>
         </div>
