@@ -1,0 +1,53 @@
+name: Sync desktop release to /download
+
+# Keeps /download in sync with GitHub Releases: whenever a stable desktop
+# release is published on this repo, downloads its .exe assets and runs
+# scripts/publish-desktop-release.mjs to update the manifest that
+# /api/desktop/release serves to the website. See that script's header for
+# the full manual-usage docs.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  sync:
+    # Prereleases (beta/nightly channels) must never become the "latest"
+    # download on the public website.
+    if: ${{ github.event.release.prerelease == false && github.event.release.draft == false }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tss-website
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tss-website/package-lock.json
+
+      - name: Install script dependency
+        run: npm install @supabase/supabase-js@^2 --no-save --no-audit --no-fund
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist-electron
+          gh release download "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "*.exe" \
+            --dir dist-electron
+
+      - name: Publish manifest
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/publish-desktop-release.mjs \
+            --github "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}"

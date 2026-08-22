@@ -28,8 +28,8 @@ const semver = require('semver');
 const REPO_CONFIG = Object.freeze({
   // The official Two Steps Studio desktop repository. All release artefacts
   // must come from here — no other URL is ever queried.
-  owner: 'twostepsstudio',
-  repo: 'tss-desktop',
+  owner: 'Two-Steps-Studio',
+  repo: 'two-steps-studio',
 });
 
 const SUPPORTED_CHANNELS = Object.freeze(['stable', 'beta', 'nightly']);

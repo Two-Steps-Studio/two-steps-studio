@@ -100,8 +100,8 @@ module.exports = {
       // Coordinates come from electron/updater.js so the runtime feed and
       // the build-time publish target can never drift.
       provider: 'github',
-      owner: 'twostepsstudio',
-      repo: 'tss-desktop',
+      owner: 'Two-Steps-Studio',
+      repo: 'two-steps-studio',
       channel: 'latest',
       // `releaseType` defaults to "release" (i.e. stable only). Prerelease
       // artefacts land on the same repo but tagged as Pre-release, so they

@@ -97,6 +97,11 @@ function loadEnv() {
       if (match && !(match[1] in env)) env[match[1]] = match[2].trim().replace(/^["']|["']$/g, "");
     }
   }
+  // CI (e.g. GitHub Actions) injects secrets as process.env with no .env
+  // file on disk, so that's the fallback once no file supplied a value.
+  for (const key of Object.keys(process.env)) {
+    if (!(key in env)) env[key] = process.env[key];
+  }
   return env;
 }
 
