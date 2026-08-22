@@ -8,34 +8,18 @@ import {
   Sun,
   Moon,
   Home,
-  HomeIcon,
   User,
   Users,
   Settings,
   Bell,
   Gamepad,
-  Trophy,
   Mic2,
   Music2,
-  FolderOpen,
-  Mail,
   Code,
   BookOpen,
   Book,
-  Server,
-  Layout,
-  Database,
-  Shield,
-  Clipboard,
-  Terminal,
-  Search,
-  TreePine,
-  Cpu,
-  File,
-  NotebookText,
-  CalendarFold,
-  FileText, Map, CheckSquare, FolderKanban, Download,
   Briefcase,
+  Music,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "../lib/utils";
@@ -155,6 +139,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
       id: "records", type: "expandable", href: "/records", label: t.nav.records || "Records", icon: Music2, items: [
         { href: "/records/podcasts", label: "Podcasty", icon: Book },
         { href: "/records/beats", label: "Beaty", icon: Mic2 },
+        { href: "/records/music", label: "Muzyka", icon: Music },
       ]}
     ] : []),
     ...(categoryVisibility.dev ? [{
