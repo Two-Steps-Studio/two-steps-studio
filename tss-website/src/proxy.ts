@@ -187,7 +187,7 @@ export async function proxy(request: NextRequest) {
   // repeat the very same lookup — skip the client entirely and return early.
   const pathname = request.nextUrl.pathname;
   const AUTH_AWARE_PREFIXES = [
-    "/profile", "/ustawienia", "/notifications", // protected
+    "/profile", "/settings", "/notifications", // protected
     "/login", "/registration",                    // redirect-if-signed-in
     "/dev", "/games", "/records",                 // project access + category visibility
   ];
@@ -225,7 +225,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected routes
-  const protectedRoutes = ["/profile", "/ustawienia", "/notifications"];
+  const protectedRoutes = ["/profile", "/settings", "/notifications"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );

@@ -52,7 +52,7 @@ export async function GET(request: Request) {
 
     if (existingIntegration && existingIntegration.user_id !== user.id) {
       return NextResponse.redirect(
-        new URL("/ustawienia?error=discord_already_connected", request.url)
+        new URL("/settings?error=discord_already_connected", request.url)
       );
     }
 
@@ -104,13 +104,13 @@ export async function GET(request: Request) {
 
     // Redirect back to settings with success
     return NextResponse.redirect(
-      new URL("/ustawienia?success=discord_connected", request.url)
+      new URL("/settings?success=discord_connected", request.url)
     );
 
   } catch (error) {
     console.error("Discord OAuth error:", error);
     return NextResponse.redirect(
-      new URL("/ustawienia?error=discord_connection_failed", request.url)
+      new URL("/settings?error=discord_connection_failed", request.url)
     );
   }
 }

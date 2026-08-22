@@ -147,8 +147,8 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
     { id: "profile", type: "single", href: "/profile", label: t.nav.profile || "Profil", icon: User, ariaCurrent: getAriaCurrent("/profile") },
     ...(categoryVisibility.games ? [{
       id: "games", type: "expandable", href: "/games", label: t.nav.games || "Games", icon: Gamepad, items: [
-        { href: "/games/loucher-gier", label: t.nav.Loucher || "Loucher Gier", icon: Gamepad },
-        { href: "/games/o-grach", label: "O grach", icon: BookOpen },
+        { href: "/games/shop", label: t.nav.Shop || "Shop", icon: Gamepad },
+        { href: "/games/about", label: "About", icon: BookOpen },
       ]}
     ] : []),
     ...(categoryVisibility.records ? [{
@@ -407,10 +407,10 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
           )}
 
           <Link
-              href="/ustawienia"
+              href="/settings"
               className={cn(
                   "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all group relative overflow-hidden border border-(--border-color)",
-                  pathname === "/ustawienia"
+                  pathname === "/settings"
                       ? "text-white bg-(--color-general) shadow-lg shadow-(--color-general)/20 font-black"
                       : "text-[var(--text)]/50 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
               )}
@@ -418,7 +418,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
             <div
                 className={cn(
                     "w-[18px] h-[18px] flex items-center justify-center relative z-10",
-                    pathname === "/ustawienia" ? "opacity-100" : "opacity-70"
+                    pathname === "/settings" ? "opacity-100" : "opacity-70"
                 )}
             >
               <Settings size={18} className="text-current group-hover:rotate-90 transition-transform duration-500" />
