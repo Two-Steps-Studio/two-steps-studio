@@ -187,15 +187,17 @@ export default function AddGamePage() {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-6xl">
       {/* Hero Section */}
-      <div className="relative mb-12 p-8 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md">
+      <div className="relative mb-12 md:aspect-video p-8 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md flex flex-col items-center justify-center">
+        {/* Hero Background Image - podmień src, aby dodać obraz tła */}
+        {/* <img src="" alt="" className="absolute inset-0 h-full w-full object-cover" /> */}
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-games)]/10 via-transparent to-transparent opacity-50" />
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-games)]/10 blur-3xl" />
 
-        <div className="relative z-10 space-y-4">
+        <div className="relative z-10 space-y-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
             <span className="text-[var(--color-games)]">Zarządzanie grami</span>
           </h1>
-          <p className="text-zinc-400 max-w-xl font-[family-name:var(--font-outfit)] text-lg">
+          <p className="text-zinc-400 max-w-xl mx-auto font-[family-name:var(--font-outfit)] text-lg">
             Zarządzaj grami w launcherze Two Steps Studio
           </p>
         </div>
