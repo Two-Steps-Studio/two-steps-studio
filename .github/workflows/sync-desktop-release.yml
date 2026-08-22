@@ -26,7 +26,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # @supabase/supabase-js >=2.112 throws (not just warns) when
+          # `createClient()` runs without a native WebSocket, which Node
+          # only has from 22 onward. Node 20 made this workflow fail outright.
+          node-version: 22
           cache: npm
           cache-dependency-path: tss-website/package-lock.json
 
