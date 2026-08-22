@@ -5,16 +5,27 @@ name: Sync desktop release to /download
 # scripts/publish-desktop-release.mjs to update the manifest that
 # /api/desktop/release serves to the website. See that script's header for
 # the full manual-usage docs.
+#
+# Also runnable by hand (Actions tab -> this workflow -> Run workflow) for
+# an already-published release, e.g. to retry after a failed run without
+# deleting and recreating the release (which would drop its uploaded assets).
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to sync, e.g. v1.0.2"
+        required: true
 
 jobs:
   sync:
     # Prereleases (beta/nightly channels) must never become the "latest"
-    # download on the public website.
-    if: ${{ github.event.release.prerelease == false && github.event.release.draft == false }}
+    # download on the public website. Manual runs skip this check since
+    # there is no release object to inspect -- the person triggering it is
+    # trusted to pass a stable tag.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.release.prerelease == false && github.event.release.draft == false) }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,6 +33,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -41,7 +61,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p dist-electron
-          gh release download "${{ github.event.release.tag_name }}" \
+          gh release download "${{ steps.resolve.outputs.tag }}" \
             --repo "${{ github.repository }}" \
             --pattern "*.exe" \
             --dir dist-electron
@@ -52,5 +72,5 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           node scripts/publish-desktop-release.mjs \
-            --github "${{ github.event.release.tag_name }}" \
+            --github "${{ steps.resolve.outputs.tag }}" \
             --repo "${{ github.repository }}"
