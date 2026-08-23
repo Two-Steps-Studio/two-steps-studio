@@ -113,7 +113,7 @@ export default function Page() {
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
               <span className="text-[var(--color-games)]">Shop</span>
             </h1>
-            <p className="text-zinc-400 max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
+            <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
               Miejsce, w którym znajdziesz gry, dodatki i inne produkty związane z naszymi projektami. Sprawdź, co jest już dostępne i co pojawi się w przyszłości.
             </p>
           </div>
@@ -132,7 +132,7 @@ export default function Page() {
               href={item.href}
               className="rounded-3xl border border-[var(--color-games)]/20 bg-[var(--color-games)]/5 hover:bg-[var(--color-games)]/10 transition-all p-5 shadow-sm group"
             >
-              <div className="text-lg font-bold text-black dark:text-white group-hover:text-[var(--color-games)] transition-colors">
+              <div className="text-lg font-bold text-[var(--text)] group-hover:text-[var(--color-games)] transition-colors">
                 {item.name}
               </div>
             </a>
@@ -143,7 +143,7 @@ export default function Page() {
       {/* Featured Games Carousel */}
       {featuredGames.length > 0 && (
         <div className="container mx-auto px-6 mb-12 max-w-7xl">
-          <h2 className="mb-4 text-2xl font-bold text-white font-[family-name:var(--font-space)]">
+          <h2 className="mb-4 text-2xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">
             Polecane
           </h2>
           <Carousel opts={{ loop: true, align: "start" }} className="w-full">
@@ -185,7 +185,7 @@ export default function Page() {
             placeholder="Szukaj gier, deweloperów..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 rounded-2xl bg-black/40 border-white/10 text-white placeholder:text-zinc-500"
+            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border)] text-white placeholder:text-zinc-500"
           />
         </div>
 

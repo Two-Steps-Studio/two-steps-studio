@@ -100,15 +100,15 @@ export default function RecruitmentPage() {
                   href={item.href}
                   className="rounded-3xl border border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5 hover:bg-[var(--color-dev)]/10 transition-all p-5 shadow-sm group"
               >
-                <div className="text-lg font-bold text-black dark:text-white group-hover:text-[var(--color-dev)] transition-colors">
+                <div className="text-lg font-bold text-[var(--text)] group-hover:text-[var(--color-dev)] transition-colors">
                   {item.name}
                 </div>
               </a>
           ))}
         </div>
 
-        <p className="text-center text-zinc-400 font-[family-name:var(--font-outfit)] text-lg max-w-2xl mx-auto">
-          Odpowiedz na kilka pytań poniżej i opowiedz nam trochę o sobie, swoich umiejętnościach oraz tym, co chciałbyś tworzyć.
+        <p className="text-center text-[var(--text)] font-[family-name:var(--font-outfit)] text-lg max-w-2xl mx-auto">
+          Odpowiedz na kilka pytań poniżej i opowiedz nam trochę o sobie i swoich umiejętnościach.
         </p>
 
         <Card className="max-w-2xl mx-auto p-6  bg-[var(--card-bg)]">
@@ -206,7 +206,7 @@ export default function RecruitmentPage() {
                 />
               </div>
   
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
