@@ -99,13 +99,14 @@ export default function ShopPage() {
         <Card className="w-full max-w-3xl glass rounded-[2.5rem] shadow-2xl">
           <CardContent className="p-12 text-center">
             <ShoppingCart className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Sklep niedostępny</h2>
-            <p className="text-zinc-400">Nasza sklep będzie dostępny wkrótce.</p>
+            <h2 className="text-2xl font-bold mb-2 text-white">Sklep jest jeszcze w przygotowaniu</h2>
+            <p className="text-zinc-400 mb-6">Pracujemy nad uruchomieniem naszego sklepu. Wkrótce pojawią się tutaj pierwsze produkty związane z Two Steps Studio i naszymi projektami.</p>
+            <p className="text-zinc-400 mb-6">Nie ma jeszcze czego kupić — ale to się zmieni.</p>
             <Button
-              onClick={() => router.push("/")}
-              className="mt-6 bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white font-bold"
+              onClick={() => router.push("/games")}
+              className="mt-6 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-white font-bold"
             >
-              Wróć na stronę główną
+              Poznaj nasze gry
             </Button>
           </CardContent>
         </Card>

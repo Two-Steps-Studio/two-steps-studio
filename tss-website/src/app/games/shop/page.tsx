@@ -114,7 +114,7 @@ export default function Page() {
               <span className="text-[var(--color-games)]">Shop</span>
             </h1>
             <p className="text-zinc-400 max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-              Odkryj światy, które tworzymy. Od epickich przygód po szybkie rozgrywki – znajdź coś dla siebie.
+              Miejsce, w którym znajdziesz gry, dodatki i inne produkty związane z naszymi projektami. Sprawdź, co jest już dostępne i co pojawi się w przyszłości.
             </p>
           </div>
         </div>

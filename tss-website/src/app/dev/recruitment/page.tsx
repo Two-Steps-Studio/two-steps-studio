@@ -81,10 +81,10 @@ export default function RecruitmentPage() {
               Two Steps Studio
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-              <span className="text-[var(--color-dev)]">Rekrutacjia</span>
+              <span className="text-[var(--color-dev)]">Dołącz do Two Steps Studio</span>
             </h1>
             <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-              Rekrutacja do naszego zespołu developerskiego
+              Szukamy osób, które chcą tworzyć, eksperymentować i rozwijać własne pomysły razem z nami. Nie musisz wiedzieć wszystkiego - ważniejsza jest chęć nauki, zaangażowanie i gotowość do pracy nad prawdziwymi projektami.
             </p>
           </div>
         </div>
@@ -106,7 +106,11 @@ export default function RecruitmentPage() {
               </a>
           ))}
         </div>
-        
+
+        <p className="text-center text-zinc-400 font-[family-name:var(--font-outfit)] text-lg max-w-2xl mx-auto">
+          Odpowiedz na kilka pytań poniżej i opowiedz nam trochę o sobie, swoich umiejętnościach oraz tym, co chciałbyś tworzyć.
+        </p>
+
         <Card className="max-w-2xl mx-auto p-6  bg-[var(--card-bg)]">
           <CardHeader>
             <CardTitle className="text-2xl">Join Our Team</CardTitle>

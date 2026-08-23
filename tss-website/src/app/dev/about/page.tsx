@@ -1,6 +1,7 @@
-﻿"use client"
+"use client"
 
 import {Badge} from "@/components/ui/badge";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 export default function AboutPage() {
     return (
@@ -23,7 +24,7 @@ export default function AboutPage() {
                         <span className="text-[var(--color-dev)]">About Us</span>
                     </h1>
                     <p className="text-zinc-400 max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-                        DEV
+                        DEV to część Two Steps Studio skupiona na tworzeniu oprogramowania, narzędzi i technologii. To tutaj rozwijamy pomysły, eksperymentujemy i zamieniamy koncepcje w działające projekty.
                     </p>
                 </div>
             </div>
@@ -45,6 +46,60 @@ export default function AboutPage() {
                     </a>
                 ))}
             </div>
-        </div>    
+
+            {/* Main Content */}
+            <div className="space-y-8">
+                {/* Co tworzymy */}
+                <Card className="border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5">
+                    <CardHeader>
+                        <CardTitle className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)]">
+                            Co tworzymy?
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
+                            Nie ograniczamy się do jednego rodzaju projektów. Tworzymy oprogramowanie, narzędzia i systemy, które pozwalają nam realizować własne pomysły i rozwiązywać konkretne problemy.
+                        </p>
+                        <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
+                            Interesuje nas cały proces — od koncepcji i pierwszego prototypu, przez rozwój i testowanie, aż po gotowy produkt.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Jak pracujemy */}
+                <Card className="border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5">
+                    <CardHeader>
+                        <CardTitle className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)]">
+                            Jak pracujemy?
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
+                            Stawiamy na praktyczne podejście do tworzenia. Zaczynamy od pomysłu, sprawdzamy jego potencjał, budujemy pierwszą wersję i stopniowo ją rozwijamy.
+                        </p>
+                        <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
+                            Nie boimy się eksperymentować. Jeśli coś nie działa, szukamy lepszego rozwiązania. Jeśli pojawia się nowa technologia, sprawdzamy, czy może realnie usprawnić projekt.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Nasze podejście */}
+                <Card className="border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5">
+                    <CardHeader>
+                        <CardTitle className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)]">
+                            Nasze podejście
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-2xl font-black text-[var(--color-dev)] font-[family-name:var(--font-space)]">
+                            Create. Build. Inspire.
+                        </p>
+                        <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
+                            Tworzymy, aby sprawdzać nowe pomysły. Budujemy, aby zamieniać je w rzeczywistość. Inspirujemy się tym, co już istnieje, jednocześnie szukając własnej drogi.
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     )
 }

@@ -32,7 +32,7 @@ export default function DevPage() {
               <span className="text-[var(--color-dev)]">DEV</span>
             </h1>
             <p className="text-zinc-400 max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-              DEV
+              Tworzymy technologie, narzędzia i doświadczenia, które pomagają zamieniać pomysły w działające projekty. Od pierwszego prototypu po gotowy produkt — budujemy, testujemy i rozwijamy rozwiązania stojące za Two Steps Studio.
             </p>
           </div>
         </div>
@@ -54,6 +54,43 @@ export default function DevPage() {
               </a>
           ))}
         </div>
-      </div>  
+
+        {/* Development Section */}
+        <div className="space-y-12">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)] mb-4">
+              Od pomysłu do działającego projektu
+            </h2>
+            <p className="text-zinc-400 max-w-3xl font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
+              DEV to przestrzeń Two Steps Studio poświęcona tworzeniu technologii i oprogramowania. Łączymy programowanie, projektowanie systemów i kreatywne podejście do rozwiązywania problemów.
+            </p>
+            <p className="text-zinc-400 max-w-3xl font-[family-name:var(--font-outfit)] text-lg leading-relaxed mt-4">
+              Pracujemy nad własnymi projektami, narzędziami i rozwiązaniami, które pozwalają nam szybciej realizować kolejne pomysły. Nie chodzi tylko o pisanie kodu - zależy nam na tworzeniu rzeczy z konkretnym celem, które można dalej rozwijać.
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-3xl border border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5 p-6 hover:bg-[var(--color-dev)]/10 transition-all">
+              <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">Build</h3>
+              <p className="text-zinc-400 font-[family-name:var(--font-outfit)] leading-relaxed">
+                Budujemy własne projekty od podstaw, eksperymentując z technologiami i rozwiązaniami dopasowanymi do konkretnego problemu.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5 p-6 hover:bg-[var(--color-dev)]/10 transition-all">
+              <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">Experiment</h3>
+              <p className="text-zinc-400 font-[family-name:var(--font-outfit)] leading-relaxed">
+                Testujemy nowe pomysły, technologie i podejścia, zanim zdecydujemy, które z nich warto rozwijać dalej.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-[var(--color-dev)]/20 bg-[var(--color-dev)]/5 p-6 hover:bg-[var(--color-dev)]/10 transition-all">
+              <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">Improve</h3>
+              <p className="text-zinc-400 font-[family-name:var(--font-outfit)] leading-relaxed">
+                Każdy projekt jest okazją do nauki, usprawniania naszych procesów i tworzenia coraz lepszych rozwiązań.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
   );
 }
