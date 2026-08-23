@@ -54,7 +54,7 @@ export default function GameLibraryPage() {
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white flex items-center gap-3">
+        <h1 className="text-4xl font-bold text-[var(--text)] flex items-center gap-3">
           <Library className="w-8 h-8 text-[var(--color-games)]" />
           Biblioteka
         </h1>
@@ -69,9 +69,9 @@ export default function GameLibraryPage() {
         <Card className="bg-black/40 border-white/10 rounded-[2.5rem]">
           <CardContent className="p-12 text-center">
             <Library className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Brak zainstalowanych gier</h2>
+            <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">Brak zainstalowanych gier</h2>
             <p className="text-zinc-400 mb-6">Przeglądaj katalog i zainstaluj swoją pierwszą grę.</p>
-            <Link href="/games" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium transition-colors">
+            <Link href="/games" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-[var(--text)] rounded-full font-medium transition-colors">
               Przeglądaj gry
             </Link>
           </CardContent>
@@ -92,7 +92,7 @@ export default function GameLibraryPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <Link href={`/games/${gameId}`} className="text-xl font-bold text-white hover:text-[var(--color-games)] transition-colors">
+                    <Link href={`/games/${gameId}`} className="text-xl font-bold text-[var(--text)] hover:text-[var(--color-games)] transition-colors">
                       {game?.title || `Gra #${gameId}`}
                     </Link>
                     <div className="flex items-center gap-2 mt-1">

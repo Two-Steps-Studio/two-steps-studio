@@ -185,7 +185,7 @@ export default function Page() {
             placeholder="Szukaj gier, deweloperów..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border)] text-white placeholder:text-zinc-500"
+            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border)] text-[var(--text)] placeholder:text-zinc-500"
           />
         </div>
 
@@ -253,12 +253,12 @@ export default function Page() {
             {[...Array(10)].map((_, i) => (
               <Card
                 key={i}
-                className="rounded-[2rem] bg-black/40 border border-white/10 animate-pulse h-96"
+                className="rounded-[2rem] bg-[var(--card-bg)] border border-white/10 animate-pulse h-96"
               />
             ))}
           </div>
         ) : filteredGames.length === 0 ? (
-          <Card className="w-full rounded-[2.5rem] bg-black/40 border border-white/10">
+          <Card className="w-full rounded-[2.5rem] ">
             <CardContent className="p-12 text-center">
               <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
               <h2 className="text-2xl font-bold mb-2 text-white">Brak gier</h2>
@@ -274,7 +274,7 @@ export default function Page() {
             {filteredGames.map((game) => (
               <Card
                 key={game.id}
-                className="group relative overflow-hidden rounded-[2rem] bg-black/40 border border-white/10 hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-[2rem] hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
               >
                 {game.thumbnail_url && (
                   <div className="aspect-[2/3] w-full overflow-hidden bg-white/5">
@@ -288,11 +288,11 @@ export default function Page() {
 
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-xl font-bold text-white font-[family-name:var(--font-space)] line-clamp-2">
+                    <CardTitle className="text-xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] line-clamp-2">
                       {game.title}
                     </CardTitle>
                     {game.status && game.status !== 'published' && (
-                      <Badge variant="secondary" className="bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 text-xs shrink-0">
+                      <Badge variant="secondary" className="bg-[var(--card-bg)] text-zinc-400 border border-[var(--border] text-xs shrink-0">
                         {STATUS_LABELS[game.status]}
                       </Badge>
                     )}
