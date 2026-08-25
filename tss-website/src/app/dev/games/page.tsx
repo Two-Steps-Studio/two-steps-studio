@@ -5,18 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Filter,
   Gamepad2,
   Eye,
   Download,
   Calendar,
   Upload,
-  X
+  X,
+  Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Game, GameCategory, GameStatus } from "@/types/games-records";
@@ -59,10 +60,27 @@ export default function GamesAdminPage() {
   const [selectedStatus, setSelectedStatus] = useState<GameStatus | "all">("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkedAdmin, setCheckedAdmin] = useState(false);
 
   useEffect(() => {
-    fetchGames();
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/auth");
+        const data = await res.json();
+        setIsAdmin(data.isAdmin || false);
+      } catch (error) {
+        console.error("Failed to check admin status:", error);
+      } finally {
+        setCheckedAdmin(true);
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchGames();
+  }, [isAdmin]);
 
   const fetchGames = async () => {
     try {
@@ -110,6 +128,24 @@ export default function GamesAdminPage() {
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  if (checkedAdmin && !isAdmin) {
+    return (
+      <Card className="max-w-md mx-auto mt-20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Brak dostępu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Nie masz uprawnień administratora. Skontaktuj się z administracją.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -531,7 +567,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
               {/* Thumbnail Upload */}
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">
-                  Miniatura — okładka w proporcji 2:3 (szer:wys), np. 400×600px. Większe obrazy zostaną przeskalowane i przycięte do tej proporcji.
+                  Miniatura - okładka w proporcji 2:3 (szer:wys), np. 400×600px. Większe obrazy zostaną przeskalowane i przycięte do tej proporcji.
                 </label>
                 <div className="flex gap-2">
                   <Input

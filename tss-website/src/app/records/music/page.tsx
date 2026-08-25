@@ -9,25 +9,28 @@ import { Music, Search, Filter, Play, Clock, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import type { MusicTrack, MusicGenre } from "@/types/games-records";
+import { useLanguage } from "@/hooks/use-translation";
 
 const GENRES: MusicGenre[] = ['pop', 'rock', 'hip_hop', 'electronic', 'classical', 'jazz', 'blues', 'country', 'reggae', 'metal', 'indie', 'other'];
 
-const GENRE_LABELS: Record<MusicGenre, string> = {
-  pop: 'Pop',
-  rock: 'Rock',
-  hip_hop: 'Hip-Hop',
-  electronic: 'Electronic',
-  classical: 'Classical',
-  jazz: 'Jazz',
-  blues: 'Blues',
-  country: 'Country',
-  reggae: 'Reggae',
-  metal: 'Metal',
-  indie: 'Indie',
-  other: 'Inne',
-};
-
 export default function MusicPage() {
+  const { t } = useLanguage();
+
+  const GENRE_LABELS: Record<MusicGenre, string> = {
+    pop: 'Pop',
+    rock: 'Rock',
+    hip_hop: 'Hip-Hop',
+    electronic: 'Electronic',
+    classical: 'Classical',
+    jazz: 'Jazz',
+    blues: 'Blues',
+    country: 'Country',
+    reggae: 'Reggae',
+    metal: 'Metal',
+    indie: 'Indie',
+    other: t.recordsMusic.genreOther,
+  };
+
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +47,7 @@ export default function MusicPage() {
       setTracks(data.data || []);
     } catch (error) {
       console.error("Błąd pobierania utworów:", error);
-      toast.error("Nie udało się załadować utworów");
+      toast.error(t.recordsMusic.loadError);
     } finally {
       setLoading(false);
     }
@@ -84,13 +87,13 @@ export default function MusicPage() {
 
         <div className="relative z-10 space-y-4 text-center">
           <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] hover:bg-[var(--color-records)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-            Two Steps Studio
+            {t.recordsMusic.badge}
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-            <span className="text-[var(--color-records)]">Muzyka</span>
+            <span className="text-[var(--color-records)]">{t.recordsMusic.title}</span>
           </h1>
           <p className="text-zinc-400 max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-            Odkryj oryginalną muzykę tworzoną w naszym studio. Posłuchaj i ciesz się dźwiękami.
+            {t.recordsMusic.subtitle}
           </p>
         </div>
       </div>
@@ -98,9 +101,9 @@ export default function MusicPage() {
       {/* Quick Navigation */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
-          { name: "Records", href: "/records" },
-          { name: "Beaty", href: "/records/beats" },
-          { name: "Podcasty", href: "/records/podcasts" }
+          { name: t.recordsMusic.navRecords, href: "/records" },
+          { name: t.recordsMusic.navBeats, href: "/records/beats" },
+          { name: t.recordsMusic.navPodcasts, href: "/records/podcasts" }
         ].map((item, i) => (
           <a
             key={i}
@@ -119,7 +122,7 @@ export default function MusicPage() {
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
           <Input
-            placeholder="Szukaj utworów, artystów, albumów..."
+            placeholder={t.recordsMusic.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 h-12 rounded-2xl bg-black/40 border-white/10 text-white placeholder:text-zinc-500"
@@ -129,7 +132,7 @@ export default function MusicPage() {
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
             <Filter size={16} />
-            <span>Gatunek:</span>
+            <span>{t.recordsMusic.genreLabel}</span>
           </div>
           <Button
             variant={selectedGenre === "all" ? "default" : "outline"}
@@ -140,7 +143,7 @@ export default function MusicPage() {
                 : "border-white/10 text-zinc-400 hover:text-white"
             }`}
           >
-            Wszystkie
+            {t.recordsMusic.allGenres}
           </Button>
           {GENRES.map((genre) => (
             <Button
@@ -173,11 +176,11 @@ export default function MusicPage() {
         <Card className="w-full rounded-[2.5rem] bg-black/40 border border-white/10">
           <CardContent className="p-12 text-center">
             <Music className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Brak utworów</h2>
+            <h2 className="text-2xl font-bold mb-2 text-white">{t.recordsMusic.emptyTitle}</h2>
             <p className="text-zinc-400">
               {searchQuery || selectedGenre !== "all"
-                ? "Nie znaleziono utworów pasujących do filtrów."
-                : "Brak dostępnych utworów w bazie."}
+                ? t.recordsMusic.emptyFiltered
+                : t.recordsMusic.emptyNone}
             </p>
           </CardContent>
         </Card>
@@ -232,7 +235,7 @@ export default function MusicPage() {
                       variant="outline"
                       className="w-full border-[var(--color-records)]/30 text-[var(--color-records)] hover:bg-[var(--color-records)]/10 rounded-xl"
                     >
-                      Szczegóły
+                      {t.recordsMusic.details}
                     </Button>
                   </Link>
                   {track.spotify_url && (

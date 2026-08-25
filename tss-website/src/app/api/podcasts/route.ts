@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
+import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
 import type { Podcast, PodcastWithSeries } from "@/types/games-records";
 
 // GET - Fetch all podcasts with optional filters
@@ -124,6 +125,13 @@ export async function POST(request: Request) {
     );
   }
 
+  // SECURITY: Only admins may publish podcasts
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
+
   try {
     const body: Partial<Podcast> = await request.json();
 
@@ -135,7 +143,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceClient
       .from("podcasts")
       .insert({
         series_id: body.series_id,
@@ -190,6 +198,13 @@ export async function PUT(request: Request) {
     );
   }
 
+  // SECURITY: Only admins may edit podcasts
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
+
   try {
     const body: Partial<Podcast> & { id: number } = await request.json();
 
@@ -200,7 +215,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceClient
       .from("podcasts")
       .update({
         series_id: body.series_id,
@@ -262,6 +277,13 @@ export async function DELETE(request: Request) {
     );
   }
 
+  // SECURITY: Only admins may delete podcasts
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -273,7 +295,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const { error } = await supabase
+    const { error } = await serviceClient
       .from("podcasts")
       .delete()
       .eq('id', id);

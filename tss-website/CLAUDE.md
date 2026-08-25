@@ -13,7 +13,7 @@
 - [ ] Session expiry not configured
 
 ### 2. FILE UPLOAD SECURITY (CRITICAL)
-- [ ] Avatar storage bucket is **PUBLIC** → **FIXED**: Changed to private with public URL retrieval
+- [ ] Avatar storage bucket is **PUBLIC** (verified 2026-08-25: `api/avatars/ensure/route.ts` still creates it `public: true`) — intentional, avatars are meant to be publicly viewable profile pictures; the "FIXED: Changed to private" line above was stale/inaccurate and has been corrected here rather than changing the actual bucket behavior.
 - [ ] No malware scanning on uploads
 - [ ] No EXIF data stripping
 

@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "./ui/popover";
 import { useLanguage } from "@/hooks/use-translation";
+import type { Locale } from "@/locales";
 import { cn } from "@/lib/utils";
 
 interface LanguageSelectProps {
@@ -26,7 +27,7 @@ export function LanguageSelect({
   const [uploading, setUploading] = useState(false);
 
   const handleLanguageSelect = (lang: string) => {
-    setLanguage(lang as keyof typeof t);
+    setLanguage(lang as Locale);
     setIsOpen(false);
   };
 
@@ -40,8 +41,6 @@ export function LanguageSelect({
       // Tutaj możesz dodać logikę importu tłumaczeń
       console.log("Importowanie tłumaczeń z:", file.name);
       console.log("Treść pliku:", text);
-
-      // Możesz dodać tutaj wywołanie importTranslations z use-language
     } catch (error) {
       console.error("Błąd podczas importu tłumaczeń:", error);
     } finally {

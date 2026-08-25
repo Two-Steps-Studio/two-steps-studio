@@ -48,8 +48,8 @@ export default function ShopPage() {
 
   const handleBuy = (product: Product) => {
     setCart((prev) => prev + 1);
-    toast.success(`Dodano do koszyka: ${product.name}`, {
-      description: `Cena: ${product.price} TSS Credits`,
+    toast.success(`${t.shopPage.addedToCartPrefix}${product.name}`, {
+      description: `${t.shopPage.pricePrefix}${product.price} ${t.shopPage.currency}`,
     });
   };
 
@@ -76,13 +76,13 @@ export default function ShopPage() {
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       <div className="mb-12 text-center">
         <Badge className="bg-[var(--color-general)]/20 text-[var(--color-general)] mb-4">
-          Sklep TSS
+          {t.shopPage.badge}
         </Badge>
         <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
-          Sklep Two Steps Studio
+          {t.shopPage.title}
         </h1>
         <p className="text-xl text-zinc-400 font-[family-name:var(--font-outfit)]">
-          Kupuj skórki, emblematy, motywy i więcej!
+          {t.shopPage.subtitle}
         </p>
       </div>
 
@@ -99,14 +99,14 @@ export default function ShopPage() {
         <Card className="w-full max-w-3xl glass rounded-[2.5rem] shadow-2xl">
           <CardContent className="p-12 text-center">
             <ShoppingCart className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Sklep jest jeszcze w przygotowaniu</h2>
-            <p className="text-zinc-400 mb-6">Pracujemy nad uruchomieniem naszego sklepu. Wkrótce pojawią się tutaj pierwsze produkty związane z Two Steps Studio i naszymi projektami.</p>
-            <p className="text-zinc-400 mb-6">Nie ma jeszcze czego kupić — ale to się zmieni.</p>
+            <h2 className="text-2xl font-bold mb-2 text-white">{t.shopPage.emptyTitle}</h2>
+            <p className="text-zinc-400 mb-6">{t.shopPage.emptyDesc1}</p>
+            <p className="text-zinc-400 mb-6">{t.shopPage.emptyDesc2}</p>
             <Button
               onClick={() => router.push("/games")}
               className="mt-6 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-white font-bold"
             >
-              Poznaj nasze gry
+              {t.shopPage.exploreGames}
             </Button>
           </CardContent>
         </Card>
@@ -125,7 +125,7 @@ export default function ShopPage() {
               {product.stock === 0 && (
                 <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
                   <Badge className="bg-red-500 text-white px-4 py-2">
-                    Wyczerpane
+                    {t.shopPage.outOfStock}
                   </Badge>
                 </div>
               )}
@@ -164,7 +164,7 @@ export default function ShopPage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-xl font-black text-white">
-                    {product.price} <span className="text-sm font-normal opacity-60">TSS Credits</span>
+                    {product.price} <span className="text-sm font-normal opacity-60">{t.shopPage.currency}</span>
                   </span>
                   <Button
                     onClick={() => handleBuy(product)}
@@ -176,7 +176,7 @@ export default function ShopPage() {
                     }`}
                   >
                     <ShoppingCart size={16} className="mr-2" />
-                    Dodaj do koszyka
+                    {t.shopPage.addToCart}
                   </Button>
                 </div>
               </CardContent>
@@ -187,7 +187,7 @@ export default function ShopPage() {
 
       <div className="mt-12 text-center text-sm text-zinc-500">
         <Shield size={16} className="inline-block mr-2" />
-        Wszystkie produkty są testowane i sprawdzane pod kątem bezpieczeństwa
+        {t.shopPage.footerNote}
       </div>
     </div>
   );

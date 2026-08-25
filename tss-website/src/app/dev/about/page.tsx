@@ -2,8 +2,10 @@
 
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function AboutPage() {
+    const { t } = useLanguage();
     return (
         <div className="container mx-auto p-6 mt-20 max-w-7xl">
             {/* Hero Section */}
@@ -18,13 +20,13 @@ export default function AboutPage() {
 
                 <div className="relative z-10 space-y-4 text-center">
                     <Badge className="bg-[var(--card-bg)] text-[var(--color-dev)]  border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-                        DEV
+                        {t.devAbout.badge}
                     </Badge>
                     <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-                        <span className="text-[var(--color-dev)]">About Us</span>
+                        <span className="text-[var(--color-dev)]">{t.devAbout.title}</span>
                     </h1>
                     <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-                        DEV to część Two Steps Studio skupiona na tworzeniu oprogramowania, narzędzi i technologii. To tutaj rozwijamy pomysły, eksperymentujemy i zamieniamy koncepcje w działające projekty.
+                        {t.devAbout.subtitle}
                     </p>
                 </div>
             </div>
@@ -32,8 +34,8 @@ export default function AboutPage() {
             {/* Quick Navigation */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 {[
-                    { name: "DEV", href: "/dev" },
-                    { name: "Recruitment", href: "/dev/recruitment" },
+                    { name: t.devAbout.navDev, href: "/dev" },
+                    { name: t.devAbout.navRecruitment, href: "/dev/recruitment" },
                 ].map((item, i) => (
                     <a
                         key={i}
@@ -53,15 +55,15 @@ export default function AboutPage() {
                 <Card className="">
                     <CardHeader>
                         <CardTitle className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-space)]">
-                            Co tworzymy?
+                            {t.devAbout.whatWeBuildTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                            Nie ograniczamy się do jednego rodzaju projektów. Tworzymy oprogramowanie, narzędzia i systemy, które pozwalają nam realizować własne pomysły i rozwiązywać konkretne problemy.
+                            {t.devAbout.whatWeBuildP1}
                         </p>
                         <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                            Interesuje nas cały proces — od koncepcji i pierwszego prototypu, przez rozwój i testowanie, aż po gotowy produkt.
+                            {t.devAbout.whatWeBuildP2}
                         </p>
                     </CardContent>
                 </Card>
@@ -70,15 +72,15 @@ export default function AboutPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-space)]">
-                            Jak pracujemy?
+                            {t.devAbout.howWeWorkTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className=" font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                            Stawiamy na praktyczne podejście do tworzenia. Zaczynamy od pomysłu, sprawdzamy jego potencjał, budujemy pierwszą wersję i stopniowo ją rozwijamy.
+                            {t.devAbout.howWeWorkP1}
                         </p>
                         <p className=" font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                            Nie boimy się eksperymentować. Jeśli coś nie działa, szukamy lepszego rozwiązania. Jeśli pojawia się nowa technologia, sprawdzamy, czy może realnie usprawnić projekt.
+                            {t.devAbout.howWeWorkP2}
                         </p>
                     </CardContent>
                 </Card>
@@ -87,15 +89,15 @@ export default function AboutPage() {
                 <Card className="">
                     <CardHeader>
                         <CardTitle className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-space)]">
-                            Nasze podejście
+                            {t.devAbout.approachTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-2xl font-black text-[var(--color-dev)] font-[family-name:var(--font-space)]">
-                            Create. Build. Inspire.
+                            {t.devAbout.approachTagline}
                         </p>
                         <p className=" font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                            Tworzymy, aby sprawdzać nowe pomysły. Budujemy, aby zamieniać je w rzeczywistość. Inspirujemy się tym, co już istnieje, jednocześnie szukając własnej drogi.
+                            {t.devAbout.approachP1}
                         </p>
                     </CardContent>
                 </Card>

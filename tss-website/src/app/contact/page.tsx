@@ -26,7 +26,7 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [message, setMessage] = useState("");
-  const [subject, setSubject] = useState("Wiadomość");
+  const [subject, setSubject] = useState(t.contact.defaultSubject);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,21 +37,21 @@ export default function ContactPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setSent(true);
-      toast.success("Wiadomość wysłana!", {
-        description: "Odpowiemy w ciągu 24h.",
+      toast.success(t.contact.successTitle, {
+        description: t.contact.successDesc,
       });
 
       // Czyść formularz po sukcesie
       setMessage("");
-      setSubject("Wiadomość");
+      setSubject(t.contact.defaultSubject);
 
       // Wróć po 3 sekundach
       setTimeout(() => {
         router.push("/");
       }, 3000);
     } catch (err) {
-      toast.error("Błąd wysyłania", {
-        description: "Spróbuj ponownie później",
+      toast.error(t.contact.errorTitle, {
+        description: t.contact.errorDesc,
       });
       setSent(false);
     } finally {
@@ -66,10 +66,10 @@ export default function ContactPage() {
         <div className="space-y-6">
           <div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
-              Kontakt
+              {t.contact.title}
             </h1>
             <p className="text-xl text-zinc-400 font-[family-name:var(--font-outfit)]">
-              Masz pytania? Chcesz zaproponować coś nowego? Napisz do nas!
+              {t.contact.subtitle}
             </p>
           </div>
 
@@ -78,7 +78,7 @@ export default function ContactPage() {
               <div className="flex items-start gap-4">
                 <Mail className="w-6 h-6 text-[var(--color-general)] flex-shrink-0" />
                 <div>
-                  <h3 className="font-bold text-[var(--text)] mb-1">Email</h3>
+                  <h3 className="font-bold text-[var(--text)] mb-1">{t.contact.emailLabel}</h3>
                   <p className="text-zinc-400 font-[family-name:var(--font-outfit)]">
                     two.steps.studio.contact@gmail.com
                   </p>
@@ -90,9 +90,9 @@ export default function ContactPage() {
           <Card className="glass rounded-[2rem] p-6 border border-[var(--color-general)]/20">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[var(--text)]">Czas odpowiedzi:</span>
+                <span className="font-bold text-[var(--text)]">{t.contact.responseTimeLabel}</span>
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                  24h
+                  {t.contact.responseTimeValue}
                 </Badge>
               </div>
             </div>
@@ -102,35 +102,35 @@ export default function ContactPage() {
         {/* Contact Form */}
         <Card className="glass rounded-[2rem] p-8 h-fit">
           <CardHeader className="pb-4">
-            <CardTitle className="text-2xl">Wyślij Wiadomość</CardTitle>
+            <CardTitle className="text-2xl">{t.contact.formTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {sent && (
               <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 text-center">
                 <CheckCircle className="w-12 h-12 mx-auto text-green-400 mb-2" />
-                <p className="text-green-400 font-bold">Wiadomość wysłana!</p>
-                <p className="text-green-300 text-sm">Odpowiemy w ciągu 24h.</p>
+                <p className="text-green-400 font-bold">{t.contact.successTitle}</p>
+                <p className="text-green-300 text-sm">{t.contact.successDesc}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Temat</label>
+                <label className="block text-sm font-medium mb-2">{t.contact.subjectLabel}</label>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Temat wiadomości"
+                  placeholder={t.contact.subjectPlaceholder}
                   className="bg-white/5 border-white/10"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Treść</label>
+                <label className="block text-sm font-medium mb-2">{t.contact.messageLabel}</label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Napisz swoją wiadomość..."
+                  placeholder={t.contact.messagePlaceholder}
                   className="bg-white/5 border-white/10 min-h-[150px] resize-none"
                   required
                 />
@@ -141,15 +141,15 @@ export default function ContactPage() {
                 disabled={loading || sent}
                 className="w-full bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white font-bold h-12 rounded-2xl flex items-center justify-center gap-2"
               >
-                {loading ? "Wysyłanie..." : sent ? (
+                {loading ? t.contact.sending : sent ? (
                   <>
                     <CheckCircle className="w-5 h-5" />
-                    Wysłano
+                    {t.contact.sent}
                   </>
                 ) : (
                   <>
                     <Send className="w-5 h-5" />
-                    Wyślij
+                    {t.contact.send}
                   </>
                 )}
               </Button>

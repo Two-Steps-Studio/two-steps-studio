@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Music, Calendar, Play, ShoppingCart, Filter, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/use-translation";
 
 type BeatTier = "free" | "basic" | "premium" | "unlimited" | "exclusive";
 
@@ -33,69 +34,72 @@ interface Beat {
   upload_date?: string;
 }
 
-const TIER_CONFIG: Record<BeatTier, { label: string; color: string; bgColor: string; description: string; borderColor: string }> = {
-  free: {
-    label: "Free",
-    color: "text-zinc-400",
-    bgColor: "bg-zinc-500/10",
-    borderColor: "border-zinc-500/30",
-    description: "Darmowy beat do użytku niekomercyjnego",
-  },
-  basic: {
-    label: "Basic",
-    color: "text-blue-400",
-    bgColor: "bg-blue-500/10",
-    borderColor: "border-blue-500/30",
-    description: "Podstawowa licencja",
-  },
-  premium: {
-    label: "Premium",
-    color: "text-purple-400",
-    bgColor: "bg-purple-500/10",
-    borderColor: "border-purple-500/30",
-    description: "Rozszerzona licencja",
-  },
-  unlimited: {
-    label: "Unlimited",
-    color: "text-orange-400",
-    bgColor: "bg-orange-500/10",
-    borderColor: "border-orange-500/30",
-    description: "Nieograniczona licencja",
-  },
-  exclusive: {
-    label: "Exclusive",
-    color: "text-yellow-400",
-    bgColor: "bg-yellow-500/10",
-    borderColor: "border-yellow-500/30",
-    description: "Ekskluzywne prawa",
-  },
-};
-
 const TIERS: BeatTier[] = ["free", "basic", "premium", "unlimited", "exclusive"];
 
-const DEFAULT_PACKAGES: Record<BeatTier, string[]> = {
-  free: ["Użycie niekomercyjne", "Tylko streaming", "Bez dystrybucji"],
-  basic: ["Użycie komercyjne", "Do 100k streamów", "1 projekt"],
-  premium: ["Użycie komercyjne", "Do 500k streamów", "3 projekty", "Wersja WAV"],
-  unlimited: ["Użycie komercyjne", "Nielimitowane streamy", "Nielimitowane projekty", "Wersja WAV + stems"],
-  exclusive: ["Pełne prawa autorskie", "Beat usuwany ze sklepu", "Wszystkie formaty", "Priorytetowe wsparcie"],
-};
-
 export default function BeatyPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const TIER_CONFIG: Record<BeatTier, { label: string; color: string; bgColor: string; description: string; borderColor: string }> = {
+    free: {
+      label: "Free",
+      color: "text-zinc-400",
+      bgColor: "bg-zinc-500/10",
+      borderColor: "border-zinc-500/30",
+      description: t.recordsBeats.tierDescFree,
+    },
+    basic: {
+      label: "Basic",
+      color: "text-blue-400",
+      bgColor: "bg-blue-500/10",
+      borderColor: "border-blue-500/30",
+      description: t.recordsBeats.tierDescBasic,
+    },
+    premium: {
+      label: "Premium",
+      color: "text-purple-400",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500/30",
+      description: t.recordsBeats.tierDescPremium,
+    },
+    unlimited: {
+      label: "Unlimited",
+      color: "text-orange-400",
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500/30",
+      description: t.recordsBeats.tierDescUnlimited,
+    },
+    exclusive: {
+      label: "Exclusive",
+      color: "text-yellow-400",
+      bgColor: "bg-yellow-500/10",
+      borderColor: "border-yellow-500/30",
+      description: t.recordsBeats.tierDescExclusive,
+    },
+  };
+
+  const DEFAULT_PACKAGES: Record<BeatTier, string[]> = {
+    free: [t.recordsBeats.featFreeNonCommercial, t.recordsBeats.featFreeStreamOnly, t.recordsBeats.featFreeNoDistribution],
+    basic: [t.recordsBeats.featCommercial, t.recordsBeats.featUpTo100k, t.recordsBeats.featOneProject],
+    premium: [t.recordsBeats.featCommercial, t.recordsBeats.featUpTo500k, t.recordsBeats.featThreeProjects, t.recordsBeats.featWav],
+    unlimited: [t.recordsBeats.featCommercial, t.recordsBeats.featUnlimitedStreams, t.recordsBeats.featUnlimitedProjects, t.recordsBeats.featWavStems],
+    exclusive: [t.recordsBeats.featFullCopyright, t.recordsBeats.featRemovedFromStore, t.recordsBeats.featAllFormats, t.recordsBeats.featPrioritySupport],
+  };
+
   const [beats, setBeats] = useState<Beat[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<BeatTier | "all">("all");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     // Sprawdź czy użytkownik wrócił po płatności
     if (searchParams.get("success")) {
-      toast.success("Płatność zakończona pomyślnie!");
+      toast.success(t.recordsBeats.paymentSuccess);
     }
     if (searchParams.get("canceled")) {
-      toast.error("Płatność została anulowana");
+      toast.error(t.recordsBeats.paymentCanceled);
     }
 
     fetchBeats();
@@ -103,7 +107,7 @@ export default function BeatyPage() {
 
   const fetchBeats = async () => {
     try {
-      const res = await fetch("/api/beats");
+      const res = await fetch("/api/beaty");
       const data = await res.json();
       setBeats(data || []);
     } catch (error) {
@@ -116,7 +120,7 @@ export default function BeatyPage() {
 
   const handleBuy = async (beatId: string, beatTitle: string, pkg: BeatPackage) => {
     if (pkg.tier === "free") {
-      toast.info("Pobieranie darmowego beatu...");
+      toast.info(t.recordsBeats.downloadingFree);
       // TODO: logika pobierania darmowego beatu
       return;
     }
@@ -138,21 +142,33 @@ export default function BeatyPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast.error("Nie udało się utworzyć sesji płatności");
+        toast.error(t.recordsBeats.checkoutError);
       }
     } catch (error) {
       console.error("Błąd płatności:", error);
-      toast.error("Wystąpił błąd podczas płatności");
+      toast.error(t.recordsBeats.paymentError);
     }
   };
 
-  const handlePlay = (beatId: string, title: string) => {
-    if (playingId === beatId) {
+  const handlePlay = (beat: Beat) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (playingId === beat.id) {
+      audio.pause();
       setPlayingId(null);
-    } else {
-      setPlayingId(beatId);
-      toast.info(`Odtwarzanie: ${title}`);
+      return;
     }
+
+    const src = beat.preview_url || beat.audio_url;
+    if (!src) {
+      toast.error(t.recordsBeats.noPreviewAvailable);
+      return;
+    }
+
+    audio.src = src;
+    audio.play().catch(() => toast.error(t.recordsBeats.noPreviewAvailable));
+    setPlayingId(beat.id);
   };
 
   const filteredBeats = selectedTier === "all"
@@ -161,6 +177,7 @@ export default function BeatyPage() {
 
   return (
       <div className="container mx-auto p-6 mt-20 max-w-7xl">
+        <audio ref={audioRef} onEnded={() => setPlayingId(null)} className="hidden" />
         {/* Hero Section */}
         <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
           <img 
@@ -173,13 +190,13 @@ export default function BeatyPage() {
 
           <div className="relative z-10 space-y-4 text-center">
             <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] hover:bg-[var(--color-records)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-              Two Steps Studio
+              {t.recordsBeats.badge}
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-              <span className="text-[var(--color-records)]">Records</span>
+              <span className="text-[var(--color-records)]">{t.recordsBeats.title}</span>
             </h1>
           <p className="text-zinc-400 max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-            Wybierz swój beat - od darmowych po ekskluzywne licencje.
+            {t.recordsBeats.subtitle}
           </p>
         </div>
       </div>
@@ -187,9 +204,9 @@ export default function BeatyPage() {
       {/* Quick Navigation */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
-          { name: "Records", href: "/records" },
-          { name: "Podcasty", href: "/records/podcasts" },
-          { name: "Muzyka", href: "/records/music"}
+          { name: t.recordsBeats.navRecords, href: "/records" },
+          { name: t.recordsBeats.navPodcasts, href: "/records/podcasts" },
+          { name: t.recordsBeats.navMusic, href: "/records/music"}
         ].map((item, i) => (
             <a
                 key={i}
@@ -207,7 +224,7 @@ export default function BeatyPage() {
       <div className="mb-8 flex flex-wrap gap-2">
         <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
           <Filter size={16} />
-          <span>Filtruj:</span>
+          <span>{t.recordsBeats.filterLabel}</span>
         </div>
         <Button
           variant={selectedTier === "all" ? "default" : "outline"}
@@ -218,7 +235,7 @@ export default function BeatyPage() {
               : "border-white/10 text-zinc-400 hover:text-white"
           }`}
         >
-          Wszystkie
+          {t.recordsBeats.allTiers}
         </Button>
         {TIERS.map((tier) => (
           <Button
@@ -250,11 +267,11 @@ export default function BeatyPage() {
         <Card className="w-full glass rounded-[2.5rem] shadow-2xl">
           <CardContent className="p-12 text-center">
             <Music className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Brak beatów</h2>
+            <h2 className="text-2xl font-bold mb-2 text-white">{t.recordsBeats.emptyTitle}</h2>
             <p className="text-zinc-400">
               {selectedTier === "all"
-                ? "Brak dostępnych beatów w sklepie."
-                : `Brak beatów w kategorii ${TIER_CONFIG[selectedTier].label}.`}
+                ? t.recordsBeats.emptyNone
+                : `${t.recordsBeats.emptyCategoryPrefix}${TIER_CONFIG[selectedTier].label}${t.recordsBeats.emptyCategorySuffix}`}
             </p>
           </CardContent>
         </Card>
@@ -271,10 +288,21 @@ export default function BeatyPage() {
               <CardHeader className="pb-4 border-b border-white/5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
+                    {beat.cover_image ? (
+                      <img
+                        src={beat.cover_image}
+                        alt={beat.title}
+                        className="h-16 w-16 rounded-2xl object-cover border border-white/10"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-2xl border border-white/10 bg-[var(--color-records)]/10 flex items-center justify-center">
+                        <Music className="h-6 w-6 text-[var(--color-records)]" />
+                      </div>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handlePlay(beat.id, beat.title)}
+                      onClick={() => handlePlay(beat)}
                       className="h-12 w-12 rounded-full bg-[var(--color-records)]/10 text-[var(--color-records)] hover:bg-[var(--color-records)]/20"
                     >
                       <Play size={20} className={playingId === beat.id ? "fill-current" : ""} />
@@ -285,9 +313,9 @@ export default function BeatyPage() {
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2 text-zinc-500 font-[family-name:var(--font-outfit)] text-sm mt-1">
                         <Calendar size={14} />
-                        Dodano: {beat.upload_date ? new Date(beat.upload_date).toLocaleDateString() : "Niedawno"}
+                        {t.recordsBeats.addedLabel}{beat.upload_date ? new Date(beat.upload_date).toLocaleDateString() : t.recordsBeats.recentlyFallback}
                         {beat.bpm && <span className="mx-2">•</span>}
-                        {beat.bpm && <span className="text-zinc-400">{beat.bpm} BPM</span>}
+                        {beat.bpm && <span className="text-zinc-400">{beat.bpm} {t.recordsBeats.bpmUnit}</span>}
                         {beat.key && <span className="mx-2">•</span>}
                         {beat.key && <span className="text-zinc-400">{beat.key}</span>}
                       </CardDescription>
@@ -316,7 +344,7 @@ export default function BeatyPage() {
 
                         {/* Cena */}
                         <div className="text-2xl font-black text-white mb-2">
-                          {pkg.price === 0 ? "DARMOWY" : `${pkg.price} PLN`}
+                          {pkg.price === 0 ? t.recordsBeats.freePriceLabel : `${pkg.price} ${t.recordsBeats.currencySuffix}`}
                         </div>
 
                         {/* Opis */}
@@ -343,7 +371,7 @@ export default function BeatyPage() {
                           }`}
                           size="sm"
                         >
-                          {pkg.tier === "free" ? "Pobierz" : "Kup teraz"}
+                          {pkg.tier === "free" ? t.recordsBeats.buyFree : t.recordsBeats.buyPaid}
                         </Button>
                       </div>
                     );
@@ -358,7 +386,7 @@ export default function BeatyPage() {
       {/* Info o tierach */}
       <div className="mt-12 p-8 rounded-[2rem] bg-black/40 border border-white/10">
         <h3 className="text-2xl font-bold text-white mb-6 font-[family-name:var(--font-space)]">
-          Rodzaje licencji
+          {t.recordsBeats.licenseInfoTitle}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {TIERS.map((tier) => {

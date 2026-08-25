@@ -1,8 +1,12 @@
+"use client";
+
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function Page() {
+    const { t } = useLanguage();
     return (
         <>
             <div className="container mx-auto p-6 mt-20 max-w-7xl">
@@ -18,13 +22,13 @@ export default function Page() {
 
                     <div className="relative z-10 space-y-4 text-center">
                         <Badge className="bg-[var(--color-games)]/20 text-[var(--color-games)] hover:bg-[var(--color-games)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-                            Games
+                            {t.gamesAbout.badge}
                         </Badge>
                         <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-                            <span className="text-[var(--color-games)]">About Games</span>
+                            <span className="text-[var(--color-games)]">{t.gamesAbout.title}</span>
                         </h1>
                         <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-                            Tworzymy gry, które łączą nasze pomysły, technologie i pasję do interaktywnej rozrywki. Od pierwszego prototypu po gotową grę - każdy projekt zaczyna się od pomysłu.
+                            {t.gamesAbout.subtitle}
                         </p>
                     </div>
                 </div>
@@ -34,8 +38,8 @@ export default function Page() {
                 {/* Quick Navigation */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 {[
-                    { name: "Games", href: "/games" },
-                    { name: "Shop", href: "/games/shop" },
+                    { name: t.gamesAbout.navGames, href: "/games" },
+                    { name: t.gamesAbout.navShop, href: "/games/shop" },
                 ].map((item, i) => (
                     <a
                         key={i}
@@ -55,12 +59,12 @@ export default function Page() {
                 <Card className="border-[var(--color-games)]/20 bg-[var(--color-games)]/5">
                     <CardHeader>
                         <CardTitle className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)]">
-                            Nasze gry
+                            {t.gamesAbout.ourGamesTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-zinc-400 font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                            Gry to jeden z głównych sposobów, w jaki Two Steps Studio realizuje kreatywne pomysły. Eksperymentujemy z różnymi gatunkami, mechanikami i stylami, tworząc projekty, które pozwalają nam rozwijać zarówno umiejętności, jak i własne uniwersa.
+                            {t.gamesAbout.ourGamesDesc}
                         </p>
                     </CardContent>
                 </Card>
@@ -68,38 +72,38 @@ export default function Page() {
                 {/* Od prototypu do gry */}
                 <div>
                     <h2 className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)] mb-6">
-                        Od prototypu do gry
+                        {t.gamesAbout.prototypeTitle}
                     </h2>
                     <p className="text-zinc-400 max-w-3xl font-[family-name:var(--font-outfit)] text-lg leading-relaxed">
-                        Każdy projekt zaczyna się od prostego pytania: „A co, gdyby…?”
+                        {t.gamesAbout.prototypeP1}
                     </p>
                     <p className="text-zinc-400 max-w-3xl font-[family-name:var(--font-outfit)] text-lg leading-relaxed mt-4">
-                        Potem budujemy prototyp, sprawdzamy mechaniki i rozwijamy te pomysły, które mają największy potencjał. Proces może się zmieniać wraz z projektem - czasem prowadzi do małej gry, a czasem do znacznie większej produkcji.
+                        {t.gamesAbout.prototypeP2}
                     </p>
                 </div>
 
                 {/* Co jest dla nas ważne */}
                 <div>
                     <h2 className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)] mb-6">
-                        Co jest dla nas ważne?
+                        {t.gamesAbout.importantTitle}
                     </h2>
                     <div className="space-y-6">
                         <div className="rounded-3xl border border-[var(--color-games)]/20 bg-[var(--color-games)]/5 p-6">
-                            <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">Gameplay first</h3>
+                            <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">{t.gamesAbout.gameplayFirstTitle}</h3>
                             <p className="text-zinc-400 font-[family-name:var(--font-outfit)] leading-relaxed">
-                                Dobra gra powinna przede wszystkim sprawiać przyjemność. Mechaniki i systemy projektujemy z myślą o doświadczeniu gracza.
+                                {t.gamesAbout.gameplayFirstDesc}
                             </p>
                         </div>
                         <div className="rounded-3xl border border-[var(--color-games)]/20 bg-[var(--color-games)]/5 p-6">
-                            <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">Eksperymentowanie</h3>
+                            <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">{t.gamesAbout.experimentingTitle}</h3>
                             <p className="text-zinc-400 font-[family-name:var(--font-outfit)] leading-relaxed">
-                                Nie chcemy tworzyć ciągle tego samego. Testujemy nowe pomysły i szukamy własnych sposobów na podejście do znanych gatunków.
+                                {t.gamesAbout.experimentingDesc}
                             </p>
                         </div>
                         <div className="rounded-3xl border border-[var(--color-games)]/20 bg-[var(--color-games)]/5 p-6">
-                            <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">Rozwój</h3>
+                            <h3 className="text-xl font-bold text-white font-[family-name:var(--font-space)] mb-3">{t.gamesAbout.growthTitle}</h3>
                             <p className="text-zinc-400 font-[family-name:var(--font-outfit)] leading-relaxed">
-                                Każdy projekt daje nam nowe doświadczenia. To, czego uczymy się podczas jednej gry, wykorzystujemy przy kolejnych.
+                                {t.gamesAbout.growthDesc}
                             </p>
                         </div>
                     </div>
@@ -111,10 +115,10 @@ export default function Page() {
                         href="/games"
                         className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-white font-bold rounded-2xl transition-all text-lg"
                     >
-                        Poznaj nasze projekty
+                        {t.gamesAbout.ctaButton}
                     </a>
                     <p className="text-zinc-400 mt-4 font-[family-name:var(--font-outfit)]">
-                        Zobacz gry, nad którymi pracujemy, i sprawdź, co aktualnie tworzymy.
+                        {t.gamesAbout.ctaDesc}
                     </p>
                 </div>
             </div>

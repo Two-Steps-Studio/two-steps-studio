@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useState, use, useRef } from "react";
+import { useEffect, useState, use } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { 
-  ArrowLeft, 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward, 
-  Volume2, 
-  Clock, 
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  Clock,
   Calendar,
   Music,
-  ExternalLink,
-  Heart
+  ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 import type { MusicTrack, MusicGenre } from "@/types/games-records";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 
 const GENRE_LABELS: Record<MusicGenre, string> = {
   pop: 'Pop',
@@ -40,12 +40,20 @@ export default function MusicDetailPage({ params }: { params: Promise<{ id: stri
   const [track, setTrack] = useState<MusicTrack | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [volume, setVolume] = useState(75);
-  const [isLiked, setIsLiked] = useState(false);
-  
-  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const {
+    audioRef,
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    volume,
+    handlePlayPause,
+    handleTimeUpdate,
+    handleSeek,
+    handleVolumeChange,
+    handleSkip,
+    formatTime,
+  } = useAudioPlayer();
 
   const unwrappedParams = use(params);
 
@@ -73,43 +81,6 @@ export default function MusicDetailPage({ params }: { params: Promise<{ id: stri
 
     fetchTrack();
   }, [unwrappedParams.id]);
-
-  const handlePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  const handleSeek = (value: number[]) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = value[0];
-      setCurrentTime(value[0]);
-    }
-  };
-
-  const handleVolumeChange = (value: number[]) => {
-    if (audioRef.current) {
-      audioRef.current.volume = value[0] / 100;
-      setVolume(value[0]);
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const formatDuration = (seconds?: number) => {
     if (!seconds) return "--:--";
@@ -233,7 +204,7 @@ export default function MusicDetailPage({ params }: { params: Promise<{ id: stri
 
                 {/* Controls */}
                 <div className="flex items-center justify-center gap-4">
-                  <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-zinc-400 hover:text-white">
                     <SkipBack size={24} />
                   </Button>
                   <Button
@@ -244,7 +215,7 @@ export default function MusicDetailPage({ params }: { params: Promise<{ id: stri
                   >
                     {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-zinc-400 hover:text-white">
                     <SkipForward size={24} />
                   </Button>
                 </div>
@@ -294,23 +265,6 @@ export default function MusicDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div className="space-y-8">
-          {/* Actions */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Akcje</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button
-                variant="outline"
-                className="w-full border-[var(--color-records)]/30 text-[var(--color-records)] hover:bg-[var(--color-records)]/10 rounded-full"
-                onClick={() => setIsLiked(!isLiked)}
-              >
-                <Heart size={18} className={`mr-2 ${isLiked ? 'fill-[var(--color-records)]' : ''}`} />
-                {isLiked ? 'Ulubione' : 'Dodaj do ulubionych'}
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* External Links */}
           {(track.spotify_url || track.youtube_url || track.soundcloud_url) && (
             <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">

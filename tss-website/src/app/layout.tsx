@@ -20,7 +20,6 @@ import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import InstallPrompt from "@/components/InstallPrompt";
 import { PresencePing } from "@/components/presence-ping";
 import { Footer } from "@/components/Footer";
-import { LanguageProvider } from "@/hooks/use-language";
 import { SidebarProvider } from "@/hooks/use-sidebar";
 import { SidebarLayout } from "@/components/SidebarLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -101,27 +100,25 @@ export default function RootLayout({
           data-custom-data={process.env.NODE_ENV !== "production" ? `{"appName": "TwoStepsStudio", "version": "1.0.0"}` : ""}
         />
         <Providers>
-          <LanguageProvider>
-            <SidebarProvider>
-              <SidebarLayout />
-            </SidebarProvider>
-            <PresencePing />
-            <MobileHeader />
-            <PWAController />
-            <div className="flex-1 lg:ml-[240px] lg:border-l lg:border-zinc-700/30 flex flex-col pt-[60px] transition-[margin] duration-300">
-              <TopBar suppressHydrationWarning={true} className="hidden lg:flex" />
-              <main className="p-4 md:p-6 lg:p-8 pt-8 md:pt-12 pb-20 lg:pb-0 max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
-                <ErrorBoundary>
-                  <PageTransition>
-                    {children}
-                  </PageTransition>
-                </ErrorBoundary>
-              </main>
-              <Footer />
-            </div>
-            <BottomNavigation />
-            <AdminConsole />
-          </LanguageProvider>
+          <SidebarProvider>
+            <SidebarLayout />
+          </SidebarProvider>
+          <PresencePing />
+          <MobileHeader />
+          <PWAController />
+          <div className="flex-1 lg:ml-[240px] lg:border-l lg:border-zinc-700/30 flex flex-col pt-[60px] transition-[margin] duration-300">
+            <TopBar suppressHydrationWarning={true} className="hidden lg:flex" />
+            <main className="p-4 md:p-6 lg:p-8 pt-8 md:pt-12 pb-20 lg:pb-0 max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
+              <ErrorBoundary>
+                <PageTransition>
+                  {children}
+                </PageTransition>
+              </ErrorBoundary>
+            </main>
+            <Footer />
+          </div>
+          <BottomNavigation />
+          <AdminConsole />
         </Providers>
         <ServiceWorkerRegister />
         <InstallPrompt />

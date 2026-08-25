@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Newspaper, Clock, User } from "lucide-react";
+import { useLanguage } from "@/hooks/use-translation";
 
 interface NewsItem {
   id: string;
@@ -16,6 +17,7 @@ interface NewsItem {
 }
 
 export default function NewsPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +50,10 @@ export default function NewsPage() {
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       <div className="mb-12">
         <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
-          Aktualności
+          {t.news.title}
         </h1>
         <p className="text-xl font-medium text-zinc-400 font-[family-name:var(--font-outfit)]">
-          Ostatnie wiadomości i ogłoszenia ze Studia
+          {t.news.subtitle}
         </p>
       </div>
 
@@ -59,13 +61,13 @@ export default function NewsPage() {
         <Card className="w-full max-w-3xl glass rounded-[2.5rem] shadow-2xl border border-white/5">
           <CardContent className="p-12 text-center">
             <Newspaper className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Brak aktualności</h2>
-            <p className="text-zinc-400">Nie ma obecnie żadnych wiadomości do wyświetlenia.</p>
+            <h2 className="text-2xl font-bold mb-2 text-white">{t.news.emptyTitle}</h2>
+            <p className="text-zinc-400">{t.news.emptyDesc}</p>
             <Button
               onClick={() => router.push("/")}
               className="mt-6 bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white font-bold"
             >
-              Wróć na stronę główną
+              {t.news.backHome}
             </Button>
           </CardContent>
         </Card>
@@ -95,7 +97,7 @@ export default function NewsPage() {
                 ) : (
                   <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
                     <User size={14} className="mr-1" />
-                    Moderowany
+                    {t.news.moderated}
                   </Badge>
                 )}
               </div>
@@ -127,7 +129,7 @@ export default function NewsPage() {
                   className="rounded-2xl border-white/10 hover:bg-white/5 font-bold w-full"
                   onClick={() => router.push(`/news/${item.id}`)}
                 >
-                  Czytaj więcej <ArrowRight size={16} className="ml-2" />
+                  {t.news.readMore} <ArrowRight size={16} className="ml-2" />
                 </Button>
               </CardContent>
             </Card>

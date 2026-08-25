@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
-import { requireAuth, requireOwnership, isAuthError } from "@/lib/auth-helpers";
-import type { Game, GameWithDetails } from "@/types/games-records";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
+import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
+import type { Game, GameCategory, GameStatus, GameWithDetails } from "@/types/games-records";
+
+const VALID_CATEGORIES: GameCategory[] = ['action', 'adventure', 'rpg', 'strategy', 'simulation', 'sports', 'racing', 'puzzle', 'horror', 'indie', 'other'];
+const VALID_STATUSES: GameStatus[] = ['draft', 'published', 'archived', 'coming_soon'];
 
 // GET - Fetch all games with optional filters or single game by ID
 export async function GET(request: Request) {
@@ -100,14 +103,12 @@ export async function GET(request: Request) {
       }
     }
     if (status) {
-      const validStatuses = ['draft', 'published', 'archived'];
-      if (validStatuses.includes(status)) {
+      if (VALID_STATUSES.includes(status as GameStatus)) {
         query = query.eq('status', status);
       }
     }
     if (category) {
-      const validCategories = ['indie', 'aaa', 'mobile', 'vr', 'arcade'];
-      if (validCategories.includes(category)) {
+      if (VALID_CATEGORIES.includes(category as GameCategory)) {
         query = query.eq('category', category);
       }
     }
@@ -160,9 +161,12 @@ export async function POST(request: Request) {
     );
   }
 
-  // SECURITY: Require authentication
+  // SECURITY: Only admins may publish games
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
 
   try {
     const body: Partial<Game> = await request.json();
@@ -190,8 +194,7 @@ export async function POST(request: Request) {
     }
 
     // Validate category
-    const validCategories = ['indie', 'aaa', 'mobile', 'vr', 'arcade'];
-    if (body.category && !validCategories.includes(body.category)) {
+    if (body.category && !VALID_CATEGORIES.includes(body.category)) {
       return NextResponse.json(
         { error: "Nieprawidłowa kategoria" },
         { status: 400 }
@@ -199,8 +202,7 @@ export async function POST(request: Request) {
     }
 
     // Validate status
-    const validStatuses = ['draft', 'published', 'archived'];
-    if (body.status && !validStatuses.includes(body.status)) {
+    if (body.status && !VALID_STATUSES.includes(body.status)) {
       return NextResponse.json(
         { error: "Nieprawidłowy status" },
         { status: 400 }
@@ -216,7 +218,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceClient
       .from("games")
       .insert({
         title: body.title,
@@ -274,9 +276,12 @@ export async function PUT(request: Request) {
     );
   }
 
-  // SECURITY: Require authentication
+  // SECURITY: Only admins may edit games
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
 
   try {
     const body: Partial<Game> & { id: number } = await request.json();
@@ -288,7 +293,21 @@ export async function PUT(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    // Validate category/status (mirrors POST's validation)
+    if (body.category && !VALID_CATEGORIES.includes(body.category)) {
+      return NextResponse.json(
+        { error: "Nieprawidłowa kategoria" },
+        { status: 400 }
+      );
+    }
+    if (body.status && !VALID_STATUSES.includes(body.status)) {
+      return NextResponse.json(
+        { error: "Nieprawidłowy status" },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await serviceClient
       .from("games")
       .update({
         title: body.title,
@@ -353,9 +372,12 @@ export async function DELETE(request: Request) {
     );
   }
 
-  // SECURITY: Require authentication
+  // SECURITY: Only admins may delete games
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
 
   try {
     const { searchParams } = new URL(request.url);
@@ -368,7 +390,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const { error } = await supabase
+    const { error } = await serviceClient
       .from("games")
       .delete()
       .eq('id', id);

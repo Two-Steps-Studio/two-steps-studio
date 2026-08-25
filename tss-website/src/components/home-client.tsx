@@ -169,7 +169,7 @@ export function HomeClient() {
                   <h2 className="text-6xl md:text-8xl font-black tracking-tight mb-6 italic leading-none pr-4">{content.sections.games.title}</h2>
                 <p className="text-xl md:text-2xl font-medium opacity-80 max-w-md">{content.sections.games.desc}</p>
               <Link href="/games" className="mt-10 inline-flex items-center gap-3 text-lg font-black group/link">
-                Eksploruj <ArrowRight className="group-hover/link:translate-x-2 transition-transform" />
+                {translations.homeExtra.exploreLink} <ArrowRight className="group-hover/link:translate-x-2 transition-transform" />
               </Link>
             </div>
           </motion.div>

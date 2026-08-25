@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, isSupabaseAdminInitialized } from "@/lib/supabase-admin";
+import { requireAuth, isAuthError } from "@/lib/auth-helpers";
 
 // --- SECURITY: Validate file extension and mime type before upload ---
 const ALLOWED_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "gif"];
@@ -24,6 +25,10 @@ async function validateFile(file: File | null): Promise<{ valid: boolean; extens
 }
 
 export async function POST(req: Request) {
+  // SECURITY: Require authentication
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+
   // Check if Supabase admin client is initialized
   if (!isSupabaseAdminInitialized || !supabaseAdmin) {
     return NextResponse.json({
@@ -41,6 +46,14 @@ export async function POST(req: Request) {
   }
   if (!userId) {
     return NextResponse.json({ error: "Brak userId" }, { status: 400 });
+  }
+
+  // SECURITY: Only allow uploading to your own profile. `profiles.id` is the
+  // Discord snowflake (user_metadata.provider_id), not the Supabase Auth
+  // UUID - mirrors the same lookup requireAuth() uses internally.
+  const ownDiscordId = (auth.user.user_metadata as any)?.provider_id || auth.user.id;
+  if (userId !== ownDiscordId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Validate file extension and mime type before upload

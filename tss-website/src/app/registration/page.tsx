@@ -33,8 +33,8 @@ export default function RegisterPage() {
     if (loading) return;
 
     if (!formData.termsAccepted) {
-      toast.error("Musisz zaakceptować regulamin", {
-        description: "Bez akceptacji regulaminu nie można założyć konta.",
+      toast.error(t.registrationExtra.termsRequiredTitle, {
+        description: t.registrationExtra.termsRequiredDesc,
       });
       return;
     }
@@ -60,7 +60,7 @@ export default function RegisterPage() {
       });
 
       if (signInError) {
-        toast.error("Account created but failed to sign in automatically", {
+        toast.error(t.registrationExtra.autoSignInFailed, {
           description: signInError.message,
         });
         // Redirect to login anyway
@@ -71,7 +71,7 @@ export default function RegisterPage() {
         router.refresh();
       }
     } catch (err) {
-      toast.error("An unexpected error occurred");
+      toast.error(t.registrationExtra.unexpectedError);
       console.error(err);
     } finally {
       setLoading(false);
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 className="mt-1 h-4 w-4 rounded border-zinc-400 text-[var(--color-general)] focus:ring-[var(--color-general)]"
               />
               <Label htmlFor="terms" className="text-xs text-zinc-400 font-[family-name:var(--font-outfit)] leading-tight cursor-pointer">
-                Akceptuję <a href="/terms" target="_blank" className="text-[var(--color-general)] hover:underline">regulamin</a> i politykę prywatności
+                {t.registrationExtra.acceptPrefix}<a href="/terms" target="_blank" className="text-[var(--color-general)] hover:underline">{t.registrationExtra.termsLinkText}</a>{t.registrationExtra.acceptSuffix}
               </Label>
             </div>
             <Button

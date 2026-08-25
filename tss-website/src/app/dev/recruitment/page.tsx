@@ -9,8 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Send, Loader2 } from "lucide-react";
 import {Badge} from "@/components/ui/badge";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function RecruitmentPage() {
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -39,7 +41,7 @@ export default function RecruitmentPage() {
         throw new Error("Failed to submit application");
       }
 
-      toast.success("Application submitted successfully!");
+      toast.success(t.devRecruitmentPage.submitSuccess);
       setFormData({
         name: "",
         email: "",
@@ -50,7 +52,7 @@ export default function RecruitmentPage() {
         portfolio: ""
       });
     } catch (error) {
-      toast.error("Failed to submit application. Please try again.");
+      toast.error(t.devRecruitmentPage.submitError);
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -78,13 +80,13 @@ export default function RecruitmentPage() {
       
           <div className="relative z-10 space-y-4 text-center">
             <Badge className="bg-[var(--color-dev)]/20 text-[var(--color-dev)] hover:bg-[var(--color-dev)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-              Two Steps Studio
+              {t.devRecruitmentPage.badge}
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-              <span className="text-[var(--color-dev)]">Dołącz do Two Steps Studio</span>
+              <span className="text-[var(--color-dev)]">{t.devRecruitmentPage.title}</span>
             </h1>
             <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-              Szukamy osób, które chcą tworzyć, eksperymentować i rozwijać własne pomysły razem z nami. Nie musisz wiedzieć wszystkiego - ważniejsza jest chęć nauki, zaangażowanie i gotowość do pracy nad prawdziwymi projektami.
+              {t.devRecruitmentPage.subtitle}
             </p>
           </div>
         </div>
@@ -92,8 +94,8 @@ export default function RecruitmentPage() {
         {/* Quick Navigation */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
-            { name: "DEV", href: "/dev" },
-            { name: "About Us", href: "/dev/about" },
+            { name: t.devRecruitmentPage.navDev, href: "/dev" },
+            { name: t.devRecruitmentPage.navAbout, href: "/dev/about" },
           ].map((item, i) => (
               <a
                   key={i}
@@ -108,20 +110,20 @@ export default function RecruitmentPage() {
         </div>
 
         <p className="text-center text-[var(--text)] font-[family-name:var(--font-outfit)] text-lg max-w-2xl mx-auto">
-          Odpowiedz na kilka pytań poniżej i opowiedz nam trochę o sobie i swoich umiejętnościach.
+          {t.devRecruitmentPage.introText}
         </p>
 
         <Card className="max-w-2xl mx-auto p-6  bg-[var(--card-bg)]">
           <CardHeader>
-            <CardTitle className="text-2xl">Join Our Team</CardTitle>
+            <CardTitle className="text-2xl">{t.devRecruitmentPage.formTitle}</CardTitle>
             <CardDescription>
-              Apply to become part of Two Steps Studio development team
+              {t.devRecruitmentPage.formDescription}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">{t.devRecruitmentPage.fullName}</Label>
                 <Input
                   id="name"
                   name="name"
@@ -146,7 +148,7 @@ export default function RecruitmentPage() {
               </div>
   
               <div className="space-y-2">
-                <Label htmlFor="discord">Discord Username</Label>
+                <Label htmlFor="discord">{t.devRecruitmentPage.discordUsername}</Label>
                 <Input
                   id="discord"
                   name="discord"
@@ -158,51 +160,51 @@ export default function RecruitmentPage() {
               </div>
   
               <div className="space-y-2 ">
-                <Label htmlFor="position">Position You're Applying For</Label>
+                <Label htmlFor="position">{t.devRecruitmentPage.position}</Label>
                 <Input
                   id="position"
                   name="position"
                   value={formData.position}
                   onChange={handleChange}
                   required
-                  placeholder="Frontend Developer, Backend Developer, Designer, etc."
+                  placeholder={t.devRecruitmentPage.positionPlaceholder}
                 />
               </div>
   
               <div className="space-y-2">
-                <Label htmlFor="experience">Experience</Label>
+                <Label htmlFor="experience">{t.devRecruitmentPage.experience}</Label>
                 <Textarea
                   id="experience"
                   name="experience"
                   value={formData.experience}
                   onChange={handleChange}
                   required
-                  placeholder="Tell us about your experience and skills..."
+                  placeholder={t.devRecruitmentPage.experiencePlaceholder}
                   rows={4}
                 />
               </div>
   
               <div className="space-y-2">
-                <Label htmlFor="motivation">Motivation</Label>
+                <Label htmlFor="motivation">{t.devRecruitmentPage.motivation}</Label>
                 <Textarea
                   id="motivation"
                   name="motivation"
                   value={formData.motivation}
                   onChange={handleChange}
                   required
-                  placeholder="Why do you want to join Two Steps Studio?"
+                  placeholder={t.devRecruitmentPage.motivationPlaceholder}
                   rows={4}
                 />
               </div>
   
               <div className="space-y-2">
-                <Label htmlFor="portfolio">Portfolio/GitHub (Optional)</Label>
+                <Label htmlFor="portfolio">{t.devRecruitmentPage.portfolio}</Label>
                 <Input
                   id="portfolio"
                   name="portfolio"
                   value={formData.portfolio}
                   onChange={handleChange}
-                  placeholder="https://github.com/username or portfolio link"
+                  placeholder={t.devRecruitmentPage.portfolioPlaceholder}
                 />
               </div>
   
@@ -210,12 +212,12 @@ export default function RecruitmentPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
+                    {t.devRecruitmentPage.submitting}
                   </>
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
-                    Submit Application
+                    {t.devRecruitmentPage.submit}
                   </>
                 )}
               </Button>

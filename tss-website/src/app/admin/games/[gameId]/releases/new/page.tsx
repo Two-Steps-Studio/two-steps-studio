@@ -148,7 +148,7 @@ export default function NewGameReleasePage({ params }: { params: Promise<{ gameI
         <Card>
           <CardHeader>
             <CardTitle className="text-white">Nowe wydanie</CardTitle>
-            <CardDescription>Wybierz jeden plik .zip z buildem gry — pliki zostaną przesłane bezpośrednio do Storage.</CardDescription>
+            <CardDescription>Wybierz jeden plik .zip z buildem gry - pliki zostaną przesłane bezpośrednio do Storage.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {stage === "done" ? (

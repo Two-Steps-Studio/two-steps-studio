@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { uploadMusicFile, validateFile } from "@/lib/supabase-storage";
+import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
 
 export async function POST(request: Request) {
+  // SECURITY: Only admins may upload music content
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;

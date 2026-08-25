@@ -109,7 +109,7 @@ export default function AdminGameReleasesPage({ params }: { params: Promise<{ ga
             {loading ? (
               <div className="text-center py-8 text-white/70">Ładowanie...</div>
             ) : releases.length === 0 ? (
-              <div className="text-center py-8 text-white/50">Brak wydań — opublikuj pierwsze</div>
+              <div className="text-center py-8 text-white/50">Brak wydań - opublikuj pierwsze</div>
             ) : (
               <div className="space-y-3">
                 {releases.map((release) => (

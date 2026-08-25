@@ -5,18 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Filter,
   Mic2,
   Play,
   Clock,
   Calendar,
   Upload,
-  X
+  X,
+  Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Podcast } from "@/types/games-records";
@@ -28,10 +29,27 @@ export default function PodcastsAdminPage() {
   const [selectedSeason, setSelectedSeason] = useState<number | "all">("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPodcast, setEditingPodcast] = useState<Podcast | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkedAdmin, setCheckedAdmin] = useState(false);
 
   useEffect(() => {
-    fetchPodcasts();
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/auth");
+        const data = await res.json();
+        setIsAdmin(data.isAdmin || false);
+      } catch (error) {
+        console.error("Failed to check admin status:", error);
+      } finally {
+        setCheckedAdmin(true);
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchPodcasts();
+  }, [isAdmin]);
 
   const fetchPodcasts = async () => {
     try {
@@ -86,6 +104,24 @@ export default function PodcastsAdminPage() {
 
     return matchesSearch && matchesSeason;
   });
+
+  if (checkedAdmin && !isAdmin) {
+    return (
+      <Card className="max-w-md mx-auto mt-20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Brak dostępu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Nie masz uprawnień administratora. Skontaktuj się z administracją.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -282,16 +318,43 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
   const [uploading, setUploading] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  // For a brand-new podcast there's no DB row yet when a file is picked --
+  // uploads used to go under a literal "temp" storage path that no podcast
+  // row ever pointed back to. Create a minimal draft row on first upload and
+  // reuse its id for every subsequent upload/save in this modal session.
+  const [draftId, setDraftId] = useState<number | null>(podcast?.id ?? null);
 
   const handleFileUpload = async (file: File, type: 'audio' | 'thumbnail') => {
     if (!file) return;
 
     setUploading(true);
     try {
+      let podcastId = draftId;
+      if (!podcastId) {
+        if (!formData.title.trim()) {
+          toast.error("Podaj tytuł przed przesłaniem pliku");
+          setUploading(false);
+          return;
+        }
+        const draftRes = await fetch('/api/podcasts', {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: formData.title.trim(), visibility: 'private' }),
+        });
+        const draftData = await draftRes.json();
+        if (!draftRes.ok || !draftData.success) {
+          toast.error(draftData.error || 'Nie udało się utworzyć wpisu podcastu');
+          setUploading(false);
+          return;
+        }
+        podcastId = draftData.data.id;
+        setDraftId(podcastId);
+      }
+
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('type', type);
-      uploadFormData.append('podcastId', podcast?.id?.toString() || 'temp');
+      uploadFormData.append('podcastId', String(podcastId));
 
       const res = await fetch('/api/upload/podcasts', {
         method: 'POST',
@@ -339,10 +402,10 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
 
     try {
       const url = "/api/podcasts";
-      const method = podcast ? "PUT" : "POST";
-      
-      if (podcast) {
-        (payload as any).id = podcast.id;
+      const method = draftId ? "PUT" : "POST";
+
+      if (draftId) {
+        (payload as any).id = draftId;
       }
 
       const res = await fetch(url, {

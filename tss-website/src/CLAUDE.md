@@ -130,8 +130,8 @@ The app uses a dynamic color theme system defined in `globals.css`:
 Themes are CSS custom properties applied via `.theme-*` classes.
 
 ### Protected Routes
-The middleware (`src/middleware.ts`) protects:
-- `/profile`, `/ustawienia`, `/notifications` - require auth
+The middleware (`src/proxy.ts` — Next.js 16 renamed the `middleware.ts` convention to `proxy.ts`/`export function proxy()`) protects:
+- `/profile`, `/settings`, `/notifications` - require auth
 - `/login`, `/registration` - redirect to profile if already authenticated
 
 ### Discord Bot Architecture
@@ -154,7 +154,7 @@ Both projects use the same Supabase instance:
 ### Website
 - `src/lib/supabase.ts` - Browser client with hardlink fallback
 - `src/lib/supabase-server.ts` - Server component client
-- `src/middleware.ts` - Auth route protection
+- `src/proxy.ts` - Auth route protection (Next.js 16's `middleware.ts` convention was renamed to `proxy.ts`)
 - `electron/main.js` - Electron entry point
 - `next.config.ts` - Config with Electron asset handling
 

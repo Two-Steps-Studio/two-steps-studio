@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
 import { uploadGameImage, validateFile } from "@/lib/supabase-storage";
-import { requireAuth, isAuthError } from "@/lib/auth-helpers";
+import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
 
 export async function POST(request: Request) {
-  // SECURITY: Require authentication
+  // SECURITY: Only admins may upload game images
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
 
   try {
     const formData = await request.formData();

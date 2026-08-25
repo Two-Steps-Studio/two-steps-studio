@@ -99,7 +99,7 @@ export default function AdminGamesPage() {
                       )}
                       <div>
                         <div className="text-white font-medium">{game.title}</div>
-                        <div className="text-white/50 text-sm">{game.developer || "—"}</div>
+                        <div className="text-white/50 text-sm">{game.developer || "-"}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

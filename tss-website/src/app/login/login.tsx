@@ -33,8 +33,8 @@ export default function LoginPage() {
 
     try {
       if (!supabase) {
-        toast.error("Błąd połączenia z serwerem", {
-          description: "Supabase nie jest skonfigurowany"
+        toast.error(t.loginExtra.connectionErrorTitle, {
+          description: t.loginExtra.supabaseNotConfigured
         });
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -56,8 +56,8 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       const isFetchError = err.message?.includes("fetch");
-      toast.error(isFetchError ? "Błąd połączenia z serwerem" : "Wystąpił nieoczekiwany błąd", {
-          description: isFetchError ? "Sprawdź połączenie internetowe lub spróbuj za chwilę." : err.message
+      toast.error(isFetchError ? t.loginExtra.connectionErrorTitle : t.loginExtra.unexpectedErrorTitle, {
+          description: isFetchError ? t.loginExtra.checkConnection : err.message
       });
       console.error(err);
     } finally {
@@ -68,8 +68,8 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       if (!supabase) {
-        toast.error("Błąd logowania Google", {
-          description: "Supabase nie jest skonfigurowany"
+        toast.error(t.loginExtra.googleErrorTitle, {
+          description: t.loginExtra.supabaseNotConfigured
         });
       } else {
         setLoading(true);
@@ -82,7 +82,7 @@ export default function LoginPage() {
         console.log("Google login result:", { data, error });
       }
     } catch (err) {
-      toast.error("Błąd logowania Google");
+      toast.error(t.loginExtra.googleErrorTitle);
     } finally {
       setLoading(false);
     }
@@ -150,7 +150,7 @@ export default function LoginPage() {
               {loading ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  WCHODZĘ...
+                  {t.loginExtra.loadingIn}
                 </div>
               ) : (
                 t.auth.loginButton
@@ -163,7 +163,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent px-2 text-zinc-500 font-bold tracking-[0.3em]">LUB ZALOGUJ PRZEZ</span>
+              <span className="bg-transparent px-2 text-zinc-500 font-bold tracking-[0.3em]">{t.loginExtra.orLoginWith}</span>
             </div>
           </div>
 
@@ -174,13 +174,13 @@ export default function LoginPage() {
               variant="outline"
               className="h-12 rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[var(--text)] hover:bg-black/10 dark:hover:bg-white/10 font-bold text-sm tracking-tight transition-all"
             >
-              Google
+              {t.loginExtra.google}
             </Button>
             <Button
               onClick={async () => {
                 if (!supabase) {
-                  toast.error("Błąd logowania Discord", {
-                    description: "Supabase nie jest skonfigurowany"
+                  toast.error(t.loginExtra.discordErrorTitle, {
+                    description: t.loginExtra.supabaseNotConfigured
                   });
                 } else {
                   setLoading(true);
@@ -194,7 +194,7 @@ export default function LoginPage() {
               disabled={loading}
               className="h-12 rounded-2xl bg-[#5865F2] text-white hover:bg-[#4752C4] font-bold text-sm tracking-tight transition-all shadow-lg shadow-[#5865F2]/20"
             >
-              Discord
+              {t.loginExtra.discord}
             </Button>
           </div>
         </CardContent>
@@ -217,7 +217,7 @@ export default function LoginPage() {
                 }}
                 className="text-[10px] text-[var(--color-general)] hover:underline opacity-40 font-black tracking-widest uppercase"
              >
-                Wyczyść pamięć sesji
+                {t.loginExtra.clearSession}
              </button>
           </div>
         </CardFooter>

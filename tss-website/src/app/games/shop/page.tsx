@@ -11,31 +11,17 @@ import Link from "next/link";
 import { GameInstallControls } from "@/components/Games/GameInstallControls";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import type { Game, GameCategory, GameStatus } from "@/types/games-records";
+import { useLanguage } from "@/hooks/use-translation";
+import { getGameCategoryLabels, getGameStatusLabels } from "@/lib/game-labels";
 
 const CATEGORIES: GameCategory[] = ['action', 'adventure', 'rpg', 'strategy', 'simulation', 'sports', 'racing', 'puzzle', 'horror', 'indie', 'other'];
 
-const CATEGORY_LABELS: Record<GameCategory, string> = {
-  action: 'Akcja',
-  adventure: 'Przygodowa',
-  rpg: 'RPG',
-  strategy: 'Strategia',
-  simulation: 'Symulacja',
-  sports: 'Sportowa',
-  racing: 'Wyścigi',
-  puzzle: 'Logiczna',
-  horror: 'Horror',
-  indie: 'Indie',
-  other: 'Inne',
-};
-
-const STATUS_LABELS: Record<GameStatus, string> = {
-  draft: 'Szkic',
-  published: 'Opublikowana',
-  archived: 'Zarchiwizowana',
-  coming_soon: 'Wkrótce',
-};
-
 export default function Page() {
+  const { t } = useLanguage();
+
+  const CATEGORY_LABELS = getGameCategoryLabels(t);
+  const STATUS_LABELS = getGameStatusLabels(t);
+
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,7 +40,7 @@ export default function Page() {
       setGames(data.data || []);
     } catch (error) {
       console.error("Błąd pobierania gier:", error);
-      toast.error("Nie udało się załadować gier");
+      toast.error(t.gamesCatalog.loadError);
     } finally {
       setLoading(false);
     }
@@ -108,13 +94,13 @@ export default function Page() {
 
           <div className="relative z-10 space-y-4 text-center">
             <Badge className="bg-[var(--color-games)]/20 text-[var(--color-games)] hover:bg-[var(--color-games)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-              Two Steps Studio
+              {t.gamesShopPage.badge}
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-              <span className="text-[var(--color-games)]">Shop</span>
+              <span className="text-[var(--color-games)]">{t.gamesShopPage.title}</span>
             </h1>
             <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-              Miejsce, w którym znajdziesz gry, dodatki i inne produkty związane z naszymi projektami. Sprawdź, co jest już dostępne i co pojawi się w przyszłości.
+              {t.gamesShopPage.subtitle}
             </p>
           </div>
         </div>
@@ -124,8 +110,8 @@ export default function Page() {
       <div className="container mx-auto px-6 mb-10 max-w-7xl">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: "Games", href: "/games" },
-            { name: "About", href: "/games/about" },
+            { name: t.gamesShopPage.navGames, href: "/games" },
+            { name: t.gamesShopPage.navAbout, href: "/games/about" },
           ].map((item, i) => (
             <a
               key={i}
@@ -144,7 +130,7 @@ export default function Page() {
       {featuredGames.length > 0 && (
         <div className="container mx-auto px-6 mb-12 max-w-7xl">
           <h2 className="mb-4 text-2xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">
-            Polecane
+            {t.gamesCatalog.featuredTitle}
           </h2>
           <Carousel opts={{ loop: true, align: "start" }} className="w-full">
             <CarouselContent>
@@ -182,7 +168,7 @@ export default function Page() {
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
           <Input
-            placeholder="Szukaj gier, deweloperów..."
+            placeholder={t.gamesCatalog.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border)] text-[var(--text)] placeholder:text-zinc-500"
@@ -192,7 +178,7 @@ export default function Page() {
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
             <Filter size={16} />
-            <span>Kategoria:</span>
+            <span>{t.gamesCatalog.categoryLabel}</span>
           </div>
           <Button
             variant={selectedCategory === "all" ? "default" : "outline"}
@@ -203,7 +189,7 @@ export default function Page() {
                 : "border-white/10 text-zinc-400 hover:text-white"
             }`}
           >
-            Wszystkie
+            {t.gamesCatalog.allCategories}
           </Button>
           {CATEGORIES.map((category) => (
             <Button
@@ -223,17 +209,17 @@ export default function Page() {
 
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
-            Sortuj:
+            {t.gamesCatalog.sortLabel}
           </div>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="bg-black/40 border border-white/10 text-white rounded-xl px-4 py-2 text-sm"
           >
-            <option value="created_at">Data dodania</option>
-            <option value="release_date">Data wydania</option>
-            <option value="views">Wyświetlenia</option>
-            <option value="downloads">Pobrania</option>
+            <option value="created_at">{t.gamesCatalog.sortAdded}</option>
+            <option value="release_date">{t.gamesCatalog.sortReleased}</option>
+            <option value="views">{t.gamesCatalog.sortViews}</option>
+            <option value="downloads">{t.gamesCatalog.sortDownloads}</option>
           </select>
           <Button
             variant="outline"
@@ -261,11 +247,11 @@ export default function Page() {
           <Card className="w-full rounded-[2.5rem] ">
             <CardContent className="p-12 text-center">
               <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-              <h2 className="text-2xl font-bold mb-2 text-white">Brak gier</h2>
+              <h2 className="text-2xl font-bold mb-2 text-white">{t.gamesCatalog.emptyTitle}</h2>
               <p className="text-zinc-400">
                 {searchQuery || selectedCategory !== "all"
-                  ? "Nie znaleziono gier pasujących do filtrów."
-                  : "Brak dostępnych gier w bazie."}
+                  ? t.gamesCatalog.emptyFiltered
+                  : t.gamesCatalog.emptyNone}
               </p>
             </CardContent>
           </Card>
@@ -334,7 +320,7 @@ export default function Page() {
                         variant="outline"
                         className="w-full border-[var(--color-games)]/30 text-[var(--color-games)] hover:bg-[var(--color-games)]/10 rounded-xl"
                       >
-                        Szczegóły
+                        {t.gamesCatalog.details}
                       </Button>
                     </Link>
                     {game.id !== undefined && <GameInstallControls gameId={game.id} title={game.title} compact />}

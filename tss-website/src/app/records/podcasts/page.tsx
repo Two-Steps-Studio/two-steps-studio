@@ -9,8 +9,10 @@ import { Mic2, Calendar, Search, Filter, Play } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import type { Podcast } from "@/types/games-records";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function PodcastyPage() {
+  const { t } = useLanguage();
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,7 +29,7 @@ export default function PodcastyPage() {
       setPodcasts(data.data || []);
     } catch (error) {
       console.error("Błąd pobierania podcastów:", error);
-      toast.error("Nie udało się załadować podcastów");
+      toast.error(t.recordsPodcasts.loadError);
     } finally {
       setLoading(false);
     }
@@ -62,13 +64,13 @@ export default function PodcastyPage() {
 
         <div className="relative z-10 space-y-4 text-center">
           <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] hover:bg-[var(--color-records)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-            Two Steps Studio
+            {t.recordsPodcasts.badge}
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-           <span className="text-[var(--color-records)]">Podcasty</span>
+           <span className="text-[var(--color-records)]">{t.recordsPodcasts.title}</span>
           </h1>
           <p className="text-white max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-            Posłuchaj podcastów i rozmów z naszego studia.
+            {t.recordsPodcasts.subtitle}
           </p>
         </div>
       </div>
@@ -76,10 +78,9 @@ export default function PodcastyPage() {
       {/* Quick Navigation */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
-          { name: "Records", href: "/records" },
-          { name: "Beaty", href: "/records/beats" },
-          { name: "Muzyka", href: "/records/music"},
-          { name: "Podcasty", href: "/records/podcasts"}  
+          { name: t.recordsPodcasts.navRecords, href: "/records" },
+          { name: t.recordsPodcasts.navBeats, href: "/records/beats" },
+          { name: t.recordsPodcasts.navMusic, href: "/records/music"}
         ].map((item, i) => (
             <a
                 key={i}
@@ -98,7 +99,7 @@ export default function PodcastyPage() {
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
           <Input
-            placeholder="Szukaj podcastów, prowadzących..."
+            placeholder={t.recordsPodcasts.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 h-12 rounded-2xl bg-black/40 border-white/10 text-white placeholder:text-zinc-500"
@@ -109,7 +110,7 @@ export default function PodcastyPage() {
           <div className="flex flex-wrap gap-2 items-center">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
               <Filter size={16} />
-              <span>Sezon:</span>
+              <span>{t.recordsPodcasts.seasonLabel}</span>
             </div>
             <Button
               variant={selectedSeason === "all" ? "default" : "outline"}
@@ -120,7 +121,7 @@ export default function PodcastyPage() {
                   : "border-white/10 text-zinc-400 hover:text-white"
               }`}
             >
-              Wszystkie
+              {t.recordsPodcasts.allSeasons}
             </Button>
             {seasons.map((season) => (
               <Button
@@ -133,7 +134,7 @@ export default function PodcastyPage() {
                     : "border-white/10 text-zinc-400 hover:text-white"
                 }`}
               >
-                Sezon {season}
+                {`${t.recordsPodcasts.seasonPrefix}${season}`}
               </Button>
             ))}
           </div>
@@ -154,11 +155,11 @@ export default function PodcastyPage() {
         <Card className="w-full rounded-[2.5rem] bg-black/40 border border-white/10">
           <CardContent className="p-12 text-center">
             <Mic2 className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Brak podcastów</h2>
+            <h2 className="text-2xl font-bold mb-2 text-white">{t.recordsPodcasts.emptyTitle}</h2>
             <p className="text-zinc-400">
               {searchQuery || selectedSeason !== "all"
-                ? "Nie znaleziono podcastów pasujących do filtrów."
-                : "Brak dostępnych podcastów w bazie."}
+                ? t.recordsPodcasts.emptyFiltered
+                : t.recordsPodcasts.emptyNone}
             </p>
           </CardContent>
         </Card>
@@ -186,7 +187,7 @@ export default function PodcastyPage() {
                   </CardTitle>
                   {podcast.featured && (
                     <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 text-xs shrink-0">
-                      Polecane
+                      {t.recordsPodcasts.featuredBadge}
                     </Badge>
                   )}
                 </div>
@@ -207,11 +208,11 @@ export default function PodcastyPage() {
                 <div className="flex items-center gap-2 text-xs text-zinc-500">
                   {podcast.season && (
                     <Badge variant="secondary" className="bg-[var(--color-records)]/10 text-[var(--color-records)] border border-[var(--color-records)]/20 text-xs">
-                      Sezon {podcast.season}
+                      {`${t.recordsPodcasts.seasonPrefix}${podcast.season}`}
                     </Badge>
                   )}
                   {podcast.episode_number && (
-                    <span>Odcinek {podcast.episode_number}</span>
+                    <span>{`${t.recordsPodcasts.episodePrefix}${podcast.episode_number}`}</span>
                   )}
                 </div>
 
@@ -221,7 +222,7 @@ export default function PodcastyPage() {
                     <span>
                       {podcast.published_date
                         ? new Date(podcast.published_date).toLocaleDateString()
-                        : "Niedawno"}
+                        : t.recordsPodcasts.recentlyFallback}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -235,7 +236,7 @@ export default function PodcastyPage() {
                     variant="outline"
                     className="w-full border-[var(--color-records)]/30 text-[var(--color-records)] hover:bg-[var(--color-records)]/10 rounded-xl"
                   >
-                    Odtwórz
+                    {t.recordsPodcasts.play}
                   </Button>
                 </Link>
               </CardContent>

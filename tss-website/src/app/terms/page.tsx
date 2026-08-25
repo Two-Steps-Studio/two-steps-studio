@@ -1,217 +1,211 @@
-﻿"use client"
+"use client"
+
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function TermsOfServicePage() {
+    const { t } = useLanguage();
     return (
         <div className="mx-auto max-w-4xl px-6 py-12 text-left leading-relaxed">
 
             <h1 className="mb-4 text-center text-4xl font-bold text-general">
-                Terms of Service - Two Steps Studio
+                {t.termsPage.title}
             </h1>
 
             <p className="mb-10 text-center text-gray-400">
-                Last updated: July 23, 2026
+                {t.termsPage.lastUpdated}
             </p>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    1. Introduction
+                    {t.termsPage.s1Title}
                 </h2>
 
                 <p>
-                    These Terms of Service ("Terms") govern your use of services
-                    provided by Two Steps Studio ("TSS", "we", "us", or "our"),
-                    including games, websites, applications, and community platforms.
+                    {t.termsPage.s1P1}
                 </p>
 
                 <p className="mt-3">
-                    By accessing or using our services, you agree to these Terms.
+                    {t.termsPage.s1P2}
                 </p>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    2. Use of Our Services
+                    {t.termsPage.s2Title}
                 </h2>
 
                 <p>
-                    You may use our services only for lawful purposes.
+                    {t.termsPage.s2P1}
                 </p>
 
                 <p className="mt-3">
-                    You agree not to:
+                    {t.termsPage.s2P2}
                 </p>
 
                 <ul className="mt-3 list-disc space-y-2 pl-6">
-                    <li>Modify, reverse engineer, or exploit our software without permission</li>
-                    <li>Use cheats, hacks, exploits, or unauthorized tools</li>
-                    <li>Disrupt our services or communities</li>
-                    <li>Impersonate TSS members or representatives</li>
-                    <li>Distribute our content without authorization</li>
+                    <li>{t.termsPage.s2Item1}</li>
+                    <li>{t.termsPage.s2Item2}</li>
+                    <li>{t.termsPage.s2Item3}</li>
+                    <li>{t.termsPage.s2Item4}</li>
+                    <li>{t.termsPage.s2Item5}</li>
                 </ul>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    3. Games and Software
+                    {t.termsPage.s3Title}
                 </h2>
 
                 <p>
-                    Our games and applications are provided "as is".
+                    {t.termsPage.s3P1}
                 </p>
 
                 <p className="mt-3">
-                    We may:
+                    {t.termsPage.s3P2}
                 </p>
 
                 <ul className="mt-3 list-disc space-y-2 pl-6">
-                    <li>Update or modify features</li>
-                    <li>Fix bugs</li>
-                    <li>Change or discontinue parts of our services</li>
+                    <li>{t.termsPage.s3Item1}</li>
+                    <li>{t.termsPage.s3Item2}</li>
+                    <li>{t.termsPage.s3Item3}</li>
                 </ul>
 
                 <p className="mt-3">
-                    We do not guarantee that every service will always be available
-                    or error-free.
+                    {t.termsPage.s3P3}
                 </p>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    4. Intellectual Property
+                    {t.termsPage.s4Title}
                 </h2>
 
                 <p>
-                    All content created by Two Steps Studio, including but not limited to:
+                    {t.termsPage.s4P1}
                 </p>
 
                 <ul className="mt-3 list-disc space-y-2 pl-6">
-                    <li>Games</li>
-                    <li>Code</li>
-                    <li>Artwork</li>
-                    <li>Logos</li>
-                    <li>Branding</li>
-                    <li>Audio</li>
-                    <li>Designs</li>
+                    <li>{t.termsPage.s4Item1}</li>
+                    <li>{t.termsPage.s4Item2}</li>
+                    <li>{t.termsPage.s4Item3}</li>
+                    <li>{t.termsPage.s4Item4}</li>
+                    <li>{t.termsPage.s4Item5}</li>
+                    <li>{t.termsPage.s4Item6}</li>
+                    <li>{t.termsPage.s4Item7}</li>
                 </ul>
 
                 <p className="mt-3">
-                    is owned by Two Steps Studio or its respective creators unless
-                    stated otherwise.
+                    {t.termsPage.s4P2}
                 </p>
 
                 <p className="mt-3">
-                    You may not use, copy, sell, or distribute our content without permission.
+                    {t.termsPage.s4P3}
                 </p>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    5. Community Rules
+                    {t.termsPage.s5Title}
                 </h2>
 
                 <p>
-                    When participating in TSS communities, including Discord servers,
-                    users must:
+                    {t.termsPage.s5P1}
                 </p>
 
                 <ul className="mt-3 list-disc space-y-2 pl-6">
-                    <li>Respect other members</li>
-                    <li>Follow community guidelines</li>
-                    <li>Avoid harassment, spam, or harmful behavior</li>
-                    <li>Follow instructions from moderators</li>
+                    <li>{t.termsPage.s5Item1}</li>
+                    <li>{t.termsPage.s5Item2}</li>
+                    <li>{t.termsPage.s5Item3}</li>
+                    <li>{t.termsPage.s5Item4}</li>
                 </ul>
 
                 <p className="mt-3">
-                    We reserve the right to remove users who violate these rules.
+                    {t.termsPage.s5P2}
                 </p>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    6. User Content
+                    {t.termsPage.s6Title}
                 </h2>
 
                 <p>
-                    If you submit feedback, ideas, reports, or other content to TSS,
-                    you allow us to use this information to improve our services.
+                    {t.termsPage.s6P1}
                 </p>
 
                 <p className="mt-3">
-                    You remain responsible for any content you submit.
+                    {t.termsPage.s6P2}
                 </p>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    7. Third-Party Services
+                    {t.termsPage.s7Title}
                 </h2>
 
                 <p>
-                    Our services may include links or integrations with third-party services.
+                    {t.termsPage.s7P1}
                 </p>
 
                 <p className="mt-3">
-                    TSS is not responsible for the content, policies, or actions
-                    of third-party platforms.
+                    {t.termsPage.s7P2}
                 </p>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    8. Limitation of Liability
+                    {t.termsPage.s8Title}
                 </h2>
 
                 <p>
-                    To the maximum extent permitted by law, Two Steps Studio is not
-                    responsible for:
+                    {t.termsPage.s8P1}
                 </p>
 
                 <ul className="mt-3 list-disc space-y-2 pl-6">
-                    <li>Losses caused by use of our services</li>
-                    <li>Data loss</li>
-                    <li>Service interruptions</li>
-                    <li>Issues caused by third-party services</li>
+                    <li>{t.termsPage.s8Item1}</li>
+                    <li>{t.termsPage.s8Item2}</li>
+                    <li>{t.termsPage.s8Item3}</li>
+                    <li>{t.termsPage.s8Item4}</li>
                 </ul>
             </section>
 
 
             <section className="mb-8">
                 <h2 className="mb-3 text-2xl font-semibold">
-                    9. Changes to These Terms
+                    {t.termsPage.s9Title}
                 </h2>
 
                 <p>
-                    We may update these Terms at any time.
+                    {t.termsPage.s9P1}
                 </p>
 
                 <p className="mt-3">
-                    Continued use of our services after changes means you accept
-                    the updated Terms.
+                    {t.termsPage.s9P2}
                 </p>
             </section>
 
 
             <section>
                 <h2 className="mb-3 text-2xl font-semibold">
-                    10. Contact
+                    {t.termsPage.s10Title}
                 </h2>
 
                 <p>
-                    If you have questions regarding these Terms, contact Two Steps Studio through:
+                    {t.termsPage.s10P1}
                 </p>
 
                 <p className="mt-3">
-                    Website:
+                    {t.termsPage.s10WebsiteLabel}
                     <br />
-                    <a 
+                    <a
                         href="https://two-steps-studio.xyz"
                         className="text-general hover:underline"
                     >
@@ -220,7 +214,7 @@ export default function TermsOfServicePage() {
                 </p>
 
                 <p className="mt-5 font-semibold">
-                    Two Steps Studio
+                    {t.termsPage.s10Brand}
                 </p>
             </section>
         </div>

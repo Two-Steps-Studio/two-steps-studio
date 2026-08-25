@@ -1,211 +1,201 @@
-﻿"use client";
+"use client";
+
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function PrivacyPolicyPage() {
+        const { t } = useLanguage();
         return (
             <div className="mx-auto max-w-4xl px-6 py-12 text-left leading-relaxed">
 
                     <h1 className="mb-4 text-center text-4xl font-bold text-general">
-                            Privacy Policy - Two Steps Studio
+                            {t.privacyPage.title}
                     </h1>
 
                     <p className="mb-10 text-center text-gray-400">
-                            Last updated: July 23, 2026
+                            {t.privacyPage.lastUpdated}
                     </p>
 
 
                     <section className="mb-8">
                             <h2 className="mb-3 text-2xl font-semibold">
-                                    1. Introduction
+                                    {t.privacyPage.s1Title}
                             </h2>
 
                             <p>
-                                    Welcome to Two Steps Studio ("TSS", "we", "us", or "our").
+                                    {t.privacyPage.s1P1}
                             </p>
 
                             <p className="mt-3">
-                                    This Privacy Policy explains how we collect, use, store, and
-                                    protect information when you use our websites, games,
-                                    applications, Discord community, and other services provided
-                                    by Two Steps Studio.
+                                    {t.privacyPage.s1P2}
                             </p>
 
                             <p className="mt-3">
-                                    By using our services, you agree to the practices described
-                                    in this Privacy Policy.
+                                    {t.privacyPage.s1P3}
                             </p>
                     </section>
 
 
                     <section className="mb-8">
                             <h2 className="mb-3 text-2xl font-semibold">
-                                    2. Information We Collect
+                                    {t.privacyPage.s2Title}
                             </h2>
 
                             <p>
-                                    Depending on how you use our services, we may collect:
+                                    {t.privacyPage.s2Intro}
                             </p>
 
 
                             <h3 className="mt-5 text-xl font-medium">
-                                    Information you provide:
+                                    {t.privacyPage.s2ProvidedTitle}
                             </h3>
 
                             <ul className="mt-3 list-disc space-y-2 pl-6">
-                                    <li>Username or display name</li>
-                                    <li>Email address (if you contact us or create an account)</li>
-                                    <li>Messages or feedback sent to us</li>
-                                    <li>Information provided during recruitment or community activities</li>
+                                    <li>{t.privacyPage.s2Provided1}</li>
+                                    <li>{t.privacyPage.s2Provided2}</li>
+                                    <li>{t.privacyPage.s2Provided3}</li>
+                                    <li>{t.privacyPage.s2Provided4}</li>
                             </ul>
 
 
                             <h3 className="mt-5 text-xl font-medium">
-                                    Automatically collected information:
+                                    {t.privacyPage.s2AutoTitle}
                             </h3>
 
                             <ul className="mt-3 list-disc space-y-2 pl-6">
-                                    <li>Device information</li>
-                                    <li>Operating system information</li>
-                                    <li>Game/application usage data</li>
-                                    <li>Error reports and crash logs</li>
-                                    <li>Basic analytics information</li>
+                                    <li>{t.privacyPage.s2Auto1}</li>
+                                    <li>{t.privacyPage.s2Auto2}</li>
+                                    <li>{t.privacyPage.s2Auto3}</li>
+                                    <li>{t.privacyPage.s2Auto4}</li>
+                                    <li>{t.privacyPage.s2Auto5}</li>
                             </ul>
 
 
                             <p className="mt-4">
-                                    We do not intentionally collect sensitive personal information
-                                    unless required for a specific service and with appropriate notice.
+                                    {t.privacyPage.s2Outro}
                             </p>
                     </section>
 
 
                     <section className="mb-8">
                             <h2 className="mb-3 text-2xl font-semibold">
-                                    3. How We Use Information
+                                    {t.privacyPage.s3Title}
                             </h2>
 
                             <p>
-                                    We may use collected information to:
+                                    {t.privacyPage.s3Intro}
                             </p>
 
                             <ul className="mt-3 list-disc space-y-2 pl-6">
-                                    <li>Provide and improve our games and services</li>
-                                    <li>Fix bugs and technical issues</li>
-                                    <li>Respond to user requests</li>
-                                    <li>Maintain security</li>
-                                    <li>Understand how users interact with our products</li>
-                                    <li>Improve user experience</li>
+                                    <li>{t.privacyPage.s3Item1}</li>
+                                    <li>{t.privacyPage.s3Item2}</li>
+                                    <li>{t.privacyPage.s3Item3}</li>
+                                    <li>{t.privacyPage.s3Item4}</li>
+                                    <li>{t.privacyPage.s3Item5}</li>
+                                    <li>{t.privacyPage.s3Item6}</li>
                             </ul>
                     </section>
 
 
                     <section className="mb-8">
                             <h2 className="mb-3 text-2xl font-semibold">
-                                    4. Third-Party Services
+                                    {t.privacyPage.s4Title}
                             </h2>
 
                             <p>
-                                    Our services may use third-party platforms, including:
+                                    {t.privacyPage.s4Intro}
                             </p>
 
                             <ul className="mt-3 list-disc space-y-2 pl-6">
-                                    <li>Game engines and related services</li>
-                                    <li>Hosting providers</li>
-                                    <li>Analytics services</li>
-                                    <li>Communication platforms such as Discord</li>
-                            </ul>
-
-                            <p className="mt-4">
-                                    These services may collect information according to their
-                                    own privacy policies.
-                            </p>
-                    </section>
-
-
-                    <section className="mb-8">
-                            <h2 className="mb-3 text-2xl font-semibold">
-                                    5. Data Storage and Security
-                            </h2>
-
-                            <p>
-                                    We take reasonable measures to protect user information from
-                                    unauthorized access, loss, or misuse.
-                            </p>
-
-                            <p className="mt-3">
-                                    However, no online service can guarantee complete security.
-                            </p>
-                    </section>
-
-
-                    <section className="mb-8">
-                            <h2 className="mb-3 text-2xl font-semibold">
-                                    6. Children's Privacy
-                            </h2>
-
-                            <p>
-                                    Our services are not specifically designed for children under
-                                    the age required by applicable laws.
-                            </p>
-
-                            <p className="mt-3">
-                                    If we learn that we have collected personal information from
-                                    a child without appropriate permission, we will take steps
-                                    to remove it.
-                            </p>
-                    </section>
-
-
-                    <section className="mb-8">
-                            <h2 className="mb-3 text-2xl font-semibold">
-                                    7. Your Rights
-                            </h2>
-
-                            <p>
-                                    Depending on your location, you may have rights regarding
-                                    your personal information, including:
-                            </p>
-
-                            <ul className="mt-3 list-disc space-y-2 pl-6">
-                                    <li>Accessing your data</li>
-                                    <li>Requesting correction</li>
-                                    <li>Requesting deletion</li>
-                                    <li>Objecting to certain processing activities</li>
+                                    <li>{t.privacyPage.s4Item1}</li>
+                                    <li>{t.privacyPage.s4Item2}</li>
+                                    <li>{t.privacyPage.s4Item3}</li>
+                                    <li>{t.privacyPage.s4Item4}</li>
                             </ul>
 
                             <p className="mt-4">
-                                    To request these actions, contact us through our official
-                                    communication channels.
+                                    {t.privacyPage.s4Outro}
                             </p>
                     </section>
 
 
                     <section className="mb-8">
                             <h2 className="mb-3 text-2xl font-semibold">
-                                    8. Changes to This Privacy Policy
+                                    {t.privacyPage.s5Title}
                             </h2>
 
                             <p>
-                                    We may update this Privacy Policy from time to time.
+                                    {t.privacyPage.s5P1}
                             </p>
 
                             <p className="mt-3">
-                                    Any changes will be posted on this page with an updated date.
+                                    {t.privacyPage.s5P2}
+                            </p>
+                    </section>
+
+
+                    <section className="mb-8">
+                            <h2 className="mb-3 text-2xl font-semibold">
+                                    {t.privacyPage.s6Title}
+                            </h2>
+
+                            <p>
+                                    {t.privacyPage.s6P1}
+                            </p>
+
+                            <p className="mt-3">
+                                    {t.privacyPage.s6P2}
+                            </p>
+                    </section>
+
+
+                    <section className="mb-8">
+                            <h2 className="mb-3 text-2xl font-semibold">
+                                    {t.privacyPage.s7Title}
+                            </h2>
+
+                            <p>
+                                    {t.privacyPage.s7Intro}
+                            </p>
+
+                            <ul className="mt-3 list-disc space-y-2 pl-6">
+                                    <li>{t.privacyPage.s7Item1}</li>
+                                    <li>{t.privacyPage.s7Item2}</li>
+                                    <li>{t.privacyPage.s7Item3}</li>
+                                    <li>{t.privacyPage.s7Item4}</li>
+                            </ul>
+
+                            <p className="mt-4">
+                                    {t.privacyPage.s7Outro}
+                            </p>
+                    </section>
+
+
+                    <section className="mb-8">
+                            <h2 className="mb-3 text-2xl font-semibold">
+                                    {t.privacyPage.s8Title}
+                            </h2>
+
+                            <p>
+                                    {t.privacyPage.s8P1}
+                            </p>
+
+                            <p className="mt-3">
+                                    {t.privacyPage.s8P2}
                             </p>
                     </section>
 
 
                     <section>
                             <h2 className="mb-3 text-2xl font-semibold">
-                                    9. Contact
+                                    {t.privacyPage.s9Title}
                             </h2>
 
                             <p>
-                                    For privacy-related questions, contact Two Steps Studio
-                                    through our official website or community channels.
+                                    {t.privacyPage.s9P1}
                             </p>
 
                             <p className="mt-4 font-semibold">
-                                    Two Steps Studio
+                                    {t.privacyPage.s9Brand}
                             </p>
 
                             <a

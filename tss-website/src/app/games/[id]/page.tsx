@@ -5,32 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Download, Eye, Gamepad2, Monitor, Cpu, HardDrive, Tag } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { GameInstallControls } from "@/components/Games/GameInstallControls";
-import type { GameWithDetails, GameCategory, GameStatus } from "@/types/games-records";
-
-const CATEGORY_LABELS: Record<GameCategory, string> = {
-  action: 'Akcja',
-  adventure: 'Przygodowa',
-  rpg: 'RPG',
-  strategy: 'Strategia',
-  simulation: 'Symulacja',
-  sports: 'Sportowa',
-  racing: 'Wyścigi',
-  puzzle: 'Logiczna',
-  horror: 'Horror',
-  indie: 'Indie',
-  other: 'Inne',
-};
-
-const STATUS_LABELS: Record<GameStatus, string> = {
-  draft: 'Szkic',
-  published: 'Opublikowana',
-  archived: 'Zarchiwizowana',
-  coming_soon: 'Wkrótce',
-};
+import type { GameWithDetails } from "@/types/games-records";
+import { useLanguage } from "@/hooks/use-translation";
+import { getGameCategoryLabels, getGameStatusLabels } from "@/lib/game-labels";
 
 export default function GameDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useLanguage();
+  const CATEGORY_LABELS = getGameCategoryLabels(t);
+  const STATUS_LABELS = getGameStatusLabels(t);
   const [game, setGame] = useState<GameWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -260,9 +243,6 @@ export default function GameDetailPage({ params }: { params: Promise<{ id: strin
             </CardHeader>
             <CardContent className="space-y-4">
               {game.id !== undefined && <GameInstallControls gameId={game.id} title={game.title} />}
-              <Button variant="outline" className="w-full border-[var(--color-games)]/30 text-[var(--color-games)] hover:bg-[var(--color-games)]/10 rounded-full font-medium transition-colors">
-                Dodaj do ulubionych
-              </Button>
             </CardContent>
           </Card>
 

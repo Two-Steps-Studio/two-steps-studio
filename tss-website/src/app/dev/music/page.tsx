@@ -5,17 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Filter,
   Music,
   Play,
   Clock,
   Upload,
-  X
+  X,
+  Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import type { MusicTrack, MusicGenre } from "@/types/games-records";
@@ -44,10 +45,27 @@ export default function MusicAdminPage() {
   const [selectedGenre, setSelectedGenre] = useState<MusicGenre | "all">("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTrack, setEditingTrack] = useState<MusicTrack | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkedAdmin, setCheckedAdmin] = useState(false);
 
   useEffect(() => {
-    fetchTracks();
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/auth");
+        const data = await res.json();
+        setIsAdmin(data.isAdmin || false);
+      } catch (error) {
+        console.error("Failed to check admin status:", error);
+      } finally {
+        setCheckedAdmin(true);
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchTracks();
+  }, [isAdmin]);
 
   const fetchTracks = async () => {
     try {
@@ -100,6 +118,24 @@ export default function MusicAdminPage() {
 
     return matchesSearch && matchesGenre;
   });
+
+  if (checkedAdmin && !isAdmin) {
+    return (
+      <Card className="max-w-md mx-auto mt-20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Brak dostępu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Nie masz uprawnień administratora. Skontaktuj się z administracją.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -283,16 +319,43 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
   const [uploading, setUploading] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  // For a brand-new track there's no DB row yet when a file is picked --
+  // uploads used to go under a literal "temp" storage path that no track
+  // row ever pointed back to. Create a minimal draft row on first upload and
+  // reuse its id for every subsequent upload/save in this modal session.
+  const [draftId, setDraftId] = useState<number | null>(track?.id ?? null);
 
   const handleFileUpload = async (file: File, type: 'audio' | 'cover') => {
     if (!file) return;
 
     setUploading(true);
     try {
+      let musicId = draftId;
+      if (!musicId) {
+        if (!formData.title.trim() || !formData.artist.trim()) {
+          toast.error("Podaj tytuł i wykonawcę przed przesłaniem pliku");
+          setUploading(false);
+          return;
+        }
+        const draftRes = await fetch('/api/music', {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: formData.title.trim(), artist: formData.artist.trim(), visibility: 'private' }),
+        });
+        const draftData = await draftRes.json();
+        if (!draftRes.ok || !draftData.success) {
+          toast.error(draftData.error || 'Nie udało się utworzyć wpisu utworu');
+          setUploading(false);
+          return;
+        }
+        musicId = draftData.data.id;
+        setDraftId(musicId);
+      }
+
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('type', type);
-      uploadFormData.append('musicId', track?.id?.toString() || 'temp');
+      uploadFormData.append('musicId', String(musicId));
 
       const res = await fetch('/api/upload/music', {
         method: 'POST',
@@ -340,10 +403,10 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
 
     try {
       const url = "/api/music";
-      const method = track ? "PUT" : "POST";
-      
-      if (track) {
-        payload.id = track.id;
+      const method = draftId ? "PUT" : "POST";
+
+      if (draftId) {
+        payload.id = draftId;
       }
 
       const res = await fetch(url, {

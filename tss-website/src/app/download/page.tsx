@@ -14,29 +14,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { formatBytes, type DesktopRelease } from '@/lib/desktop-release';
-
-const SYSTEM_REQUIREMENTS = [
-  'System operacyjny: Windows 10 lub nowszy (64-bit)',
-  'Procesor: Intel Core i3 lub równoważny',
-  'Pamięć RAM: 4 GB minimum (8 GB zalecane)',
-  'Miejsce na dysku: 500 MB na instalację',
-  'Połączenie internetowe: wymagane do synchronizacji',
-];
-
-const FEATURES = [
-  { heading: 'Funkcje aplikacji', items: ['Powiadomienia systemowe', 'Praca w zasobniku systemowym', 'Automatyczne aktualizacje', 'Szybki start aplikacji'] },
-  { heading: 'Integracja', items: ['Synchronizacja z kontem TSS', 'Udostępnianie plików', 'Powiadomienia o projektach', 'Wsparcie dla ciemnego motywu'] },
-];
+import { useLanguage } from '@/hooks/use-translation';
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
+  if (Number.isNaN(date.getTime())) return '-';
   return new Intl.DateTimeFormat('pl-PL', { dateStyle: 'long' }).format(date);
 }
 
 export default function DownloadPage() {
+  const { t } = useLanguage();
   const [release, setRelease] = useState<DesktopRelease | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
+
+  const SYSTEM_REQUIREMENTS = [
+    t.download.sysReq1,
+    t.download.sysReq2,
+    t.download.sysReq3,
+    t.download.sysReq4,
+    t.download.sysReq5,
+  ];
+
+  const FEATURES = [
+    { heading: t.download.featuresGroup1Title, items: [t.download.feature1, t.download.feature2, t.download.feature3, t.download.feature4] },
+    { heading: t.download.featuresGroup2Title, items: [t.download.feature5, t.download.feature6, t.download.feature7, t.download.feature8] },
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -69,11 +71,10 @@ export default function DownloadPage() {
             <Monitor className="h-10 w-10 text-[var(--color-general)]" />
           </div>
           <h1 className="mb-4 text-4xl font-bold text-[var(--text)] sm:text-5xl">
-            Pobierz aplikację desktopową
+            {t.download.title}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-[var(--text)]/70">
-            Two Steps Studio na Twoim komputerze — powiadomienia systemowe, praca w zasobniku
-            i automatyczne aktualizacje.
+            {t.download.subtitle}
           </p>
         </header>
 
@@ -83,12 +84,12 @@ export default function DownloadPage() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <CardTitle className="mb-2 text-2xl text-[var(--text)]">
-                    Two Steps Studio Desktop
+                    {t.download.cardTitle}
                   </CardTitle>
                   <CardDescription className="text-[var(--text)]/70">
                     {status === 'ready' && release
-                      ? `Wersja ${release.version} • ${release.minimumOs ?? 'Windows 10/11'} • wydana ${formatDate(release.releasedAt)}`
-                      : 'Windows 10/11 (64-bit)'}
+                      ? `${t.download.versionWord} ${release.version} • ${release.minimumOs ?? t.download.fallbackDesc}${t.download.releasedWord}${formatDate(release.releasedAt)}`
+                      : t.download.fallbackDesc}
                   </CardDescription>
                 </div>
                 {status === 'ready' && (
@@ -97,7 +98,7 @@ export default function DownloadPage() {
                     className="border-green-500/30 bg-green-500/15 text-green-700 dark:text-green-300"
                   >
                     <CheckCircle2 className="mr-1 h-3 w-3" />
-                    Najnowsza wersja
+                    {t.download.latestBadge}
                   </Badge>
                 )}
               </div>
@@ -120,13 +121,13 @@ export default function DownloadPage() {
                   <div>
                     <p className="font-medium text-[var(--text)]">
                       {status === 'empty'
-                        ? 'Żadna wersja nie została jeszcze opublikowana'
-                        : 'Nie udało się pobrać informacji o wydaniu'}
+                        ? t.download.noRelease
+                        : t.download.fetchError}
                     </p>
                     <p className="mt-1 text-sm text-[var(--text)]/70">
                       {status === 'empty'
-                        ? 'Pracujemy nad pierwszym publicznym wydaniem. Zajrzyj tu ponownie wkrótce.'
-                        : 'Odśwież stronę za chwilę. Jeśli problem się powtarza, napisz do nas.'}
+                        ? t.download.emptySubtext
+                        : t.download.errorSubtext}
                     </p>
                   </div>
                 </div>
@@ -166,7 +167,7 @@ export default function DownloadPage() {
               <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4">
                 <h2 className="flex items-center gap-2 font-semibold text-[var(--text)]">
                   <HardDrive className="h-4 w-4" />
-                  Wymagania systemowe
+                  {t.download.systemReqTitle}
                 </h2>
                 <ul className="space-y-1 text-sm text-[var(--text)]/75">
                   {SYSTEM_REQUIREMENTS.map((requirement) => (
@@ -200,7 +201,7 @@ export default function DownloadPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl text-[var(--text)]">
                   <Clock className="h-5 w-5" />
-                  Lista zmian — wersja {release.version}
+                  {t.download.changelogPrefix}{release.version}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -220,30 +221,29 @@ export default function DownloadPage() {
         <div className="mx-auto max-w-4xl">
           <Card className="border-[var(--border-color)] bg-[var(--card-bg)]">
             <CardHeader>
-              <CardTitle className="text-xl text-[var(--text)]">Instrukcja instalacji</CardTitle>
+              <CardTitle className="text-xl text-[var(--text)]">{t.download.installGuideTitle}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <h3 className="font-semibold text-[var(--text)]">Instalator (.exe)</h3>
+                <h3 className="font-semibold text-[var(--text)]">{t.download.installerTitle}</h3>
                 <ol className="list-inside list-decimal space-y-1 text-sm text-[var(--text)]/75">
-                  <li>Pobierz plik instalatora</li>
-                  <li>Uruchom pobrany plik (kliknij dwukrotnie)</li>
+                  <li>{t.download.installStep1}</li>
+                  <li>{t.download.installStep2}</li>
                   <li>
-                    Windows może pokazać ostrzeżenie SmartScreen — wybierz „Więcej informacji" i
-                    „Uruchom mimo to"
+                    {t.download.installStep3}
                   </li>
-                  <li>Wybierz lokalizację instalacji lub użyj domyślnej</li>
-                  <li>Zakończ instalację i uruchom aplikację</li>
+                  <li>{t.download.installStep4}</li>
+                  <li>{t.download.installStep5}</li>
                 </ol>
               </div>
               <Separator className="bg-[var(--border-color)]" />
               <div className="space-y-2">
-                <h3 className="font-semibold text-[var(--text)]">Wersja portable</h3>
+                <h3 className="font-semibold text-[var(--text)]">{t.download.portableTitle}</h3>
                 <ol className="list-inside list-decimal space-y-1 text-sm text-[var(--text)]/75">
-                  <li>Pobierz plik portable (.exe)</li>
-                  <li>Uruchom go bezpośrednio — instalacja nie jest wymagana</li>
-                  <li>Przy pierwszym starcie plik rozpakowuje się, więc trwa on dłużej</li>
-                  <li>Działa również z pendrive'a</li>
+                  <li>{t.download.portableStep1}</li>
+                  <li>{t.download.portableStep2}</li>
+                  <li>{t.download.portableStep3}</li>
+                  <li>{t.download.portableStep4}</li>
                 </ol>
               </div>
             </CardContent>
@@ -252,11 +252,10 @@ export default function DownloadPage() {
 
         <footer className="mx-auto mt-8 max-w-4xl text-center text-sm text-[var(--text)]/70">
           <p>
-            Aplikacja sprawdza aktualizacje automatycznie. Możesz to wyłączyć w ustawieniach
-            aplikacji.
+            {t.download.footerNote}
           </p>
           <p className="mt-2">
-            W razie problemów z instalacją napisz na{' '}
+            {t.download.footerContactPrefix}{' '}
             <a
               href="mailto:support@twostepsstudio.com"
               className="font-medium text-[var(--color-general)] underline underline-offset-4"

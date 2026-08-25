@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { createClient } from "@/lib/supabase-server";
 
 // Stripe requires a configured instance
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -23,14 +24,35 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { beatId, beatTitle, price, tier } = await req.json();
+    const { beatId, beatTitle, tier } = await req.json();
 
-    if (!beatId || !beatTitle || !price || !tier) {
+    if (!beatId || !beatTitle || !tier) {
       return NextResponse.json(
         { error: "Brak wymaganych danych" },
         { status: 400 }
       );
     }
+
+    // SECURITY: Never trust a client-supplied price. Look up the
+    // authoritative price server-side; beats with no real beat_packages row
+    // (sample/demo/legacy-records beats) have nothing real to sell and are
+    // rejected rather than trusting whatever the client claims their price is.
+    const supabase = await createClient();
+    const { data: pkg, error: pkgError } = await supabase
+      .from("beat_packages")
+      .select("price")
+      .eq("beat_id", beatId)
+      .eq("tier", tier)
+      .single();
+
+    if (pkgError || !pkg) {
+      return NextResponse.json(
+        { error: "Nieprawidłowy beat lub licencja" },
+        { status: 400 }
+      );
+    }
+
+    const price = parseFloat(pkg.price);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "blik"],

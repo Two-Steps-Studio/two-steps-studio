@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
+import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
 import type { MusicTrack } from "@/types/games-records";
 
 // GET - Fetch all music tracks with optional filters or single track by ID
@@ -115,6 +116,13 @@ export async function POST(request: Request) {
     );
   }
 
+  // SECURITY: Only admins may publish music
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
+
   try {
     const body: Partial<MusicTrack> = await request.json();
 
@@ -126,7 +134,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceClient
       .from("music_tracks")
       .insert({
         title: body.title,
@@ -183,6 +191,13 @@ export async function PUT(request: Request) {
     );
   }
 
+  // SECURITY: Only admins may edit music
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
+
   try {
     const body: Partial<MusicTrack> & { id: number } = await request.json();
 
@@ -193,7 +208,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceClient
       .from("music_tracks")
       .update({
         title: body.title,
@@ -257,6 +272,13 @@ export async function DELETE(request: Request) {
     );
   }
 
+  // SECURITY: Only admins may delete music
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+  const serviceClient = createServiceClient();
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -268,7 +290,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const { error } = await supabase
+    const { error } = await serviceClient
       .from("music_tracks")
       .delete()
       .eq('id', id);

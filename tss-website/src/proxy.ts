@@ -105,7 +105,7 @@ function handleBotRequest(request: NextRequest, botType: string): NextResponse {
       { status: 403 }
     );
   }
-  
+
   // Allow basic user agents with "bot" in name (Googlebot, Bingbot, etc.)
   if (/googlebot|bingbot|baidu|yandex/i.test(botType)) {
     return NextResponse.next();
@@ -236,7 +236,7 @@ export async function proxy(request: NextRequest) {
   if (isDevRoute && user && supabase && projectMatch) {
     try {
       const projectId = parseInt(projectMatch[1]);
-      
+
       // Check if user has access to this specific project
       const { data: project, error: projectError } = await supabase
         .from("dev_projects")
