@@ -1,6 +1,5 @@
 "use client";
 
-import {Badge} from "@/components/ui/badge";
 import {Card, CardContent} from "@/components/ui/card";
 import { useLanguage } from "@/hooks/use-translation";
 
@@ -19,9 +18,6 @@ export default function DevPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-dev)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-            <Badge className="bg-[var(--color-dev)]/20 text-[var(--color-dev)] hover:bg-[var(--color-dev)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-              {t.devPage.badge}
-            </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
               <span className="text-[var(--color-dev)]">{t.devPage.title}</span>
             </h1>

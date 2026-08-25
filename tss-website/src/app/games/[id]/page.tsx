@@ -100,9 +100,6 @@ export default function GameDetailPage({ params }: { params: Promise<{ id: strin
 
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <Badge className="bg-[var(--color-games)]/20 text-[var(--color-games)] hover:bg-[var(--color-games)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-              Two Steps Studio
-            </Badge>
             {game.category && (
               <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
                 {CATEGORY_LABELS[game.category]}

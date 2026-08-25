@@ -145,7 +145,6 @@
     "backToHome": "Back to home"
   },
   "devAbout": {
-    "badge": "DEV",
     "title": "About Us",
     "subtitle": "DEV is the part of Two Steps Studio focused on building software, tools, and technology. It's where we develop ideas, experiment, and turn concepts into working projects.",
     "navDev": "DEV",
@@ -161,7 +160,6 @@
     "approachP1": "We create to test new ideas. We build to turn them into reality. We draw inspiration from what already exists while searching for our own path."
   },
   "devRecruitmentPage": {
-    "badge": "Two Steps Studio",
     "title": "Join Two Steps Studio",
     "subtitle": "We're looking for people who want to create, experiment, and develop their own ideas together with us. You don't need to know everything - what matters more is a willingness to learn, commitment, and readiness to work on real projects.",
     "navDev": "DEV",
@@ -185,7 +183,6 @@
     "submitError": "Failed to submit application. Please try again."
   },
   "devPage": {
-    "badge": "Two Steps Studio",
     "title": "DEV",
     "subtitle": "We create technologies, tools, and experiences that help turn ideas into working projects. From the first prototype to the finished product - we build, test, and develop the solutions behind Two Steps Studio.",
     "navAbout": "About Us",
@@ -201,7 +198,6 @@
     "featureImproveDesc": "Every project is a chance to learn, improve our processes, and build better and better solutions."
   },
   "gamesAbout": {
-    "badge": "Games",
     "title": "About Games",
     "subtitle": "We create games that combine our ideas, technology, and passion for interactive entertainment. From the first prototype to a finished game - every project starts with an idea.",
     "navGames": "Games",
@@ -257,7 +253,6 @@
     "loadError": "Failed to load games"
   },
   "gamesPage": {
-    "badge": "Two Steps Studio",
     "title": "Games",
     "subtitle": "Discover games created by our studio. Download and play our productions.",
     "navGames": "Games",
@@ -267,7 +262,6 @@
     "popularTitle": "Most Popular"
   },
   "gamesShopPage": {
-    "badge": "Two Steps Studio",
     "title": "Shop",
     "subtitle": "The place to find games, add-ons, and other products related to our projects. Check out what's already available and what's coming soon.",
     "navGames": "Games",
@@ -286,7 +280,6 @@
     "gameFallback": "Game #"
   },
   "recordsPage": {
-    "badge": "Two Steps Studio",
     "title": "Records",
     "subtitle": "Podcasts, beats, and music. Listen to what we create in our studio.",
     "navBeats": "Beats",
@@ -300,7 +293,6 @@
   "recordsMusic": {
     "genreOther": "Other",
     "loadError": "Failed to load tracks",
-    "badge": "Two Steps Studio",
     "title": "Music",
     "subtitle": "Discover original music created in our studio. Listen and enjoy the sounds.",
     "navRecords": "Records",
@@ -316,7 +308,6 @@
   },
   "recordsPodcasts": {
     "loadError": "Failed to load podcasts",
-    "badge": "Two Steps Studio",
     "title": "Podcasts",
     "subtitle": "Listen to podcasts and conversations from our studio.",
     "navRecords": "Records",
@@ -363,7 +354,6 @@
     "checkoutError": "Failed to create payment session",
     "paymentError": "An error occurred during payment",
     "playingPrefix": "Now playing: ",
-    "badge": "Two Steps Studio",
     "title": "Records",
     "subtitle": "Choose your beat - from free to exclusive licenses.",
     "navRecords": "Records",
@@ -461,7 +451,6 @@
     "footerContactPrefix": "If you run into installation issues, email us at"
   },
   "shopPage": {
-    "badge": "TSS Shop",
     "title": "Two Steps Studio Shop",
     "subtitle": "Buy skins, emblems, themes, and more!",
     "emptyTitle": "The shop is still being prepared",

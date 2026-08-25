@@ -145,7 +145,6 @@
     "backToHome": "Zurück zur Startseite"
   },
   "devAbout": {
-    "badge": "DEV",
     "title": "Über uns",
     "subtitle": "DEV ist der Bereich von Two Steps Studio, der sich auf die Entwicklung von Software, Tools und Technologien konzentriert. Hier entwickeln wir Ideen, experimentieren und verwandeln Konzepte in funktionierende Projekte.",
     "navDev": "DEV",
@@ -161,7 +160,6 @@
     "approachP1": "Wir erschaffen, um neue Ideen zu testen. Wir bauen, um sie in die Realität umzusetzen. Wir lassen uns von Bestehendem inspirieren und suchen dabei unseren eigenen Weg."
   },
   "devRecruitmentPage": {
-    "badge": "Two Steps Studio",
     "title": "Werde Teil von Two Steps Studio",
     "subtitle": "Wir suchen Menschen, die gemeinsam mit uns kreativ sein, experimentieren und eigene Ideen entwickeln möchten. Du musst nicht alles wissen - wichtiger sind Lernbereitschaft, Engagement und die Bereitschaft, an echten Projekten zu arbeiten.",
     "navDev": "DEV",
@@ -185,7 +183,6 @@
     "submitError": "Bewerbung konnte nicht gesendet werden. Bitte versuche es erneut."
   },
   "devPage": {
-    "badge": "Two Steps Studio",
     "title": "DEV",
     "subtitle": "Wir entwickeln Technologien, Tools und Erlebnisse, die dabei helfen, Ideen in funktionierende Projekte zu verwandeln. Vom ersten Prototyp bis zum fertigen Produkt - wir entwickeln, testen und verbessern die Lösungen hinter Two Steps Studio.",
     "navAbout": "Über uns",
@@ -201,7 +198,6 @@
     "featureImproveDesc": "Jedes Projekt ist eine Gelegenheit zu lernen, unsere Prozesse zu verbessern und immer bessere Lösungen zu entwickeln."
   },
   "gamesAbout": {
-    "badge": "Games",
     "title": "Über unsere Spiele",
     "subtitle": "Wir entwickeln Spiele, die unsere Ideen, Technologien und unsere Leidenschaft für interaktive Unterhaltung vereinen. Vom ersten Prototyp bis zum fertigen Spiel - jedes Projekt beginnt mit einer Idee.",
     "navGames": "Games",
@@ -257,7 +253,6 @@
     "loadError": "Spiele konnten nicht geladen werden"
   },
   "gamesPage": {
-    "badge": "Two Steps Studio",
     "title": "Games",
     "subtitle": "Entdecke Spiele, die von unserem Studio entwickelt wurden. Lade unsere Produktionen herunter und spiele sie.",
     "navGames": "Games",
@@ -267,7 +262,6 @@
     "popularTitle": "Beliebteste"
   },
   "gamesShopPage": {
-    "badge": "Two Steps Studio",
     "title": "Shop",
     "subtitle": "Der Ort, an dem du Spiele, Erweiterungen und andere Produkte rund um unsere Projekte findest. Sieh dir an, was bereits verfügbar ist und was als Nächstes kommt.",
     "navGames": "Games",
@@ -286,7 +280,6 @@
     "gameFallback": "Spiel #"
   },
   "recordsPage": {
-    "badge": "Two Steps Studio",
     "title": "Records",
     "subtitle": "Podcasts, Beats und Musik. Hör dir an, was wir in unserem Studio erschaffen.",
     "navBeats": "Beats",
@@ -300,7 +293,6 @@
   "recordsMusic": {
     "genreOther": "Sonstige",
     "loadError": "Titel konnten nicht geladen werden",
-    "badge": "Two Steps Studio",
     "title": "Musik",
     "subtitle": "Entdecke Originalmusik aus unserem Studio. Hör zu und genieße die Klänge.",
     "navRecords": "Records",
@@ -316,7 +308,6 @@
   },
   "recordsPodcasts": {
     "loadError": "Podcasts konnten nicht geladen werden",
-    "badge": "Two Steps Studio",
     "title": "Podcasts",
     "subtitle": "Hör dir Podcasts und Gespräche aus unserem Studio an.",
     "navRecords": "Records",
@@ -363,7 +354,6 @@
     "checkoutError": "Zahlungssitzung konnte nicht erstellt werden",
     "paymentError": "Bei der Zahlung ist ein Fehler aufgetreten",
     "playingPrefix": "Wird abgespielt: ",
-    "badge": "Two Steps Studio",
     "title": "Records",
     "subtitle": "Wähle deinen Beat - von kostenlos bis exklusiv lizenziert.",
     "navRecords": "Records",
@@ -461,7 +451,6 @@
     "footerContactPrefix": "Bei Installationsproblemen schreib uns an"
   },
   "shopPage": {
-    "badge": "TSS Shop",
     "title": "Two Steps Studio Shop",
     "subtitle": "Kaufe Skins, Embleme, Themes und mehr!",
     "emptyTitle": "Der Shop wird noch vorbereitet",

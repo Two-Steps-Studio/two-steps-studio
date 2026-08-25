@@ -24,6 +24,7 @@ import { SidebarProvider } from "@/hooks/use-sidebar";
 import { SidebarLayout } from "@/components/SidebarLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import FirstRunExperience from "@/components/Electron/FirstRunExperience";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -125,6 +126,7 @@ export default function RootLayout({
         <VisualEditsMessenger />
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics />
       </body>
     </html>
   );

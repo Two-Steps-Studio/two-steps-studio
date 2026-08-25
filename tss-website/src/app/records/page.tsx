@@ -19,9 +19,6 @@ export default function RecordsPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-             <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] hover:bg-[var(--color-records)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-                {t.recordsPage.badge}
-             </Badge>
              <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
                 <span className="text-[var(--color-records)]">{t.recordsPage.title}</span>
              </h1>

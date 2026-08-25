@@ -1,6 +1,5 @@
 ﻿"use client"
 
-import {Badge} from "@/components/ui/badge";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import { useLanguage } from "@/hooks/use-translation";
 
@@ -19,9 +18,6 @@ export default function AboutPage() {
                 <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-dev)]/20 blur-3xl animate-pulse" />
 
                 <div className="relative z-10 space-y-4 text-center">
-                    <Badge className="bg-[var(--card-bg)] text-[var(--color-dev)]  border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-                        {t.devAbout.badge}
-                    </Badge>
                     <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
                         <span className="text-[var(--color-dev)]">{t.devAbout.title}</span>
                     </h1>

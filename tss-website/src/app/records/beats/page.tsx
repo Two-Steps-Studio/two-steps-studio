@@ -118,10 +118,20 @@ export default function BeatyPage() {
     }
   };
 
-  const handleBuy = async (beatId: string, beatTitle: string, pkg: BeatPackage) => {
+  const handleBuy = async (beat: Beat, pkg: BeatPackage) => {
     if (pkg.tier === "free") {
+      const downloadUrl = beat.audio_url || beat.preview_url;
+      if (!downloadUrl) {
+        toast.error(t.recordsBeats.noPreviewAvailable);
+        return;
+      }
       toast.info(t.recordsBeats.downloadingFree);
-      // TODO: logika pobierania darmowego beatu
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `${beat.title}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       return;
     }
 
@@ -130,8 +140,8 @@ export default function BeatyPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          beatId,
-          beatTitle,
+          beatId: beat.id,
+          beatTitle: beat.title,
           price: pkg.price,
           tier: pkg.tier,
         }),
@@ -189,11 +199,9 @@ export default function BeatyPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-            <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] hover:bg-[var(--color-records)]/30 border-0 px-4 py-1.5 text-sm font-medium rounded-full backdrop-blur-sm">
-              {t.recordsBeats.badge}
-            </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
-              <span className="text-[var(--color-records)]">{t.recordsBeats.title}</span>
+              {/* TODO: Add translation */}
+              <span className="text-[var(--color-records)]">Beats</span>
             </h1>
           <p className="text-zinc-400 max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
             {t.recordsBeats.subtitle}
@@ -362,7 +370,7 @@ export default function BeatyPage() {
 
                         {/* Przycisk */}
                         <Button
-                          onClick={() => handleBuy(beat.id, beat.title, pkg)}
+                          onClick={() => handleBuy(beat, pkg)}
                           disabled={beat.status !== "available"}
                           className={`w-full rounded-xl font-bold ${
                             pkg.tier === "free"

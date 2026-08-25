@@ -75,9 +75,6 @@ export default function ShopPage() {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       <div className="mb-12 text-center">
-        <Badge className="bg-[var(--color-general)]/20 text-[var(--color-general)] mb-4">
-          {t.shopPage.badge}
-        </Badge>
         <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
           {t.shopPage.title}
         </h1>

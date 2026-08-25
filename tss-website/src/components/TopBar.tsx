@@ -81,28 +81,32 @@ export function TopBar({ className }: { className?: string }) {
       // set through the app's own upload (which writes to profiles.avatar_url
       // keyed by the Discord id) never showed here.
       const discordId = (user.user_metadata as any)?.provider_id || user.id;
+      // NOTE: `pln_balance` was previously selected here but that column
+      // does not exist on the live `profiles` table (CLAUDE.md documents a
+      // migration adding it that was never actually applied) -- selecting a
+      // nonexistent column fails the *entire* query, so this never once
+      // reached the real row and always fell through to metadata-only,
+      // which is why the profile's real (custom-uploaded) avatar never
+      // showed here even though MobileHeader's equivalent, narrower query
+      // (no pln_balance) worked fine.
       const { data, error } = await supabase
           .from("profiles")
-          .select("avatar_url,username,pln_balance")
+          .select("avatar_url,username")
           .eq("id", discordId)
           .maybeSingle();
       // Handle error (PGRST116 = 0 rows, or other errors)
       if (error || !data) {
         console.log('[TopBar] Profile not found, using fallback values');
       }
-      // Use data if available, otherwise use fallbacks
-      const profileData = data || { avatar_url: metaAvatar, username: null, pln_balance: 0 };
-      setAvatarUrl(profileData.avatar_url ?? null);
+      // Use data if available, otherwise use fallbacks. A profile row with
+      // no avatar_url (never uploaded a custom one) is still truthy, so only
+      // overwrite the metadata-seeded avatar when the row actually has one --
+      // otherwise this was wiping out the Discord OAuth avatar that had
+      // already been set above, leaving only the initials fallback (mirrors
+      // MobileHeader, which never had this bug).
+      const profileData = data || { avatar_url: metaAvatar, username: null };
+      if (profileData.avatar_url) setAvatarUrl(profileData.avatar_url);
       setDisplayName((profileData.username as string) || user.user_metadata?.full_name || emailName);
-      if (profileData.pln_balance !== undefined) {
-        localStorage.setItem("pln_balance", String(profileData.pln_balance));
-        setPlnBalance(
-          Number(profileData.pln_balance).toLocaleString("pl-PL", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })
-        );
-      }
     };
     loadProfile();
   }, [user]);
