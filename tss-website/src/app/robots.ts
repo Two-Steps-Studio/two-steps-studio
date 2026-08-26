@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/admin/', '/_next/'],
       },
     ],
-    sitemap: 'https://twostepsstudio.vercel.app/sitemap.xml',
+    sitemap: 'https://twostepsstudio.gg/sitemap.xml',
   }
 }
