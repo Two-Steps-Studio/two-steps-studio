@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Shield, Gamepad2, ChevronRight } from "lucide-react";
 import type { Game } from "@/types/games-records";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function AdminGamesPage() {
+  const { t } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
