@@ -113,10 +113,18 @@ export function OnlineChart() {
       const yScale = (y: number) =>
         height - padding.bottom - (y / yMax) * (height - padding.top - padding.bottom);
 
-      const pathFor = (arr: number[]) =>
-        arr
-          .map((y, i) => `${i === 0 ? "M" : "L"} ${xScale(xs[i]).toFixed(2)} ${yScale(y).toFixed(2)}`)
+      const pathFor = (arr: number[]) => {
+        console.log("pathFor called with array length:", arr.length, "xs length:", xs.length);
+        return arr
+          .map((y, i) => {
+            if (typeof xs[i] !== 'number' || typeof y !== 'number') {
+              console.log("Invalid data at index", i, "xs[i]:", xs[i], "y:", y);
+              return '';
+            }
+            return `${i === 0 ? "M" : "L"} ${xScale(xs[i]).toFixed(2)} ${yScale(y).toFixed(2)}`;
+          })
           .join(" ");
+      };
 
       return {
         total: pathFor(ys),
