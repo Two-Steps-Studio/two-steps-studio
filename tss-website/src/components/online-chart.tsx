@@ -8,13 +8,11 @@ type Resp = { buckets: Bucket[]; bucket_minutes: number; window_hours: number };
 
 export function OnlineChart() {
   const { t } = useLanguage();
-  const [data, setData] = useState<Resp>({
-    buckets: [],
-    bucket_minutes: 15,
-    window_hours: 24,
-  });
+  const [data, setData] = useState<Resp | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch("/api/site-stats-history")
       .then((r) => r.json())
       .then((d: Partial<Resp>) => {
@@ -27,6 +25,7 @@ export function OnlineChart() {
             bucket_minutes: 15,
             window_hours: 24,
           });
+          setLoading(false);
           return;
         }
         const validBuckets = d.buckets.filter((b: any) =>
@@ -46,6 +45,7 @@ export function OnlineChart() {
           bucket_minutes: typeof d.bucket_minutes === "number" ? d.bucket_minutes : 15,
           window_hours: typeof d.window_hours === "number" ? d.window_hours : 24,
         });
+        setLoading(false);
       })
       .catch((e) => {
         console.error("Fetch error:", e);
@@ -54,6 +54,7 @@ export function OnlineChart() {
           bucket_minutes: 15,
           window_hours: 24,
         });
+        setLoading(false);
       });
   }, []);
 
@@ -63,7 +64,7 @@ export function OnlineChart() {
 
   const chart = useMemo(() => {
     try {
-      if (!data || !Array.isArray(data.buckets)) return null;
+      if (!data || typeof data !== 'object' || !Array.isArray(data.buckets)) return null;
       const buckets = data.buckets.filter((b): b is Bucket =>
           b != null &&
           typeof b === 'object' &&
@@ -117,8 +118,14 @@ export function OnlineChart() {
     }
   }, [data]);
 
-  if (!chart) {
+  if (loading || !data) {
     return <div className="h-60 rounded-[2.5rem] bg-white/5 animate-pulse" />;
+  }
+
+  if (!chart) {
+    return <div className="h-60 rounded-[2.5rem] bg-white/5 flex items-center justify-center text-white/50">
+      No data available
+    </div>;
   }
 
   const gridColor = "rgba(255,255,255,0.06)"; // Używa globalnego CSS dla trybu jasnego
@@ -135,7 +142,7 @@ export function OnlineChart() {
         <path d={chart.logged} stroke="var(--color-e-sport)" strokeWidth={2} fill="none" />
         <path d={chart.anon} stroke="var(--color-records)" strokeWidth={2} fill="none" />
         <text x={width - 20} y={20} textAnchor="end" fill="white" opacity={0.6} fontSize={12}>
-          24h / {data?.bucket_minutes}m
+          24h / {data?.bucket_minutes ?? 15}m
         </text>
       </svg>
       <div className="flex gap-6 px-2 py-2 text-xs text-zinc-400">
