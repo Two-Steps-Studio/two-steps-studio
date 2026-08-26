@@ -767,5 +767,20 @@
       "archived": "Archived",
       "coming_soon": "Coming Soon"
     }
+  },
+  "devMusicAdmin": {
+    "genres": {
+      "pop": "Pop",
+      "rock": "Rock",
+      "hip_hop": "Hip-Hop",
+      "electronic": "Electronic",
+      "jazz": "Jazz",
+      "classical": "Classical",
+      "rnb": "R&B",
+      "country": "Country",
+      "metal": "Metal",
+      "indie": "Indie",
+      "other": "Other"
+    }
   }
 }
