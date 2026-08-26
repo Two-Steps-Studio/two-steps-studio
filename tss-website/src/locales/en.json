@@ -746,5 +746,26 @@
   },
   "devCrudCommon": {
     "loading": "Loading..."
+  },
+  "devGamesAdmin": {
+    "categories": {
+      "action": "Action",
+      "adventure": "Adventure",
+      "rpg": "RPG",
+      "strategy": "Strategy",
+      "simulation": "Simulation",
+      "sports": "Sports",
+      "racing": "Racing",
+      "puzzle": "Puzzle",
+      "horror": "Horror",
+      "indie": "Indie",
+      "other": "Other"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived",
+      "coming_soon": "Coming Soon"
+    }
   }
 }

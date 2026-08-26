@@ -746,5 +746,26 @@
   },
   "devCrudCommon": {
     "loading": "Ładowanie..."
+  },
+  "devGamesAdmin": {
+    "categories": {
+      "action": "Akcja",
+      "adventure": "Przygodowa",
+      "rpg": "RPG",
+      "strategy": "Strategiczna",
+      "simulation": "Symulacja",
+      "sports": "Sportowa",
+      "racing": "Wyścigowa",
+      "puzzle": "Logiczna",
+      "horror": "Horror",
+      "indie": "Indie",
+      "other": "Inne"
+    },
+    "statuses": {
+      "draft": "Szkic",
+      "published": "Opublikowana",
+      "archived": "Zarchiwizowana",
+      "coming_soon": "Wkrótce"
+    }
   }
 }
