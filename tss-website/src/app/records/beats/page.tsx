@@ -199,13 +199,10 @@ export default function BeatyPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+            <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
               {/* TODO: Add translation */}
               <span className="text-[var(--color-records)]">Beats</span>
             </h1>
-          <p className="text-zinc-400 max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-            {t.recordsBeats.subtitle}
-          </p>
         </div>
       </div>
 

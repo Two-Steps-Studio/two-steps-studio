@@ -63,12 +63,9 @@ export default function PodcastyPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
         <div className="relative z-10 space-y-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+          <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
            <span className="text-[var(--color-records)]">{t.recordsPodcasts.title}</span>
           </h1>
-          <p className="text-white max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
-            {t.recordsPodcasts.subtitle}
-          </p>
         </div>
       </div>
 
