@@ -50,10 +50,10 @@ export default function AdminGamesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              Admin Access
+              {t.adminGames.noAccessTitle}
             </CardTitle>
             <CardDescription>
-              You don't have admin privileges. Contact the system administrator.
+              {t.adminGames.noAccessDescription}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -67,20 +67,20 @@ export default function AdminGamesPage() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
             <Gamepad2 className="w-8 h-8" />
-            Zarządzanie grami
+            {t.adminGames.title}
           </h1>
-          <p className="text-white/70">Publikacja i wersje buildów gier</p>
+          <p className="text-white/70">{t.adminGames.subtitle}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Gry</CardTitle>
+            <CardTitle>{t.adminGames.gamesLabel}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8 text-white/70">Ładowanie...</div>
+              <div className="text-center py-8 text-white/70">{t.devCrudCommon.loading}</div>
             ) : games.length === 0 ? (
-              <div className="text-center py-8 text-white/50">Brak gier</div>
+              <div className="text-center py-8 text-white/50">{t.adminGames.noGames}</div>
             ) : (
               <div className="space-y-3">
                 {games.map((game) => (

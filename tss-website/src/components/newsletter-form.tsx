@@ -30,11 +30,11 @@ export function NewsletterForm() {
         setEmail("");
       } else {
         setStatus("error");
-        setMessage(data.error || "Coś poszło nie tak.");
+        setMessage(data.error || t.home.somethingWrong);
       }
     } catch (err) {
       setStatus("error");
-      setMessage("Błąd połączenia.");
+      setMessage(t.home.connectionError);
     }
   };
 

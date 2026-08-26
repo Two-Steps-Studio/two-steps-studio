@@ -103,7 +103,7 @@ export function MobileHeader() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            aria-label="Two Steps Studio — strona główna"
+            aria-label={t.nav.homeAriaLabel}
             style={{ "--section-color": sectionColor } as React.CSSProperties}
             className="group relative flex items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
           >
@@ -163,7 +163,7 @@ export function MobileHeader() {
 
           {!loading && user ? (
             <Link href="/profile">
-              <Button variant="ghost" size="icon" aria-label="Profil" className="rounded-xl w-10 h-10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+              <Button variant="ghost" size="icon" aria-label={t.nav.profile} className="rounded-xl w-10 h-10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <Avatar className="w-8 h-8 border border-[var(--border-color)]">
                   {avatarUrl ? (
                     <AvatarImage src={avatarUrl} alt="Avatar" />

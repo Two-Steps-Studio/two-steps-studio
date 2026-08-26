@@ -172,8 +172,15 @@ export default function LoginPage() {
               onClick={handleGoogleLogin}
               disabled={loading}
               variant="outline"
-              className="h-12 rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[var(--text)] hover:bg-black/10 dark:hover:bg-white/10 font-bold text-sm tracking-tight transition-all"
+              className="h-12 rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[var(--text)] hover:bg-black/10 dark:hover:bg-white/10 font-bold text-sm tracking-tight transition-all flex items-center justify-center"
             >
+              <Image 
+                src="/assets/Logo/Google/google_logo.svg" 
+                alt="Google" 
+                width={20} 
+                height={20} 
+                className="mr-2"
+              />
               {t.loginExtra.google}
             </Button>
             <Button
@@ -192,8 +199,15 @@ export default function LoginPage() {
                 }
               }}
               disabled={loading}
-              className="h-12 rounded-2xl bg-[#5865F2] text-white hover:bg-[#4752C4] font-bold text-sm tracking-tight transition-all shadow-lg shadow-[#5865F2]/20"
+              className="h-12 rounded-2xl bg-[#5865F2] text-white hover:bg-[#4752C4] font-bold text-sm tracking-tight transition-all shadow-lg shadow-[#5865F2]/20 flex items-center justify-center"
             >
+              <Image 
+                src="/assets/Logo/Discord/discord_logo.svg" 
+                alt="Discord" 
+                width={20} 
+                height={20} 
+                className="mr-2 brightness-0 invert"
+              />
               {t.loginExtra.discord}
             </Button>
           </div>

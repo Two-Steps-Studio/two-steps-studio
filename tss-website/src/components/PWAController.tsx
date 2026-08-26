@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
+import { useLanguage } from "@/hooks/use-translation";
 
 // Push Notification setup
 export function usePWA() {
@@ -69,6 +70,7 @@ export function usePWA() {
 
 // Install Prompt
 export function PWAInstallPrompt() {
+  const { t } = useLanguage();
   const [promptReady, setPromptReady] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
@@ -118,10 +120,10 @@ export function PWAInstallPrompt() {
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-black text-[var(--text)]">
-            Zainstaluj Two Steps Studio?
+            {t.compPWAController.installPrompt}
           </h3>
           <p className="text-xs opacity-60">
-            Dostępne offline, prędkie uruchamianie
+            {t.compPWAController.installDesc}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -131,7 +133,7 @@ export function PWAInstallPrompt() {
             onClick={handleCancel}
             className="rounded-xl text-sm h-auto py-0"
           >
-            Nie teraz
+            {t.compPWAController.notNow}
           </Button>
           <Button
             variant="outline"
@@ -139,7 +141,7 @@ export function PWAInstallPrompt() {
             onClick={() => deferredPrompt.prompt()}
             className="rounded-xl text-sm h-auto py-0"
           >
-            Zainstaluj
+            {t.compPWAController.install}
           </Button>
         </div>
       </div>

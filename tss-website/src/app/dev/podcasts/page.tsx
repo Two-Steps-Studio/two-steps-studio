@@ -20,9 +20,11 @@ import {
   Shield
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/use-translation";
 import type { Podcast } from "@/types/games-records";
 
 export default function PodcastsAdminPage() {
+  const { t } = useLanguage();
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,28 +60,28 @@ export default function PodcastsAdminPage() {
       setPodcasts(data.data || []);
     } catch (error) {
       console.error("Błąd pobierania podcastów:", error);
-      toast.error("Nie udało się załadować podcastów");
+      toast.error(t.devPodcastsAdmin.errors.loadFailed);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Czy na pewno chcesz usunąć ten podcast?")) return;
+    if (!confirm(t.devPodcastsAdmin.confirmDelete)) return;
 
     try {
       const res = await fetch(`/api/podcasts?id=${id}`, { method: "DELETE" });
       const data = await res.json();
-      
+
       if (data.success) {
-        toast.success("Podcast został usunięty");
+        toast.success(t.devPodcastsAdmin.podcastDeleted);
         fetchPodcasts();
       } else {
-        toast.error(data.error || "Błąd podczas usuwania");
+        toast.error(data.error || t.devCrudCommon.errorDeleting);
       }
     } catch (error) {
       console.error("Błąd usuwania podcastu:", error);
-      toast.error("Wystąpił błąd podczas usuwania");
+      toast.error(t.devCrudCommon.errorDeletingGeneric);
     }
   };
 
@@ -111,12 +113,12 @@ export default function PodcastsAdminPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            Brak dostępu
+            {t.devCrudCommon.noAccess}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Nie masz uprawnień administratora. Skontaktuj się z administracją.
+            {t.devCrudCommon.noAccessDescription}
           </p>
         </CardContent>
       </Card>
@@ -129,10 +131,10 @@ export default function PodcastsAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-black dark:text-white font-[family-name:var(--font-space)]">
-            Zarządzanie Podcastami
+            {t.devPodcastsAdmin.title}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Dodawaj, edytuj i usuwaj podcasty
+            {t.devPodcastsAdmin.subtitle}
           </p>
         </div>
         <Button
@@ -140,7 +142,7 @@ export default function PodcastsAdminPage() {
           className="bg-[var(--color-records)] text-white hover:bg-[var(--color-records)]/80"
         >
           <Plus size={16} className="mr-2" />
-          Dodaj podcast
+          {t.devPodcastsAdmin.addPodcast}
         </Button>
       </div>
 
@@ -151,7 +153,7 @@ export default function PodcastsAdminPage() {
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
-                placeholder="Szukaj podcastów, prowadzących..."
+                placeholder={t.devPodcastsAdmin.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12"
@@ -162,14 +164,14 @@ export default function PodcastsAdminPage() {
               <div className="flex flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Filter size={16} />
-                  <span>Sezon:</span>
+                  <span>{t.devPodcastsAdmin.seasonLabel}</span>
                 </div>
                 <Button
                   variant={selectedSeason === "all" ? "default" : "outline"}
                   onClick={() => setSelectedSeason("all")}
                   size="sm"
                 >
-                  Wszystkie
+                  {t.devCrudCommon.all}
                 </Button>
                 {seasons.map((season) => (
                   <Button
@@ -178,7 +180,7 @@ export default function PodcastsAdminPage() {
                     onClick={() => setSelectedSeason(season)}
                     size="sm"
                   >
-                    Sezon {season}
+                    {t.devPodcastsAdmin.seasonN.replace("{n}", String(season))}
                   </Button>
                 ))}
               </div>

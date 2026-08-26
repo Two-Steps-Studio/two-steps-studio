@@ -19,26 +19,27 @@ import {
   Shield
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/use-translation";
 import type { MusicTrack, MusicGenre } from "@/types/games-records";
 
 const GENRES: MusicGenre[] = ['pop', 'rock', 'hip_hop', 'electronic', 'classical', 'jazz', 'blues', 'country', 'reggae', 'metal', 'indie', 'other'];
 
-const GENRE_LABELS: Record<MusicGenre, string> = {
-  pop: 'Pop',
-  rock: 'Rock',
-  hip_hop: 'Hip-Hop',
-  electronic: 'Electronic',
-  classical: 'Classical',
-  jazz: 'Jazz',
-  blues: 'Blues',
-  country: 'Country',
-  reggae: 'Reggae',
-  metal: 'Metal',
-  indie: 'Indie',
-  other: 'Inne',
-};
-
 export default function MusicAdminPage() {
+  const { t } = useLanguage();
+  const GENRE_LABELS: Record<MusicGenre, string> = {
+    pop: t.devMusicAdmin.genres.pop,
+    rock: t.devMusicAdmin.genres.rock,
+    hip_hop: t.devMusicAdmin.genres.hip_hop,
+    electronic: t.devMusicAdmin.genres.electronic,
+    classical: t.devMusicAdmin.genres.classical,
+    jazz: t.devMusicAdmin.genres.jazz,
+    blues: t.devMusicAdmin.genres.blues,
+    country: t.devMusicAdmin.genres.country,
+    reggae: t.devMusicAdmin.genres.reggae,
+    metal: t.devMusicAdmin.genres.metal,
+    indie: t.devMusicAdmin.genres.indie,
+    other: t.devMusicAdmin.genres.other,
+  };
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,28 +75,28 @@ export default function MusicAdminPage() {
       setTracks(data.data || []);
     } catch (error) {
       console.error("Błąd pobierania utworów:", error);
-      toast.error("Nie udało się załadować utworów");
+      toast.error(t.devMusicAdmin.errors.loadFailed);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Czy na pewno chcesz usunąć ten utwór?")) return;
+    if (!confirm(t.devMusicAdmin.confirmDelete)) return;
 
     try {
       const res = await fetch(`/api/music?id=${id}`, { method: "DELETE" });
       const data = await res.json();
-      
+
       if (data.success) {
-        toast.success("Utwór został usunięty");
+        toast.success(t.devMusicAdmin.trackDeleted);
         fetchTracks();
       } else {
-        toast.error(data.error || "Błąd podczas usuwania");
+        toast.error(data.error || t.devCrudCommon.errorDeleting);
       }
     } catch (error) {
       console.error("Błąd usuwania utworu:", error);
-      toast.error("Wystąpił błąd podczas usuwania");
+      toast.error(t.devCrudCommon.errorDeletingGeneric);
     }
   };
 
@@ -125,12 +126,12 @@ export default function MusicAdminPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            Brak dostępu
+            {t.devCrudCommon.noAccess}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Nie masz uprawnień administratora. Skontaktuj się z administracją.
+            {t.devCrudCommon.noAccessDescription}
           </p>
         </CardContent>
       </Card>
@@ -143,10 +144,10 @@ export default function MusicAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-black dark:text-white font-[family-name:var(--font-space)]">
-            Zarządzanie Muzyką
+            {t.devMusicAdmin.title}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Dodawaj, edytuj i usuwaj utwory muzyczne
+            {t.devMusicAdmin.subtitle}
           </p>
         </div>
         <Button
@@ -154,7 +155,7 @@ export default function MusicAdminPage() {
           className="bg-[var(--color-records)] text-white hover:bg-[var(--color-records)]/80"
         >
           <Plus size={16} className="mr-2" />
-          Dodaj utwór
+          {t.devMusicAdmin.addTrack}
         </Button>
       </div>
 
@@ -165,7 +166,7 @@ export default function MusicAdminPage() {
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
-                placeholder="Szukaj utworów, artystów, albumów..."
+                placeholder={t.devMusicAdmin.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12"
@@ -175,14 +176,14 @@ export default function MusicAdminPage() {
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter size={16} />
-                <span>Gatunek:</span>
+                <span>{t.devMusicAdmin.genreLabel}</span>
               </div>
               <Button
                 variant={selectedGenre === "all" ? "default" : "outline"}
                 onClick={() => setSelectedGenre("all")}
                 size="sm"
               >
-                Wszystkie
+                {t.devCrudCommon.all}
               </Button>
               {GENRES.map((genre) => (
                 <Button
@@ -210,11 +211,11 @@ export default function MusicAdminPage() {
         <Card className="rounded-3xl">
           <CardContent className="p-12 text-center">
             <Music className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Brak utworów</h3>
+            <h3 className="text-lg font-semibold mb-2">{t.devMusicAdmin.noTracks}</h3>
             <p className="text-muted-foreground">
               {searchQuery || selectedGenre !== "all"
-                ? "Nie znaleziono utworów pasujących do filtrów."
-                : "Brak utworów w bazie danych. Dodaj pierwszy utwór!"}
+                ? t.devCrudCommon.noResultsFiltered
+                : t.devMusicAdmin.noTracksInDb}
             </p>
           </CardContent>
         </Card>
@@ -258,7 +259,7 @@ export default function MusicAdminPage() {
                     onClick={() => setEditingTrack(track)}
                   >
                     <Edit size={14} className="mr-1" />
-                    Edytuj
+                    {t.devCrudCommon.edit}
                   </Button>
                   <Button
                     variant="outline"
@@ -267,7 +268,7 @@ export default function MusicAdminPage() {
                     onClick={() => handleDelete(track.id!)}
                   >
                     <Trash2 size={14} className="mr-1" />
-                    Usuń
+                    {t.devCrudCommon.delete}
                   </Button>
                 </div>
               </CardContent>
@@ -297,6 +298,21 @@ export default function MusicAdminPage() {
 
 // Music Form Modal Component
 function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; onClose: () => void; onSave: () => void }) {
+  const { t } = useLanguage();
+  const GENRE_LABELS: Record<MusicGenre, string> = {
+    pop: t.devMusicAdmin.genres.pop,
+    rock: t.devMusicAdmin.genres.rock,
+    hip_hop: t.devMusicAdmin.genres.hip_hop,
+    electronic: t.devMusicAdmin.genres.electronic,
+    classical: t.devMusicAdmin.genres.classical,
+    jazz: t.devMusicAdmin.genres.jazz,
+    blues: t.devMusicAdmin.genres.blues,
+    country: t.devMusicAdmin.genres.country,
+    reggae: t.devMusicAdmin.genres.reggae,
+    metal: t.devMusicAdmin.genres.metal,
+    indie: t.devMusicAdmin.genres.indie,
+    other: t.devMusicAdmin.genres.other,
+  };
   const [formData, setFormData] = useState({
     title: track?.title || "",
     artist: track?.artist || "",
@@ -333,7 +349,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
       let musicId = draftId;
       if (!musicId) {
         if (!formData.title.trim() || !formData.artist.trim()) {
-          toast.error("Podaj tytuł i wykonawcę przed przesłaniem pliku");
+          toast.error(t.devMusicAdmin.errors.titleArtistRequiredForUpload);
           setUploading(false);
           return;
         }
@@ -344,7 +360,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
         });
         const draftData = await draftRes.json();
         if (!draftRes.ok || !draftData.success) {
-          toast.error(draftData.error || 'Nie udało się utworzyć wpisu utworu');
+          toast.error(draftData.error || t.devMusicAdmin.errors.createDraftFailed);
           setUploading(false);
           return;
         }
@@ -370,13 +386,13 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
         } else {
           setFormData({ ...formData, cover_image_url: data.data.publicUrl });
         }
-        toast.success('Plik został przesłany');
+        toast.success(t.devCrudCommon.fileUploaded);
       } else {
-        toast.error(data.error || 'Błąd podczas przesyłania');
+        toast.error(data.error || t.devCrudCommon.errorUploading);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Wystąpił błąd podczas przesyłania');
+      toast.error(t.devCrudCommon.errorUploadingGeneric);
     } finally {
       setUploading(false);
     }
@@ -387,11 +403,11 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
 
     // Validation
     if (!formData.title.trim()) {
-      toast.error("Tytuł jest wymagany");
+      toast.error(t.devMusicAdmin.errors.titleRequired);
       return;
     }
     if (!formData.artist.trim()) {
-      toast.error("Wykonawca jest wymagany");
+      toast.error(t.devMusicAdmin.errors.artistRequired);
       return;
     }
 
@@ -418,19 +434,19 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || `Błąd HTTP: ${res.status}`);
+        toast.error(data.error || `${t.devCrudCommon.httpError}: ${res.status}`);
         return;
       }
 
       if (data.success) {
-        toast.success(track ? "Utwór zaktualizowany" : "Utwór utworzony");
+        toast.success(track ? t.devMusicAdmin.trackUpdated : t.devMusicAdmin.trackCreated);
         onSave();
       } else {
-        toast.error(data.error || "Błąd podczas zapisu");
+        toast.error(data.error || t.devCrudCommon.errorSaving);
       }
     } catch (error) {
       console.error("Błąd zapisu:", error);
-      toast.error("Wystąpił błąd podczas zapisu");
+      toast.error(t.devCrudCommon.errorSavingGeneric);
     }
   };
 
@@ -438,13 +454,13 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
         <CardHeader>
-          <CardTitle>{track ? "Edytuj utwór" : "Dodaj nowy utwór"}</CardTitle>
+          <CardTitle>{track ? t.devMusicAdmin.editTrack : t.devMusicAdmin.addNewTrack}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Tytuł *</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.title} *</label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -452,7 +468,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Wykonawca *</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.artist} *</label>
                 <Input
                   value={formData.artist}
                   onChange={(e) => setFormData({ ...formData, artist: e.target.value })}
@@ -463,14 +479,14 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Album</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.album}</label>
                 <Input
                   value={formData.album}
                   onChange={(e) => setFormData({ ...formData, album: e.target.value })}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Gatunek</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.genre}</label>
                 <select
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background"
                   value={formData.genre}
@@ -487,7 +503,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Data wydania</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.releaseDate}</label>
                 <Input
                   type="date"
                   value={formData.release_date}
@@ -495,7 +511,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Czas trwania (sekundy)</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.durationSeconds}</label>
                 <Input
                   type="number"
                   value={formData.duration_seconds}
@@ -505,11 +521,11 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
             </div>
 
             <div className="space-y-4">
-              <label className="text-sm font-medium">Pliki</label>
-              
+              <label className="text-sm font-medium">{t.devCrudCommon.filesLabel}</label>
+
               {/* Cover Image Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Okładka</label>
+                <label className="text-xs text-muted-foreground">{t.devMusicAdmin.fields.cover}</label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -529,7 +545,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                     disabled={!coverFile || uploading}
                   >
                     <Upload size={16} className="mr-1" />
-                    {uploading ? 'Przesyłanie...' : 'Prześlij'}
+                    {uploading ? t.devCrudCommon.uploading : t.devCrudCommon.upload}
                   </Button>
                 </div>
                 {formData.cover_image_url && (
@@ -550,7 +566,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
 
               {/* Audio File Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Plik audio</label>
+                <label className="text-xs text-muted-foreground">{t.devMusicAdmin.fields.audioFile}</label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -570,13 +586,13 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                     disabled={!audioFile || uploading}
                   >
                     <Upload size={16} className="mr-1" />
-                    {uploading ? 'Przesyłanie...' : 'Prześlij'}
+                    {uploading ? t.devCrudCommon.uploading : t.devCrudCommon.upload}
                   </Button>
                 </div>
                 {formData.audio_file_url && (
                   <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
                     <Music size={16} className="text-[var(--color-records)]" />
-                    <span className="text-sm text-zinc-300 truncate flex-1">Plik audio załadowany</span>
+                    <span className="text-sm text-zinc-300 truncate flex-1">{t.devCrudCommon.audioFileLoaded}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -591,7 +607,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Opis</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.description}</label>
               <textarea
                 className="w-full min-h-[80px] px-3 py-2 rounded-lg border border-input bg-background"
                 value={formData.description}
@@ -600,7 +616,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Tekst utworu</label>
+              <label className="text-sm font-medium">{t.devMusicAdmin.fields.lyrics}</label>
               <textarea
                 className="w-full min-h-[120px] px-3 py-2 rounded-lg border border-input bg-background"
                 value={formData.lyrics}
@@ -609,7 +625,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Linki zewnętrzne</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.externalLinks}</label>
               <Input
                 placeholder="Spotify URL"
                 value={formData.spotify_url}
@@ -628,9 +644,9 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Tagi (przecinkami)</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.tagsCommaSeparated}</label>
               <Input
-                placeholder="np. chill, lo-fi, instrumental"
+                placeholder={t.devMusicAdmin.tagsPlaceholder}
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
               />
@@ -638,15 +654,15 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium">Widoczność</label>
+                <label className="text-sm font-medium">{t.devCrudCommon.visibility}</label>
                 <select
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background"
                   value={formData.visibility}
                   onChange={(e) => setFormData({ ...formData, visibility: e.target.value as any })}
                 >
-                  <option value="private">Prywatna</option>
-                  <option value="public">Publiczna</option>
-                  <option value="unlisted">Niewidoczna</option>
+                  <option value="private">{t.devCrudCommon.visibilityPrivate}</option>
+                  <option value="public">{t.devCrudCommon.visibilityPublic}</option>
+                  <option value="unlisted">{t.devCrudCommon.visibilityUnlisted}</option>
                 </select>
               </div>
               <div className="col-span-2 flex items-end">
@@ -657,17 +673,17 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                     className="rounded"
                   />
-                  Wyróżniony
+                  {t.devCrudCommon.featured}
                 </label>
               </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
-                Anuluj
+                {t.devCrudCommon.cancel}
               </Button>
               <Button type="submit" className="bg-[var(--color-records)] text-white hover:bg-[var(--color-records)]/80">
-                {track ? "Zapisz zmiany" : "Utwórz utwór"}
+                {track ? t.devCrudCommon.saveChanges : t.devMusicAdmin.createTrack}
               </Button>
             </div>
           </form>

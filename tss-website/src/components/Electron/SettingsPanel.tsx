@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useIsElectron, useAppInfo, useAppLogs, useAppControls, useWindowControls, useAppSettings } from '@/hooks/useElectron';
+import { useLanguage } from '@/hooks/use-translation';
 
 // Mirrors DEFAULT_SETTINGS in electron/main.js, which is what enforces them.
 const DEFAULT_SETTINGS = {
@@ -13,6 +14,7 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function SettingsPanel() {
+  const { t } = useLanguage();
   const isElectron = useIsElectron();
   const appInfo = useAppInfo();
   const { logs, getLogs, clearLogs } = useAppLogs();
@@ -39,7 +41,7 @@ export default function SettingsPanel() {
   const handleClearCache = async () => {
     if (isElectron && window.electron) {
       await window.electron.clearSession();
-      alert('Cache został wyczyszczony');
+      alert(t.compElectronSettings.cacheCleared);
     }
   };
 
@@ -61,9 +63,9 @@ export default function SettingsPanel() {
   return (
     <div className="bg-[var(--bg)] rounded-xl p-6 border border-[var(--bg)]">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-[var(--text)]">Ustawienia</h2>
+        <h2 className="text-2xl font-bold text-[var(--text)]">{t.compElectronSettings.title}</h2>
         <div className="text-sm text-[var(--text)]">
-          Wersja {appInfo?.version || '1.0.0'}
+          {t.compElectronSettings.versionLabel} {appInfo?.version || '1.0.0'}
         </div>
       </div>
 
@@ -76,7 +78,7 @@ export default function SettingsPanel() {
               : 'bg-[var(--bg)] text-[var(--text)]'
           }`}
         >
-          Ogólne
+          {t.compElectronSettings.tabGeneral}
         </button>
         <button
           onClick={() => setActiveTab('advanced')}
@@ -86,7 +88,7 @@ export default function SettingsPanel() {
               : 'bg-[var(--bg)] text-[var(--text)] hover:bg-gray-700'
           }`}
         >
-          Zaawansowane
+          {t.compElectronSettings.tabAdvanced}
         </button>
         <button
           onClick={() => setActiveTab('diagnostics')}
@@ -96,7 +98,7 @@ export default function SettingsPanel() {
               : 'bg-[var(--bg)] text-[var(--text)] hover:bg-gray-700'
           }`}
         >
-          Diagnostyka
+          {t.compElectronSettings.tabDiagnostics}
         </button>
       </div>
 
@@ -104,8 +106,8 @@ export default function SettingsPanel() {
         <div className="space-y-4">
           <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-[var(--text)] font-medium">Uruchamiaj przy starcie Windows</span>
-              <p className="text-[var(--text)] text-sm">Aplikacja będzie uruchamiana automatycznie</p>
+              <span className="text-[var(--text)] font-medium">{t.compElectronSettings.autoStartLabel}</span>
+              <p className="text-[var(--text)] text-sm">{t.compElectronSettings.autoStartDesc}</p>
             </div>
             <input
               type="checkbox"
@@ -118,8 +120,8 @@ export default function SettingsPanel() {
 
           <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-[var(--text)] font-medium">Minimalizuj do tray</span>
-              <p className="text-[var(--text)] text-sm">Aplikacja będzie działać w tle po zamknięciu</p>
+              <span className="text-[var(--text)] font-medium">{t.compElectronSettings.minimizeToTrayLabel}</span>
+              <p className="text-[var(--text)] text-sm">{t.compElectronSettings.minimizeToTrayDesc}</p>
             </div>
             <input
               type="checkbox"
@@ -132,8 +134,8 @@ export default function SettingsPanel() {
 
           <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-[var(--text)] font-medium">Powiadomienia systemowe</span>
-              <p className="text-[var(--text)] text-sm">Otrzymuj powiadomienia o aktualizacjach</p>
+              <span className="text-[var(--text)] font-medium">{t.compElectronSettings.notificationsLabel}</span>
+              <p className="text-[var(--text)] text-sm">{t.compElectronSettings.notificationsDesc}</p>
             </div>
             <input
               type="checkbox"
@@ -146,8 +148,8 @@ export default function SettingsPanel() {
 
           <label className="flex items-center justify-between p-4 bg-[var(--bg)] rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-[var(--text)] font-medium">Automatyczne aktualizacje</span>
-              <p className="text-[var(--text)] text-sm">Pobieraj i instaluj aktualizacje automatycznie</p>
+              <span className="text-[var(--text)] font-medium">{t.compElectronSettings.autoUpdateLabel}</span>
+              <p className="text-[var(--text)] text-sm">{t.compElectronSettings.autoUpdateDesc}</p>
             </div>
             <input
               type="checkbox"
@@ -163,12 +165,12 @@ export default function SettingsPanel() {
             disabled={saveState === 'saving'}
             className="w-full py-3bg-[var(--bg)] text-[var(--text)] font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
           >
-            {saveState === 'saving' ? 'Zapisywanie...' : 'Zapisz ustawienia'}
+            {saveState === 'saving' ? t.compElectronSettings.saving : t.compElectronSettings.saveSettings}
           </button>
 
           <p aria-live="polite" className="text-sm text-center min-h-5">
-            {saveState === 'saved' && <span className="text-green-400">Ustawienia zapisane</span>}
-            {saveState === 'error' && <span className="text-red-400">Nie udało się zapisać ustawień</span>}
+            {saveState === 'saved' && <span className="text-green-400">{t.compElectronSettings.settingsSaved}</span>}
+            {saveState === 'error' && <span className="text-red-400">{t.compElectronSettings.saveFailed}</span>}
           </p>
         </div>
       )}
@@ -177,8 +179,8 @@ export default function SettingsPanel() {
         <div className="space-y-4">
           <label className="flex items-center justify-between p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-750 transition">
             <div>
-              <span className="text-[var(--text)] font-medium">Przyspieszenie sprzętowe</span>
-              <p className="text-[var(--text)] text-sm">Użyj GPU dla lepszej wydajności</p>
+              <span className="text-[var(--text)] font-medium">{t.compElectronSettings.hardwareAccelerationLabel}</span>
+              <p className="text-[var(--text)] text-sm">{t.compElectronSettings.hardwareAccelerationDesc}</p>
             </div>
             <input
               type="checkbox"
@@ -191,15 +193,15 @@ export default function SettingsPanel() {
 
           {requiresRestart && (
             <p role="status" className="p-3 rounded-lg bg-[var(--bg)] text-amber-300 text-sm">
-              Zmiana przyspieszenia sprzętowego zadziała po ponownym uruchomieniu aplikacji.
+              {t.compElectronSettings.hardwareAccelerationRestartNotice}
             </p>
           )}
 
           <div className="p-4 bg-[var(--bg)] rounded-lg">
-            <h3 className="text-[var(--text)] font-medium mb-2">Informacje o systemie</h3>
+            <h3 className="text-[var(--text)] font-medium mb-2">{t.compElectronSettings.systemInfoTitle}</h3>
             <div className="space-y-1 text-sm text-[var(--text)]">
-              <p>Platforma: {appInfo?.platform}</p>
-              <p>Architektura: {appInfo?.arch}</p>
+              <p>{t.compElectronSettings.platform}: {appInfo?.platform}</p>
+              <p>{t.compElectronSettings.architecture}: {appInfo?.arch}</p>
               <p>Electron: {appInfo?.electronVersion}</p>
               <p>Node: {appInfo?.nodeVersion}</p>
               <p>Chrome: {appInfo?.chromeVersion}</p>
@@ -210,14 +212,14 @@ export default function SettingsPanel() {
             onClick={handleClearCache}
             className="w-full py-3 bg-red-500 text-[var(--text)] font-semibold rounded-lg hover:bg-red-600 transition"
           >
-            Wyczyść cache
+            {t.compElectronSettings.clearCache}
           </button>
 
           <button
             onClick={restartApp}
             className="w-full py-3 bg-[var(--bg)] text-[var(--text)] font-semibold rounded-lg hover:bg-gray-600 transition"
           >
-            Uruchom ponownie aplikację
+            {t.compElectronSettings.restartApp}
           </button>
         </div>
       )}
@@ -225,9 +227,9 @@ export default function SettingsPanel() {
       {activeTab === 'diagnostics' && (
         <div className="space-y-4">
           <div className="p-4 bg-[var(--bg)] rounded-lg">
-            <h3 className="text-[var(--text)] font-medium mb-2">Logi aplikacji</h3>
+            <h3 className="text-[var(--text)] font-medium mb-2">{t.compElectronSettings.appLogsTitle}</h3>
             <div className="bg-[var(--bg)] text-[var(--text)] rounded p-4 h-64 overflow-y-auto text-xs font-mono">
-              {logs || 'Brak logów. Kliknij "Pobierz logi" aby wyświetlić.'}
+              {logs || t.compElectronSettings.noLogs}
             </div>
           </div>
 
@@ -236,36 +238,36 @@ export default function SettingsPanel() {
               onClick={handleExportLogs}
               className="flex-1 py-3 bg-blue-500 text-[var(--text)] font-semibold rounded-lg hover:bg-blue-600 transition"
             >
-              Pobierz logi
+              {t.compElectronSettings.exportLogs}
             </button>
             <button
               onClick={clearLogs}
               className="flex-1 py-3 bg-red-500 text-[var(--text)] font-semibold rounded-lg hover:bg-red-600 transition"
             >
-              Wyczyść logi
+              {t.compElectronSettings.clearLogs}
             </button>
           </div>
 
           <div className="p-4 bg-[var(--bg)] rounded-lg">
-            <h3 className="text-[var(--text)] font-medium mb-2">Testy okna</h3>
+            <h3 className="text-[var(--text)] font-medium mb-2">{t.compElectronSettings.windowTestsTitle}</h3>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={minimizeWindow}
                 className="py-2 bg-[var(--bg)] text-[var(--text)] rounded hover:bg-gray-600 transition"
               >
-                Minimalizuj
+                {t.compElectronSettings.minimize}
               </button>
               <button
                 onClick={maximizeWindow}
                 className="py-2 bg-[var(--bg)] text-[var(--text)] rounded hover:bg-gray-600 transition"
               >
-                Maksymalizuj
+                {t.compElectronSettings.maximize}
               </button>
               <button
                 onClick={closeWindow}
                 className="py-2 bg-red-500 text-[var(--text)] rounded hover:bg-red-600 transition"
               >
-                Zamknij
+                {t.compElectronSettings.close}
               </button>
             </div>
           </div>

@@ -20,8 +20,10 @@ import {
 import Link from "next/link";
 import type { PodcastWithSeries } from "@/types/games-records";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function PodcastDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useLanguage();
   const [podcast, setPodcast] = useState<PodcastWithSeries | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,20 +50,20 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
         const res = await fetch(`/api/podcasts?id=${unwrappedParams.id}`);
         if (!res.ok) {
           if (res.status === 404) {
-            throw new Error("Podcast nie został znaleziony");
+            throw new Error(t.recordsPodcasts.notFound);
           }
-          throw new Error("Błąd pobierania danych podcastu");
+          throw new Error(t.recordsPodcasts.fetchError);
         }
         const data = await res.json();
 
         if (!data.success || !data.data) {
-          throw new Error("Podcast nie został znaleziony");
+          throw new Error(t.recordsPodcasts.notFound);
         }
 
         setPodcast(data.data);
       } catch (err) {
         console.error("[PODCAST DETAIL] Error:", err);
-        setError(err instanceof Error ? err.message : "Nieznany błąd");
+        setError(err instanceof Error ? err.message : t.recordsPodcasts.unknownError);
       } finally {
         setLoading(false);
       }
@@ -91,11 +93,11 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
     return (
       <div className="container mx-auto p-6 mt-20 max-w-7xl">
         <div className="p-6 rounded-xl bg-red-500/10 border border-red-500/30 text-red-200 mb-8">
-          <strong>Błąd:</strong> {error || "Podcast nie został znaleziony"}
+          <strong>{t.recordsPodcasts.errorLabel}</strong> {error || t.recordsPodcasts.notFound}
         </div>
         <Link href="/records/podcasts" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-records)] hover:bg-[var(--color-records)]/90 text-white rounded-full font-medium transition-colors shadow-lg">
           <ArrowLeft size={18} />
-          Wróć do podcastów
+          {t.recordsPodcasts.backToPodcasts}
         </Link>
       </div>
     );
@@ -109,7 +111,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
           className="inline-flex items-center gap-2 text-[var(--color-records)] hover:text-[var(--color-records)]/80 transition-colors"
         >
           <ArrowLeft size={18} />
-          <span>Wróć do podcastów</span>
+          <span>{t.recordsPodcasts.backToPodcasts}</span>
         </Link>
       </div>
 
@@ -132,12 +134,12 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
                   <div className="flex items-center gap-3 flex-wrap">
                     {podcast.episode_number && (
                       <Badge className="bg-[var(--color-records)]/20 text-[var(--color-records)] border-[var(--color-records)]/30">
-                        Odcinek {podcast.episode_number}
+                        {t.recordsPodcasts.episodePrefix}{podcast.episode_number}
                       </Badge>
                     )}
                     {podcast.season && (
                       <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
-                        Sezon {podcast.season}
+                        {t.recordsPodcasts.seasonPrefix}{podcast.season}
                       </Badge>
                     )}
                   </div>
@@ -237,7 +239,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
           {podcast.description && (
             <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Opis</CardTitle>
+                <CardTitle className="text-2xl font-bold text-white">{t.recordsPodcasts.descriptionLabel}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
@@ -251,7 +253,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
           {podcast.guests && podcast.guests.length > 0 && (
             <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Goście</CardTitle>
+                <CardTitle className="text-2xl font-bold text-white">{t.recordsPodcasts.guestsLabel}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -270,35 +272,35 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
           {/* Info */}
           <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Informacje</CardTitle>
+              <CardTitle className="text-2xl font-bold text-white">{t.recordsPodcasts.infoLabel}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {podcast.host && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Prowadzący:</span>
+                  <span className="text-zinc-400">{t.recordsPodcasts.hostLabel}</span>
                   <span className="text-white">{podcast.host}</span>
                 </div>
               )}
               {podcast.episode_number && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Numer odcinka:</span>
+                  <span className="text-zinc-400">{t.recordsPodcasts.episodeNumberLabel}</span>
                   <span className="text-white">{podcast.episode_number}</span>
                 </div>
               )}
               {podcast.season && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Sezon:</span>
+                  <span className="text-zinc-400">{t.recordsPodcasts.seasonLabel}</span>
                   <span className="text-white">{podcast.season}</span>
                 </div>
               )}
               {podcast.published_date && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Data publikacji:</span>
+                  <span className="text-zinc-400">{t.recordsPodcasts.publishDateLabel}</span>
                   <span className="text-white">{new Date(podcast.published_date).toLocaleDateString('pl-PL')}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Odtworzenia:</span>
+                <span className="text-zinc-400">{t.recordsPodcasts.playsLabel}</span>
                 <div className="flex items-center gap-1">
                   <Mic2 size={14} className="text-[var(--color-records)]" />
                   <span className="text-white">{podcast.plays || 0}</span>
@@ -311,7 +313,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
           {podcast.tags && podcast.tags.length > 0 && (
             <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">Tagi</CardTitle>
+                <CardTitle className="text-xl font-bold text-white">{t.recordsPodcasts.tagsLabel}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">

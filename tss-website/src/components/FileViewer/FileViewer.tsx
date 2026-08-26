@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DevProjectFile } from "@/lib/types/dev-types";
+import { useLanguage } from "@/hooks/use-translation";
 
 // Sub-viewers
 import { ImageViewer } from "./viewers/ImageViewer";
@@ -135,6 +136,7 @@ function formatDate(dateString: string | null | undefined): string {
 }
 
 export default function FileViewer({ file, files, isOpen, onClose, onDelete }: FileViewerProps) {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -212,7 +214,7 @@ export default function FileViewer({ file, files, isOpen, onClose, onDelete }: F
   }, [currentIndex, files.length]);
 
   const handleDelete = useCallback(() => {
-    if (onDelete && currentFile && confirm(`Czy na pewno chcesz usunąć plik "${currentFile.name}"?`)) {
+    if (onDelete && currentFile && confirm(`${t.compFileViewer.confirmDelete} "${currentFile.name}"?`)) {
       onDelete(currentFile.id);
       onClose();
     }
@@ -246,7 +248,7 @@ export default function FileViewer({ file, files, isOpen, onClose, onDelete }: F
               size="icon"
               onClick={handleCopyUrl}
               className="text-[var(--text)] hover:bg-[var(--bg)]"
-              title="Kopiuj link"
+              title={t.compFileViewer.copyLink}
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -256,7 +258,7 @@ export default function FileViewer({ file, files, isOpen, onClose, onDelete }: F
               size="icon"
               onClick={handleDownload}
               className="text-[var(--text)] hover:bg-[var(--bg)]"
-              title="Pobierz"
+              title={t.compFileViewer.download}
             >
               <Download className="h-4 w-4" />
             </Button>
@@ -267,7 +269,7 @@ export default function FileViewer({ file, files, isOpen, onClose, onDelete }: F
                 size="icon"
                 onClick={() => window.open(currentFile.file_url, "_blank")}
                 className="text-[var(--text)] hover:bg-[var(--bg)]"
-                title="Otwórz w nowej karcie"
+                title={t.compFileViewer.openInNewTab}
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
@@ -279,7 +281,7 @@ export default function FileViewer({ file, files, isOpen, onClose, onDelete }: F
                 size="icon"
                 onClick={handleDelete}
                 className="text-red-500 hover:bg-red-500/10"
-                title="Usuń"
+                title={t.compFileViewer.delete}
               >
                 <X className="h-4 w-4" />
               </Button>

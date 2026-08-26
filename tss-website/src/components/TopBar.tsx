@@ -150,7 +150,7 @@ export function TopBar({ className }: { className?: string }) {
           <div className="flex items-center gap-4 flex-1">
             <button
                 onClick={toggle}
-                aria-label="Otwórz menu"
+                aria-label={t.nav.openMenu}
                 className="lg:hidden p-2.5 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
             >
               <Menu size={22} />
@@ -184,7 +184,7 @@ export function TopBar({ className }: { className?: string }) {
               )}
 
               <Link href="/notifications">
-                <Button variant="ghost" size="icon" aria-label="Powiadomienia" className="rounded-2xl w-11 h-11 relative bg-[var(--bg)] border border-[var(--border-color)] transition-all hover:scale-105 active:scale-95 cursor-pointer">
+                <Button variant="ghost" size="icon" aria-label={t.nav.notifications} className="rounded-2xl w-11 h-11 relative bg-[var(--bg)] border border-[var(--border-color)] transition-all hover:scale-105 active:scale-95 cursor-pointer">
                   <Bell size={20} />
                   {unread > 0 ? (
                       <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[var(--color-general)] text-white text-[10px] font-black flex items-center justify-center border-2 border-[var(--bg)]">
@@ -201,7 +201,7 @@ export function TopBar({ className }: { className?: string }) {
             
                   {/* Balans PLN */}
                   <div className="hidden md:flex flex-col items-end mr-2">
-                    <span className="text-xs text-muted-foreground font-medium">Saldo:</span>
+                    <span className="text-xs text-muted-foreground font-medium">{t.nav.balance}</span>
                     <span className="text-sm font-black text-[var(--color-general)]">
                       {plnBalance} zł
                     </span>
@@ -213,9 +213,9 @@ export function TopBar({ className }: { className?: string }) {
                       <div className="flex items-center gap-1">
                         {/* Nazwa użytkownika */}
                         <div className="hidden sm:flex flex-col items-end mr-1">
-                          <span className="text-xs text-muted-foreground font-medium text-[var(--text)]">Witaj,</span>
+                          <span className="text-xs text-muted-foreground font-medium text-[var(--text)]">{t.nav.greeting}</span>
                           <span className="text-sm font-black text-[var(--color-general)] truncate max-w-[160px]">
-                            {displayName || "Użytkownik"}
+                            {displayName || t.nav.userFallback}
                           </span>
                         </div>
 

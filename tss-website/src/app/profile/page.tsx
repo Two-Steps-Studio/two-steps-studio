@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/hooks/use-translation";
 import ProfileForm from "./profile-form";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,6 +66,7 @@ function findRole(raw: string): { priority: number; color: string; label: string
 }
 
 function DiscordRolesPanel({ discordRoles }: { discordRoles: string[] }) {
+    const { t } = useLanguage();
     const matched = discordRoles
         .map((raw) => ({ raw, info: findRole(raw) }))
         .filter((x): x is { raw: string; info: { priority: number; color: string; label: string } } => x.info !== null)
@@ -74,7 +76,7 @@ function DiscordRolesPanel({ discordRoles }: { discordRoles: string[] }) {
 
     return (
         <div className="space-y-2 pt-1">
-            <p className="text-[10px] uppercase tracking-[0.14em] font-black text-white/35 select-none">Role - {matched.length}</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] font-black text-white/35 select-none">{t.profile.roles} - {matched.length}</p>
             <div className="flex flex-wrap gap-1.5">
                 {matched.map(({ raw, info }) => (
                     <span key={raw} className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[12px] font-semibold border cursor-default select-none transition-all hover:brightness-125"
@@ -126,6 +128,7 @@ const fetchRankingData = async () => {
 
 export default function ProfilePage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
@@ -258,7 +261,7 @@ export default function ProfilePage() {
     }, [router]);
 
     if (!authChecked || (loading && !user)) {
-        return <div className="p-20 text-center italic">Wczytywanie...</div>;
+        return <div className="p-20 text-center italic">{t.profile.loading}</div>;
     }
 
     const discordId = user?.user_metadata?.provider_id || user?.id;
@@ -300,11 +303,11 @@ export default function ProfilePage() {
                                 <h1 className="text-4xl font-bold text-[var(--text)] tracking-tight">{discordName}</h1>
                                 {isDiscordLinked ? (
                                     <Badge variant="outline" className="mt-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-400 gap-1.5">
-                                        <CheckCircle2 size={12} /> Zweryfikowany Discord
+                                        <CheckCircle2 size={12} /> {t.profile.discordVerified}
                                     </Badge>
                                 ) : (
                                     <Button variant="outline" size="sm" className="mt-2 h-7 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 text-xs rounded-full gap-2">
-                                        <LinkIcon size={12} /> Połącz z Discordem
+                                        <LinkIcon size={12} /> {t.profile.connectDiscord}
                                     </Button>
                                 )}
                             </div>
@@ -317,7 +320,7 @@ export default function ProfilePage() {
 
                         <div className="w-full md:w-72 space-y-3 bg-[var(--bg)] p-5 rounded-2xl border border-[var(--border-color)] backdrop-blur-sm">
                             <div className="flex items-center justify-between text-sm mb-1">
-                                <span className="font-bold flex items-center gap-2 text-[var(--text)] text-base"><Trophy size={15} className="text-[var(--color-general)]" /> Postęp Poziomu</span>
+                                <span className="font-bold flex items-center gap-2 text-[var(--text)] text-base"><Trophy size={15} className="text-[var(--color-general)]" /> {t.profile.levelProgress}</span>
                                 <span className="font-black text-[var(--color-general)] text-base">{Math.round(progress)}%</span>
                             </div>
                             <Progress value={progress} className="h-4 rounded-full bg-white/10 border-[var(--border-color)]"  />
@@ -336,25 +339,25 @@ export default function ProfilePage() {
                 <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-xl">
                     <Card className="bg-transparent border-0 shadow-none rounded-[2.5rem]">
                         <CardHeader className="border-b border-black/10 dark:border-white/5 text-[var(--text)]  font-bold italic flex items-center">
-                            <Star size={18} className="mr-2 text-[var(--color-general)]" /> Statystyki
+                            <Star size={18} className="mr-2 text-[var(--color-general)]" /> {t.profile.statistics}
                         </CardHeader>
                         <CardContent className="p-6 space-y-4">
                             <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)] border border-[var(--border-color)]">
-                                <span className="text-sm font-bold opacity-60 text-[var(--text)]">Portfel</span>
+                                <span className="text-sm font-bold opacity-60 text-[var(--text)]">{t.profile.wallet}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl font-black text-[var(--color-general)]">{(profile?.money ?? 0).toLocaleString()}</span>
                                     <Image src="/assets/discord/coin/Coin_TSS.png" alt="C" width={24} height={24} />
                                 </div>
                             </div>
                             <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)] border border-[var(--border-color)]">
-                                <span className="text-sm font-bold opacity-60 text-[var(--text)]">Bank</span>
+                                <span className="text-sm font-bold opacity-60 text-[var(--text)]">{t.profile.bank}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl font-black text-[var(--color-general)]">{profile?.bank || 0}</span>
                                     <Image src="/assets/discord/coin/Coin_TSS.png" alt="C" width={24} height={24} className="opacity-80" />
                                 </div>
                             </div>
                             <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)] border border-[var(--border-color)]">
-                                <span className="text-sm font-bold opacity-60 text-[var(--text)]">Saldo PLN</span>
+                                <span className="text-sm font-bold opacity-60 text-[var(--text)]">{t.profile.plnBalance}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl font-black text-[var(--color-general)]">{profile?.pln_balance?.toFixed(2) || "0.00"} zł</span>
                                 </div>
@@ -368,26 +371,26 @@ export default function ProfilePage() {
                     <Card className="bg-transparent border-0 shadow-none rounded-[2.5rem] flex-1 flex flex-col min-h-0">
                         <CardHeader className="border-b border-black/10 dark:border-white/5 flex flex-col gap-3 pb-4 flex-shrink-0">
                             <div className="flex items-center text-[var(--text)] font-bold italic">
-                                <Trophy size={18} className="mr-2 text-[var(--color-general)]" /> Tabela Wyników
+                                <Trophy size={18} className="mr-2 text-[var(--color-general)]" /> {t.profile.leaderboard}
                             </div>
                             <div className="flex gap-2 w-full">
                                 <button
                                     onClick={() => setTopTab("level")}
                                     className={`flex-1 py-1.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${topTab === "level" ? "bg-[var(--color-general)] text-[var(--text)]" : "bg-[var(--bg)] text-[var(--text)] opacity-60 border-[var(--border-color)] hover:opacity-100 "}`}
                                 >
-                                    <Trophy size={14} className="inline mr-1.5 -mt-0.5" /> Poziomy
+                                    <Trophy size={14} className="inline mr-1.5 -mt-0.5" /> {t.profile.levels}
                                 </button>
                                 <button
                                     onClick={() => setTopTab("money")}
                                     className={`flex-1 py-1.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${topTab === "money" ? "bg-[var(--color-general)] text-[var(--text)] " : "bg-[var(--bg)] text-[var(--text)] opacity-60 border-[var(--border-color)] hover:opacity-100"}`}
                                 >
-                                    <Coins size={14} className="inline mr-1.5 -mt-0.5" /> Pieniądze
+                                    <Coins size={14} className="inline mr-1.5 -mt-0.5" /> {t.profile.money}
                                 </button>
                             </div>
                         </CardHeader>
                         <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-2 no-scrollbar">
                             {topList.length === 0 && (
-                                <div className="text-center opacity-40 text-sm pt-8">Wczytywanie...</div>
+                                <div className="text-center opacity-40 text-sm pt-8">{t.profile.loading}</div>
                             )}
                             {topList.map((u, idx) => (
                                 <div key={u.id} className={cn("w-full flex items-center justify-between p-4 rounded-xl border transition-colors",
@@ -401,9 +404,9 @@ export default function ProfilePage() {
                                         <span className="font-black w-6 text-center">{u.rank}</span>
                                         <div className="w-6"></div>
                                         <div className="flex-1 min-w-0">
-                                            <div className={cn("font-bold truncate text-sm", u.discord_id === discordId ? "text-[var(--color-general)]" : "")}>{u.username || u.discord_name || u.email?.split("@")[0] || (u.discord_id ? u.discord_id.slice(0, 14) : "Nieznany")}</div>
+                                            <div className={cn("font-bold truncate text-sm", u.discord_id === discordId ? "text-[var(--color-general)]" : "")}>{u.username || u.discord_name || u.email?.split("@")[0] || (u.discord_id ? u.discord_id.slice(0, 14) : t.profile.unknown)}</div>
                                             <div className="text-xs opacity-50">
-                                                {topTab === "level" ? `Poziom ${u.level}` : `${(u.money / 1000).toFixed(1)}K monet`}
+                                                {topTab === "level" ? `${t.profile.levelLabel} ${u.level}` : `${(u.money / 1000).toFixed(1)}K ${t.profile.coinsShort}`}
                                             </div>
                                         </div>
                                     </div>
@@ -418,7 +421,7 @@ export default function ProfilePage() {
             <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] shadow-xl">
                 <Card className="bg-transparent border-0 shadow-none rounded-[2.5rem]">
                     <CardHeader className="border-b border-black/10 dark:border-white/5 text-[var(--text)] font-bold italic flex items-center">
-                        <Bell size={18} className="mr-2 text-[var(--color-general)]" /> Ustawienia
+                        <Bell size={18} className="mr-2 text-[var(--color-general)]" /> {t.settings.title}
                     </CardHeader>
                     <CardContent className="p-8">
                         <ProfileForm

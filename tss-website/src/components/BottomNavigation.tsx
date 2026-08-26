@@ -12,20 +12,22 @@ import {
   Code,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-
-const BOTTOM_NAV_ITEMS = {
-  home: { label: "Strona główna", href: "/" },
-  profile: { label: "Profil", href: "/profile" },
-  games: { label: "Games", href: "/games" },
-  records: { label: "Records", href: "/records" },
-  dev: { label: "Dev", href: "/dev" },
-  notifications: { label: "Powiadomienia", href: "/notifications" },
-};
+import { useLanguage } from "@/hooks/use-translation";
 
 export function BottomNavigation() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [isMobile, setIsMobile] = useState(false);
   const mediaQuery = "(max-width: 1023px)";
+
+  const BOTTOM_NAV_ITEMS = {
+    home: { label: t.nav.home, href: "/" },
+    profile: { label: t.nav.profile, href: "/profile" },
+    games: { label: t.nav.games, href: "/games" },
+    records: { label: "Records", href: "/records" },
+    dev: { label: t.nav.dev, href: "/dev" },
+    notifications: { label: t.nav.notifications, href: "/notifications" },
+  };
 
   useEffect(() => {
     const checkMobile = () =>

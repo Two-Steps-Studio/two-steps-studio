@@ -11,7 +11,7 @@ import {
 import { useTranslation } from "@/hooks/use-translation";
 
 export default function TranslationManagementPage() {
-  const { availableLocales, locale } = useTranslation();
+  const { availableLocales, locale, t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-black/5 dark:bg-white/5 p-4 lg:p-8">
@@ -20,10 +20,10 @@ export default function TranslationManagementPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl lg:text-3xl font-black mb-2">
-              Zarządzanie Tłumaczeniami
+              {t.pageTranslationsAdmin.title}
             </h1>
             <p className="text-muted-foreground">
-              Podgląd struktury tłumaczeń i dostępnych języków w aplikacji.
+              {t.pageTranslationsAdmin.subtitle}
             </p>
           </div>
         </div>
@@ -31,9 +31,9 @@ export default function TranslationManagementPage() {
         {/* Example Translation Template */}
         <Card>
           <CardHeader>
-            <CardTitle>Template Tłumaczenia</CardTitle>
+            <CardTitle>{t.pageTranslationsAdmin.templateTitle}</CardTitle>
             <CardDescription>
-              Przykład struktury tłumaczenia
+              {t.pageTranslationsAdmin.templateDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -189,9 +189,9 @@ export default function TranslationManagementPage() {
         {/* Available Languages Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Dostępne Języki</CardTitle>
+            <CardTitle>{t.pageTranslationsAdmin.availableLanguagesTitle}</CardTitle>
             <CardDescription>
-              Obecnie wspierane języki
+              {t.pageTranslationsAdmin.availableLanguagesDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -216,7 +216,7 @@ export default function TranslationManagementPage() {
         {/* Instructions */}
         <Card className="bg-[var(--color-general)]/5 border-[var(--color-general)]/20">
           <CardHeader>
-            <CardTitle>Jak dodać nowe tłumaczenie</CardTitle>
+            <CardTitle>{t.pageTranslationsAdmin.howToAddTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <ol className="space-y-3 text-sm">
@@ -225,8 +225,8 @@ export default function TranslationManagementPage() {
                   1
                 </span>
                 <div>
-                  <strong>Edytuj pliki locale:</strong> zaktualizuj <code>src/locales/pl.json</code>,
-                  <code> src/locales/en.json</code> i <code>src/locales/de.json</code>.
+                  <strong>{t.pageTranslationsAdmin.step1Title}</strong> {t.pageTranslationsAdmin.step1Desc} <code>src/locales/pl.json</code>,
+                  <code> src/locales/en.json</code> {t.pageTranslationsAdmin.and} <code>src/locales/de.json</code>.
                 </div>
               </li>
               <li className="flex gap-3">
@@ -234,8 +234,8 @@ export default function TranslationManagementPage() {
                   2
                 </span>
                 <div>
-                  <strong>Sprawdź spójność:</strong> uruchom <code>npm run i18n:check</code>,
-                  aby zweryfikować, że wszystkie locale mają identyczną strukturę kluczy.
+                  <strong>{t.pageTranslationsAdmin.step2Title}</strong> {t.pageTranslationsAdmin.step2Desc} <code>npm run i18n:check</code>,
+                  {t.pageTranslationsAdmin.step2Desc2}
                 </div>
               </li>
               <li className="flex gap-3">
@@ -243,8 +243,8 @@ export default function TranslationManagementPage() {
                   3
                 </span>
                 <div>
-                  <strong>Użyj w kodzie:</strong> <code>const &#123; t &#125; = useTranslation(); t(&quot;nav.home&quot;)</code>
-                  lub <code>t.nav.home</code> (kompatybilność wsteczna).
+                  <strong>{t.pageTranslationsAdmin.step3Title}</strong> <code>const &#123; t &#125; = useTranslation(); t(&quot;nav.home&quot;)</code>
+                  {" "}{t.pageTranslationsAdmin.step3Or} <code>t.nav.home</code> {t.pageTranslationsAdmin.step3BackCompat}.
                 </div>
               </li>
             </ol>

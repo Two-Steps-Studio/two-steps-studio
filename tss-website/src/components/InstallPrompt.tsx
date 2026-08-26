@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { Download as DownloadIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useLanguage } from "@/hooks/use-translation";
 
 export default function InstallPrompt() {
+  const { t } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -53,7 +55,7 @@ export default function InstallPrompt() {
                   className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-white/20 transition-all shadow-lg"
               >
                 <DownloadIcon size={18} />
-                <span className="text-sm font-medium">Zainstaluj aplikację</span>
+                <span className="text-sm font-medium">{t.home.installApp}</span>
               </Link>
             </motion.div>
         )}

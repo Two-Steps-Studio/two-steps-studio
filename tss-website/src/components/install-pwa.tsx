@@ -42,7 +42,7 @@ export function InstallPWA() {
               ))}
             </div>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 pr-2">
-              Dostępne na Windows & Mac
+              {t.home.availableOn}
             </span>
           </motion.div>
 
@@ -59,7 +59,7 @@ export function InstallPWA() {
             >
               <Gamepad2 className="group-hover/btn:rotate-12 transition-transform text-[var(--color-general)]" />
               <div className="flex flex-col items-start leading-none">
-                <span className="text-xs opacity-50 mb-1 font-bold uppercase tracking-wider">Nasza aplikacja</span>
+                <span className="text-xs opacity-50 mb-1 font-bold uppercase tracking-wider">{t.home.ourApp}</span>
                 <span>{t.home.installApp}</span>
               </div>
             </Button>

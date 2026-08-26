@@ -1,11 +1,13 @@
  "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/hooks/use-translation";
 
 type Bucket = { t: string; total: number; logged_in: number; anonymous: number };
 type Resp = { buckets: Bucket[]; bucket_minutes: number; window_hours: number };
 
 export function OnlineChart() {
+  const { t } = useLanguage();
   const [data, setData] = useState<Resp>({
     buckets: [],
     bucket_minutes: 15,
@@ -15,14 +17,16 @@ export function OnlineChart() {
   useEffect(() => {
     fetch("/api/site-stats-history")
       .then((r) => r.json())
-      .then((d: Partial<Resp>) =>
+      .then((d: Partial<Resp>) => {
+        console.log("API response:", d);
+        console.log("Buckets:", d?.buckets);
         setData({
           buckets: Array.isArray(d?.buckets) ? (d!.buckets as Bucket[]) : [],
           bucket_minutes: typeof d?.bucket_minutes === "number" ? d!.bucket_minutes : 15,
           window_hours: typeof d?.window_hours === "number" ? d!.window_hours : 24,
-        })
-      )
-      .catch(() => {});
+        });
+      })
+      .catch((e) => console.error("Fetch error:", e));
   }, []);
 
   const width = 900;
@@ -31,7 +35,15 @@ export function OnlineChart() {
 
   const chart = useMemo(() => {
     try {
-      const buckets = Array.isArray(data.buckets) ? data.buckets : [];
+      if (!data || !Array.isArray(data.buckets)) return null;
+      const buckets = data.buckets.filter((b): b is Bucket => 
+          b != null && 
+          typeof b === 'object' &&
+          typeof b.total === 'number' &&
+          typeof b.logged_in === 'number' &&
+          typeof b.anonymous === 'number' &&
+          typeof b.t === 'string'
+        );
       if (!buckets || buckets.length === 0) return null;
       const xs = buckets.map((b) => new Date(b.t).getTime());
       const ys = buckets.map((b) => b.total);
@@ -90,15 +102,15 @@ export function OnlineChart() {
       <div className="flex gap-6 px-2 py-2 text-xs text-zinc-400">
         <div className="flex items-center gap-2">
           <span className="inline-block w-3 h-3 rounded-full" style={{ background: "var(--color-general)" }} />
-          <span>Łącznie</span>
+          <span>{t.compOnlineChart.total}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-block w-3 h-3 rounded-full" style={{ background: "var(--color-e-sport)" }} />
-          <span>Zalogowani</span>
+          <span>{t.compOnlineChart.loggedIn}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-block w-3 h-3 rounded-full" style={{ background: "var(--color-records)" }} />
-          <span>Anonymowi</span>
+          <span>{t.compOnlineChart.anonymous}</span>
         </div>
       </div>
     </div>

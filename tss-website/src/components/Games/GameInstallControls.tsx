@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Download, Play, RefreshCw, Trash2, ShieldCheck, XCircle, Loader2 } from "lucide-react";
 import { useIsElectron, useGameDownload } from "@/hooks/useElectron";
+import { useLanguage } from "@/hooks/use-translation";
 
 interface GameInstallControlsProps {
   gameId: number;
@@ -26,6 +27,7 @@ function formatBytes(bytes: number): string {
 }
 
 export function GameInstallControls({ gameId, title, compact = false }: GameInstallControlsProps) {
+  const { t } = useLanguage();
   const isElectron = useIsElectron();
   const { status, progress, error, currentVersion, install, update, repair, cancel, launch, uninstall } = useGameDownload(gameId);
 
@@ -38,7 +40,7 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
           ? "w-full rounded-xl bg-[var(--color-games)] text-white hover:bg-[var(--color-games)]/80"
           : "w-full bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium transition-colors"}>
           <Download size={compact ? 16 : 18} className="mr-2" />
-          {compact ? "Pobierz" : "Pobierz aplikację desktopową"}
+          {compact ? t.compGameInstall.download : t.compGameInstall.downloadDesktopApp}
         </Button>
       </Link>
     );
@@ -47,10 +49,10 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
   if (compact) {
     const label = isBusy
       ? `${Math.round(progress?.bytesTotal ? (progress.bytesDone / progress.bytesTotal) * 100 : 0)}%`
-      : status === "running" ? "Uruchomiona"
-      : status === "update-available" ? "Aktualizuj"
-      : status === "installed" ? "Graj"
-      : "Pobierz";
+      : status === "running" ? t.compGameInstall.running
+      : status === "update-available" ? t.compGameInstall.update
+      : status === "installed" ? t.compGameInstall.play
+      : t.compGameInstall.download;
     const onClick = isBusy || status === "running" ? undefined
       : status === "update-available" ? update
       : status === "installed" ? launch
@@ -82,7 +84,7 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
           <Progress value={progress.bytesTotal ? (progress.bytesDone / progress.bytesTotal) * 100 : 0} />
           <div className="flex items-center justify-between text-xs text-zinc-500">
             <span>{formatBytes(progress.bytesDone)} / {formatBytes(progress.bytesTotal)}</span>
-            <button onClick={cancel} className="text-red-400 hover:text-red-300">Anuluj</button>
+            <button onClick={cancel} className="text-red-400 hover:text-red-300">{t.compGameInstall.cancel}</button>
           </div>
         </div>
       )}
@@ -100,16 +102,16 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
           className="w-full bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium transition-colors"
         >
           <Download size={18} className="mr-2" />
-          Pobierz i zainstaluj
+          {t.compGameInstall.downloadAndInstall}
         </Button>
       ) : isBusy ? (
         <Button disabled className="w-full rounded-full font-medium">
           <Loader2 size={18} className="mr-2 animate-spin" />
-          {status === "updating" ? "Aktualizowanie…" : status === "repairing" ? "Naprawianie…" : status === "verifying" ? "Weryfikowanie…" : "Pobieranie…"}
+          {status === "updating" ? t.compGameInstall.updating : status === "repairing" ? t.compGameInstall.repairing : status === "verifying" ? t.compGameInstall.verifying : t.compGameInstall.downloading}
         </Button>
       ) : status === "running" ? (
         <Button disabled className="w-full rounded-full font-medium">
-          Gra uruchomiona
+          {t.compGameInstall.gameRunning}
         </Button>
       ) : (
         <>
@@ -119,7 +121,7 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
               className="w-full bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium transition-colors"
             >
               <RefreshCw size={18} className="mr-2" />
-              Aktualizuj do {currentVersion}
+              {t.compGameInstall.updateTo} {currentVersion}
             </Button>
           )}
           <Button
@@ -130,14 +132,14 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
               : "w-full bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium"}
           >
             <Play size={18} className="mr-2" />
-            Graj
+            {t.compGameInstall.play}
           </Button>
           <div className="flex gap-2">
             <Button onClick={repair} variant="outline" size="sm" className="flex-1 rounded-full text-xs">
-              <ShieldCheck size={14} className="mr-1" /> Zweryfikuj
+              <ShieldCheck size={14} className="mr-1" /> {t.compGameInstall.verify}
             </Button>
             <Button onClick={uninstall} variant="outline" size="sm" className="flex-1 rounded-full text-xs text-red-400 hover:text-red-300 border-red-500/30">
-              <Trash2 size={14} className="mr-1" /> Odinstaluj
+              <Trash2 size={14} className="mr-1" /> {t.compGameInstall.uninstall}
             </Button>
           </div>
         </>

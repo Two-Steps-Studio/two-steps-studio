@@ -32,7 +32,7 @@ export function DiscordStatsLive() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
         {[
           { label: t.home.onlineNow, value: (stats.online_users || 0).toLocaleString(), icon: Users, color: "var(--color-general)" },
-          { label: "Kanały", value: stats.active_channels || 0, icon: Hash, color: "var(--color-dev)" },
+          { label: t.home.channels, value: stats.active_channels || 0, icon: Hash, color: "var(--color-dev)" },
           { label: t.home.messagesToday, value: (stats.messages_today || 0).toLocaleString(), icon: MessageSquare, color: "var(--color-records)" },
         ].map((item, i) => (
         <motion.div

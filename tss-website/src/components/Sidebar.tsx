@@ -140,9 +140,9 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
     ] : []),
     ...(categoryVisibility.records ? [{
       id: "records", type: "expandable", href: "/records", label: t.nav.records || "Records", icon: Music2, items: [
-        { href: "/records/podcasts", label: "Podcasty", icon: Book },
-        { href: "/records/beats", label: "Beaty", icon: Mic2 },
-        { href: "/records/music", label: "Muzyka", icon: Music },
+        { href: "/records/podcasts", label: t.recordsPage.navPodcasts, icon: Book },
+        { href: "/records/beats", label: t.recordsPage.navBeats, icon: Mic2 },
+        { href: "/records/music", label: t.recordsPage.navMusic, icon: Music },
       ]}
     ] : []),
     ...(categoryVisibility.dev ? [{
@@ -389,7 +389,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                   </AnimatePresence>
                 </div>
                 <span className="text-sm font-bold tracking-tight relative z-10">
-                {resolvedTheme === "light" ? (t.nav.lightMode || "Tryb Jasny") : (t.nav.darkMode || "Tryb Ciemny")}
+                {resolvedTheme === "light" ? t.nav.lightMode : t.nav.darkMode}
               </span>
               </button>
           )}

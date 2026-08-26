@@ -20,30 +20,10 @@ import {
   Shield
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/use-translation";
 import type { Game, GameCategory, GameStatus } from "@/types/games-records";
 
 const CATEGORIES: GameCategory[] = ['action', 'adventure', 'rpg', 'strategy', 'simulation', 'sports', 'racing', 'puzzle', 'horror', 'indie', 'other'];
-
-const CATEGORY_LABELS: Record<GameCategory, string> = {
-  action: 'Akcja',
-  adventure: 'Przygodowa',
-  rpg: 'RPG',
-  strategy: 'Strategia',
-  simulation: 'Symulacja',
-  sports: 'Sportowa',
-  racing: 'Wyścigi',
-  puzzle: 'Logiczna',
-  horror: 'Horror',
-  indie: 'Indie',
-  other: 'Inne',
-};
-
-const STATUS_LABELS: Record<GameStatus, string> = {
-  draft: 'Szkic',
-  published: 'Opublikowana',
-  archived: 'Zarchiwizowana',
-  coming_soon: 'Wkrótce',
-};
 
 const STATUS_COLORS: Record<GameStatus, string> = {
   draft: 'bg-gray-500/20 text-gray-400',
@@ -53,6 +33,26 @@ const STATUS_COLORS: Record<GameStatus, string> = {
 };
 
 export default function GamesAdminPage() {
+  const { t } = useLanguage();
+  const CATEGORY_LABELS: Record<GameCategory, string> = {
+    action: t.devGamesAdmin.categories.action,
+    adventure: t.devGamesAdmin.categories.adventure,
+    rpg: t.devGamesAdmin.categories.rpg,
+    strategy: t.devGamesAdmin.categories.strategy,
+    simulation: t.devGamesAdmin.categories.simulation,
+    sports: t.devGamesAdmin.categories.sports,
+    racing: t.devGamesAdmin.categories.racing,
+    puzzle: t.devGamesAdmin.categories.puzzle,
+    horror: t.devGamesAdmin.categories.horror,
+    indie: t.devGamesAdmin.categories.indie,
+    other: t.devGamesAdmin.categories.other,
+  };
+  const STATUS_LABELS: Record<GameStatus, string> = {
+    draft: t.devGamesAdmin.statuses.draft,
+    published: t.devGamesAdmin.statuses.published,
+    archived: t.devGamesAdmin.statuses.archived,
+    coming_soon: t.devGamesAdmin.statuses.coming_soon,
+  };
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -89,28 +89,28 @@ export default function GamesAdminPage() {
       setGames(data.data || []);
     } catch (error) {
       console.error("Błąd pobierania gier:", error);
-      toast.error("Nie udało się załadować gier");
+      toast.error(t.devGamesAdmin.errors.loadFailed);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Czy na pewno chcesz usunąć tę grę?")) return;
+    if (!confirm(t.devGamesAdmin.confirmDelete)) return;
 
     try {
       const res = await fetch(`/api/games?id=${id}`, { method: "DELETE" });
       const data = await res.json();
-      
+
       if (data.success) {
-        toast.success("Gra została usunięta");
+        toast.success(t.devGamesAdmin.gameDeleted);
         fetchGames();
       } else {
-        toast.error(data.error || "Błąd podczas usuwania");
+        toast.error(data.error || t.devCrudCommon.errorDeleting);
       }
     } catch (error) {
       console.error("Błąd usuwania gry:", error);
-      toast.error("Wystąpił błąd podczas usuwania");
+      toast.error(t.devCrudCommon.errorDeletingGeneric);
     }
   };
 
@@ -135,12 +135,12 @@ export default function GamesAdminPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            Brak dostępu
+            {t.devCrudCommon.noAccess}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Nie masz uprawnień administratora. Skontaktuj się z administracją.
+            {t.devCrudCommon.noAccessDescription}
           </p>
         </CardContent>
       </Card>
@@ -153,10 +153,10 @@ export default function GamesAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-black dark:text-white font-[family-name:var(--font-space)]">
-            Zarządzanie Grami
+            {t.devGamesAdmin.title}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Dodawaj, edytuj i usuwaj gry z bazy danych
+            {t.devGamesAdmin.subtitle}
           </p>
         </div>
         <Button
@@ -164,7 +164,7 @@ export default function GamesAdminPage() {
           className="bg-[var(--color-games)] text-white hover:bg-[var(--color-games)]/80"
         >
           <Plus size={16} className="mr-2" />
-          Dodaj grę
+          {t.devGamesAdmin.addGame}
         </Button>
       </div>
 
@@ -175,7 +175,7 @@ export default function GamesAdminPage() {
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
-                placeholder="Szukaj gier, deweloperów..."
+                placeholder={t.devGamesAdmin.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12"
@@ -185,14 +185,14 @@ export default function GamesAdminPage() {
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter size={16} />
-                <span>Kategoria:</span>
+                <span>{t.devGamesAdmin.categoryLabel}</span>
               </div>
               <Button
                 variant={selectedCategory === "all" ? "default" : "outline"}
                 onClick={() => setSelectedCategory("all")}
                 size="sm"
               >
-                Wszystkie
+                {t.devCrudCommon.all}
               </Button>
               {CATEGORIES.map((category) => (
                 <Button
@@ -209,14 +209,14 @@ export default function GamesAdminPage() {
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter size={16} />
-                <span>Status:</span>
+                <span>{t.devGamesAdmin.statusLabel}</span>
               </div>
               <Button
                 variant={selectedStatus === "all" ? "default" : "outline"}
                 onClick={() => setSelectedStatus("all")}
                 size="sm"
               >
-                Wszystkie
+                {t.devCrudCommon.all}
               </Button>
               {(Object.keys(STATUS_LABELS) as GameStatus[]).map((status) => (
                 <Button
@@ -244,11 +244,11 @@ export default function GamesAdminPage() {
         <Card className="rounded-3xl">
           <CardContent className="p-12 text-center">
             <Gamepad2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Brak gier</h3>
+            <h3 className="text-lg font-semibold mb-2">{t.devGamesAdmin.noGames}</h3>
             <p className="text-muted-foreground">
               {searchQuery || selectedCategory !== "all" || selectedStatus !== "all"
-                ? "Nie znaleziono gier pasujących do filtrów."
-                : "Brak gier w bazie danych. Dodaj pierwszą grę!"}
+                ? t.devCrudCommon.noResultsFiltered
+                : t.devGamesAdmin.noGamesInDb}
             </p>
           </CardContent>
         </Card>
@@ -304,7 +304,7 @@ export default function GamesAdminPage() {
                     onClick={() => setEditingGame(game)}
                   >
                     <Edit size={14} className="mr-1" />
-                    Edytuj
+                    {t.devCrudCommon.edit}
                   </Button>
                   <Button
                     variant="outline"
@@ -313,7 +313,7 @@ export default function GamesAdminPage() {
                     onClick={() => handleDelete(game.id!)}
                   >
                     <Trash2 size={14} className="mr-1" />
-                    Usuń
+                    {t.devCrudCommon.delete}
                   </Button>
                 </div>
               </CardContent>
@@ -343,6 +343,26 @@ export default function GamesAdminPage() {
 
 // Game Form Modal Component
 function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: () => void; onSave: () => void }) {
+  const { t } = useLanguage();
+  const CATEGORY_LABELS: Record<GameCategory, string> = {
+    action: t.devGamesAdmin.categories.action,
+    adventure: t.devGamesAdmin.categories.adventure,
+    rpg: t.devGamesAdmin.categories.rpg,
+    strategy: t.devGamesAdmin.categories.strategy,
+    simulation: t.devGamesAdmin.categories.simulation,
+    sports: t.devGamesAdmin.categories.sports,
+    racing: t.devGamesAdmin.categories.racing,
+    puzzle: t.devGamesAdmin.categories.puzzle,
+    horror: t.devGamesAdmin.categories.horror,
+    indie: t.devGamesAdmin.categories.indie,
+    other: t.devGamesAdmin.categories.other,
+  };
+  const STATUS_LABELS: Record<GameStatus, string> = {
+    draft: t.devGamesAdmin.statuses.draft,
+    published: t.devGamesAdmin.statuses.published,
+    archived: t.devGamesAdmin.statuses.archived,
+    coming_soon: t.devGamesAdmin.statuses.coming_soon,
+  };
   const [formData, setFormData] = useState({
     title: game?.title || "",
     short_description: game?.short_description || "",
@@ -390,13 +410,13 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
         } else {
           setFormData({ ...formData, banner_url: data.data.publicUrl });
         }
-        toast.success('Zdjęcie zostało przesłane');
+        toast.success(t.devGamesAdmin.imageUploaded);
       } else {
-        toast.error(data.error || 'Błąd podczas przesyłania');
+        toast.error(data.error || t.devCrudCommon.errorUploading);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Wystąpił błąd podczas przesyłania');
+      toast.error(t.devCrudCommon.errorUploadingGeneric);
     } finally {
       setUploading(false);
     }
@@ -407,7 +427,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
 
     // Validation
     if (!formData.title.trim()) {
-      toast.error("Tytuł jest wymagany");
+      toast.error(t.devGamesAdmin.errors.titleRequired);
       return;
     }
 
@@ -434,19 +454,19 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || `Błąd HTTP: ${res.status}`);
+        toast.error(data.error || `${t.devCrudCommon.httpError}: ${res.status}`);
         return;
       }
 
       if (data.success) {
-        toast.success(game ? "Gra zaktualizowana" : "Gra utworzona");
+        toast.success(game ? t.devGamesAdmin.gameUpdated : t.devGamesAdmin.gameCreated);
         onSave();
       } else {
-        toast.error(data.error || "Błąd podczas zapisu");
+        toast.error(data.error || t.devCrudCommon.errorSaving);
       }
     } catch (error) {
       console.error("Błąd zapisu:", error);
-      toast.error("Wystąpił błąd podczas zapisu");
+      toast.error(t.devCrudCommon.errorSavingGeneric);
     }
   };
 
@@ -454,12 +474,12 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
         <CardHeader>
-          <CardTitle>{game ? "Edytuj grę" : "Dodaj nową grę"}</CardTitle>
+          <CardTitle>{game ? t.devGamesAdmin.editGame : t.devGamesAdmin.addNewGame}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Tytuł *</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.title} *</label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -468,7 +488,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Krótki opis</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.shortDescription}</label>
               <Input
                 value={formData.short_description}
                 onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
@@ -476,7 +496,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Pełny opis</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.fullDescription}</label>
               <textarea
                 className="w-full min-h-[100px] px-3 py-2 rounded-lg border border-input bg-background"
                 value={formData.full_description}
@@ -486,14 +506,14 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Wersja</label>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.version}</label>
                 <Input
                   value={formData.version}
                   onChange={(e) => setFormData({ ...formData, version: e.target.value })}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Data wydania</label>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.releaseDate}</label>
                 <Input
                   type="date"
                   value={formData.release_date}
@@ -504,14 +524,14 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Deweloper</label>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.developer}</label>
                 <Input
                   value={formData.developer}
                   onChange={(e) => setFormData({ ...formData, developer: e.target.value })}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Wydawca</label>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.publisher}</label>
                 <Input
                   value={formData.publisher}
                   onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
@@ -520,7 +540,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Kategoria</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.category}</label>
               <select
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background"
                 value={formData.category}
@@ -535,25 +555,25 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Gatunki (przecinkami)</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.genresCommaSeparated}</label>
               <Input
-                placeholder="np. akcja, sci-fi, przygodowa"
+                placeholder={t.devGamesAdmin.genresPlaceholder}
                 value={formData.genres}
                 onChange={(e) => setFormData({ ...formData, genres: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">Tagi (przecinkami)</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.tagsCommaSeparated}</label>
               <Input
-                placeholder="np. single-player, multiplayer, coop"
+                placeholder={t.devGamesAdmin.tagsPlaceholder}
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">Link do pobrania</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.downloadLink}</label>
               <Input
                 type="url"
                 value={formData.download_url}
@@ -562,12 +582,12 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
             </div>
 
             <div className="space-y-4">
-              <label className="text-sm font-medium">Obrazy</label>
-              
+              <label className="text-sm font-medium">{t.devGamesAdmin.imagesLabel}</label>
+
               {/* Thumbnail Upload */}
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">
-                  Miniatura - okładka w proporcji 2:3 (szer:wys), np. 400×600px. Większe obrazy zostaną przeskalowane i przycięte do tej proporcji.
+                  {t.devGamesAdmin.thumbnailHint}
                 </label>
                 <div className="flex gap-2">
                   <Input
@@ -588,7 +608,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                     disabled={!thumbnailFile || uploading}
                   >
                     <Upload size={16} className="mr-1" />
-                    {uploading ? 'Przesyłanie...' : 'Prześlij'}
+                    {uploading ? t.devCrudCommon.uploading : t.devCrudCommon.upload}
                   </Button>
                 </div>
                 {formData.thumbnail_url && (
@@ -609,7 +629,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
 
               {/* Banner Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Baner</label>
+                <label className="text-xs text-muted-foreground">{t.devGamesAdmin.fields.banner}</label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -629,7 +649,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                     disabled={!bannerFile || uploading}
                   >
                     <Upload size={16} className="mr-1" />
-                    {uploading ? 'Przesyłanie...' : 'Prześlij'}
+                    {uploading ? t.devCrudCommon.uploading : t.devCrudCommon.upload}
                   </Button>
                 </div>
                 {formData.banner_url && (
@@ -650,7 +670,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
             </div>
 
             <div>
-              <label className="text-sm font-medium">Changelog</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.changelog}</label>
               <textarea
                 className="w-full min-h-[100px] px-3 py-2 rounded-lg border border-input bg-background"
                 value={formData.changelog}
@@ -660,7 +680,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium">Status</label>
+                <label className="text-sm font-medium">{t.devCrudCommon.status}</label>
                 <select
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background"
                   value={formData.status}
@@ -674,15 +694,15 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium">Widoczność</label>
+                <label className="text-sm font-medium">{t.devCrudCommon.visibility}</label>
                 <select
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background"
                   value={formData.visibility}
                   onChange={(e) => setFormData({ ...formData, visibility: e.target.value as any })}
                 >
-                  <option value="private">Prywatna</option>
-                  <option value="public">Publiczna</option>
-                  <option value="unlisted">Niewidoczna</option>
+                  <option value="private">{t.devCrudCommon.visibilityPrivate}</option>
+                  <option value="public">{t.devCrudCommon.visibilityPublic}</option>
+                  <option value="unlisted">{t.devCrudCommon.visibilityUnlisted}</option>
                 </select>
               </div>
               <div className="flex items-end">
@@ -693,17 +713,17 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                     className="rounded"
                   />
-                  Wyróżniona
+                  {t.devCrudCommon.featured}
                 </label>
               </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
-                Anuluj
+                {t.devCrudCommon.cancel}
               </Button>
               <Button type="submit" className="bg-[var(--color-games)] text-white hover:bg-[var(--color-games)]/80">
-                {game ? "Zapisz zmiany" : "Utwórz grę"}
+                {game ? t.devCrudCommon.saveChanges : t.devGamesAdmin.createGame}
               </Button>
             </div>
           </form>
