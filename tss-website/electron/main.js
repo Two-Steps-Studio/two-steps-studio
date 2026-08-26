@@ -146,11 +146,11 @@ function loadSession() {
 }
 
 // Port the packaged Next.js server listens on. Resolved at startup from the
-// OS so a running `npm run dev` on 3000 never collides with the desktop app.
+// OS so a running `npm run dev` on 6767 never collides with the desktop app.
 let serverPort = 3000;
 
 function getStartUrl() {
-  return isDev ? 'http://localhost:3000' : `http://127.0.0.1:${serverPort}`;
+  return isDev ? 'http://localhost:6767' : `http://127.0.0.1:${serverPort}`;
 }
 
 function findFreePort() {

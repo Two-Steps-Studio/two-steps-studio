@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { validateEnv } from "@/lib/env-validation";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Space_Grotesk, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { VisualEditsMessenger } from "orchids-visual-edits";
 import ErrorReporter from "@/components/ErrorReporter";
@@ -26,14 +26,27 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import FirstRunExperience from "@/components/Electron/FirstRunExperience";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
+// Metropolis (Chris M. Simpson) - self-hosted from the @typehaus/metropolis
+// webfont revival. Replaces the previous Space Grotesk / Outfit pairing as
+// the single main font for both headings and body text - see
+// src/fonts/metropolis/LICENSE.txt.
+const metropolis = localFont({
+  src: [
+    { path: "../fonts/metropolis/Metropolis-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/metropolis/Metropolis-400-Italic.woff2", weight: "400", style: "italic" },
+    { path: "../fonts/metropolis/Metropolis-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/metropolis/Metropolis-500-Italic.woff2", weight: "500", style: "italic" },
+    { path: "../fonts/metropolis/Metropolis-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/metropolis/Metropolis-600-Italic.woff2", weight: "600", style: "italic" },
+    { path: "../fonts/metropolis/Metropolis-700.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/metropolis/Metropolis-700-Italic.woff2", weight: "700", style: "italic" },
+    { path: "../fonts/metropolis/Metropolis-800.woff2", weight: "800", style: "normal" },
+    { path: "../fonts/metropolis/Metropolis-800-Italic.woff2", weight: "800", style: "italic" },
+    { path: "../fonts/metropolis/Metropolis-900.woff2", weight: "900", style: "normal" },
+    { path: "../fonts/metropolis/Metropolis-900-Italic.woff2", weight: "900", style: "italic" },
+  ],
+  variable: "--font-metropolis",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -72,7 +85,7 @@ export default function RootLayout({
 }>) {
   console.log('[BUILD] RootLayout rendering at', new Date().toISOString());
   return (
-    <html lang="pl" suppressHydrationWarning className={`${spaceGrotesk.variable} ${outfit.variable}`}>
+    <html lang="pl" suppressHydrationWarning className={metropolis.variable}>
       <head>
         <meta name="theme-color" content="#000000" />
       </head>

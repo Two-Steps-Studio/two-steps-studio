@@ -11,9 +11,9 @@
     {
       "name": "tss-website",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
+      "runtimeArgs": ["run", "dev"],
       "cwd": "tss-website",
-      "port": 3001
+      "port": 6767
     }
   ]
 }

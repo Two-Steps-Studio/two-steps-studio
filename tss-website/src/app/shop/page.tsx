@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ShoppingCart, Star, Shield, Zap } from "lucide-react";
+import { ShoppingCart, Star, Shield, Zap, Image, Frame, Sparkles } from "lucide-react";
 
 interface Product {
   id: string;
@@ -35,7 +35,7 @@ export default function ShopPage() {
       try {
         const res = await fetch("/api/shop");
         const data = await res.json();
-        setProducts(data || []);
+        setProducts(res.ok && Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Błąd pobierania produktów:", error);
       } finally {
@@ -56,11 +56,11 @@ export default function ShopPage() {
   const getCategoryIcon = (category: Product["category"]) => {
     switch (category) {
       case "bg":
-        return <span className="text-lg">🖼️</span>;
+        return <Image size={16} />;
       case "frame":
-        return <span className="text-lg">🎭</span>;
+        return <Frame size={16} />;
       case "style":
-        return <span className="text-lg">✨</span>;
+        return <Sparkles size={16} />;
       case "skin":
         return <ShoppingCart size={16} />;
       case "emblem":

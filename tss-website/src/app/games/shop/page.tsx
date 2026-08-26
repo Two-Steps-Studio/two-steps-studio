@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gamepad2, Search, Filter, Download, Eye } from "lucide-react";
+import { Gamepad2, Search, Filter, Download, Eye, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { GameInstallControls } from "@/components/Games/GameInstallControls";
@@ -224,7 +224,7 @@ export default function Page() {
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
             className="rounded-xl border-white/10 text-zinc-400 hover:text-white"
           >
-            {sortOrder === "asc" ? "↑" : "↓"}
+            {sortOrder === "asc" ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
           </Button>
         </div>
       </div>

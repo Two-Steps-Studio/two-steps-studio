@@ -7,7 +7,7 @@ import { useLanguage } from "@/hooks/use-translation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Mail, User, Shield, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, User, Shield, FileText, CheckCircle2, Square, Ban } from "lucide-react";
 
 export default function RegulaminPage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -116,13 +116,13 @@ export default function RegulaminPage() {
               <h2 className="text-xl font-bold text-[var(--text)] mb-4">{t.regulaminBody.s5Title}</h2>
               <p className="text-sm mb-3">{t.regulaminBody.s5Intro}</p>
               <ul className="space-y-2 text-sm">
-                <li>⬜ - {t.regulaminBody.s5P1}</li>
-                <li>🟨 - {t.regulaminBody.s5P2}</li>
-                <li>🟧 - {t.regulaminBody.s5P3}</li>
-                <li>🟧 - {t.regulaminBody.s5P4}</li>
-                <li>🟧 - {t.regulaminBody.s5P5}</li>
-                <li>🟥 - {t.regulaminBody.s5P6}</li>
-                <li>⛔ - {t.regulaminBody.s5P7}</li>
+                <li className="flex items-center gap-2"><Square size={14} className="shrink-0 text-zinc-300 dark:text-zinc-600" fill="currentColor" /> {t.regulaminBody.s5P1}</li>
+                <li className="flex items-center gap-2"><Square size={14} className="shrink-0 text-yellow-400" fill="currentColor" /> {t.regulaminBody.s5P2}</li>
+                <li className="flex items-center gap-2"><Square size={14} className="shrink-0 text-orange-400" fill="currentColor" /> {t.regulaminBody.s5P3}</li>
+                <li className="flex items-center gap-2"><Square size={14} className="shrink-0 text-orange-400" fill="currentColor" /> {t.regulaminBody.s5P4}</li>
+                <li className="flex items-center gap-2"><Square size={14} className="shrink-0 text-orange-400" fill="currentColor" /> {t.regulaminBody.s5P5}</li>
+                <li className="flex items-center gap-2"><Square size={14} className="shrink-0 text-red-500" fill="currentColor" /> {t.regulaminBody.s5P6}</li>
+                <li className="flex items-center gap-2"><Ban size={14} className="shrink-0 text-red-600" /> {t.regulaminBody.s5P7}</li>
               </ul>
             </section>
 

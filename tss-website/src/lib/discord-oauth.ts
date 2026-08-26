@@ -2,12 +2,12 @@
 // Add these environment variables to your .env.local:
 // DISCORD_CLIENT_ID=your_discord_client_id
 // DISCORD_CLIENT_SECRET=your_discord_client_secret
-// DISCORD_REDIRECT_URI=http://localhost:3000/api/integrations/discord/callback
+// DISCORD_REDIRECT_URI=http://localhost:6767/api/integrations/discord/callback
 
 export const DISCORD_CONFIG = {
   clientId: process.env.DISCORD_CLIENT_ID || '',
   clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
-  redirectUri: process.env.DISCORD_REDIRECT_URI || 'http://localhost:3000/api/integrations/discord/callback',
+  redirectUri: process.env.DISCORD_REDIRECT_URI || 'http://localhost:6767/api/integrations/discord/callback',
   scopes: ['identify', 'email'],
   apiUrl: 'https://discord.com/api/v10',
   authUrl: 'https://discord.com/oauth2/authorize',

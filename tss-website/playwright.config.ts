@@ -11,7 +11,7 @@ export default defineConfig({
     ['html', { outputFolder: 'test-results' }],
   ],
   use: {
-    baseURL: process.env.ELECTRON ? 'http://localhost:3000' : 'http://localhost:3001',
+    baseURL: 'http://localhost:6767',
     trace: 'on-first-retry',
   },
   projects: [
@@ -30,7 +30,7 @@ export default defineConfig({
   ],
   webServer: {
     command: process.env.CI ? 'npm run start' : 'npm run dev',
-    url: process.env.ELECTRON ? 'http://localhost:3000' : 'http://localhost:3001',
+    url: 'http://localhost:6767',
     reuseExistingServer: !process.env.CI,
   },
 });

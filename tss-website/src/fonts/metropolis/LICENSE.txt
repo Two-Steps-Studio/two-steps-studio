@@ -1,0 +1,17 @@
+Metropolis typeface, designed by Chris M. Simpson.
+Webfont revival maintained by typehaus (https://typehaus.org/metropolis,
+https://github.com/typehaus/metropolis), extracted from the
+@typehaus/metropolis npm package (v12.0.0-next.7) for local self-hosting
+with next/font/local.
+
+Free for personal and commercial use. Original design released under the
+SIL Open Font License 1.1 (https://www.1001fonts.com/metropolis-font.html);
+the typehaus webfont build is additionally released into the public domain
+under the Unlicense:
+
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.

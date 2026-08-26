@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Frown, Annoyed, Meh, Smile, Laugh } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface RatingInteractionProps {
@@ -9,11 +10,11 @@ interface RatingInteractionProps {
 }
 
 const ratingData = [
-  { emoji: "😔", label: "Terrible", color: "from-red-400 to-red-500", shadowColor: "shadow-red-500/30" },
-  { emoji: "😕", label: "Poor", color: "from-orange-400 to-orange-500", shadowColor: "shadow-orange-500/30" },
-  { emoji: "😐", label: "Okay", color: "from-yellow-400 to-yellow-500", shadowColor: "shadow-yellow-500/30" },
-  { emoji: "🙂", label: "Good", color: "from-lime-400 to-lime-500", shadowColor: "shadow-lime-500/30" },
-  { emoji: "😍", label: "Amazing", color: "from-emerald-400 to-emerald-500", shadowColor: "shadow-emerald-500/30" },
+  { icon: Frown, label: "Terrible", color: "from-red-400 to-red-500", shadowColor: "shadow-red-500/30" },
+  { icon: Annoyed, label: "Poor", color: "from-orange-400 to-orange-500", shadowColor: "shadow-orange-500/30" },
+  { icon: Meh, label: "Okay", color: "from-yellow-400 to-yellow-500", shadowColor: "shadow-yellow-500/30" },
+  { icon: Smile, label: "Good", color: "from-lime-400 to-lime-500", shadowColor: "shadow-lime-500/30" },
+  { icon: Laugh, label: "Amazing", color: "from-emerald-400 to-emerald-500", shadowColor: "shadow-emerald-500/30" },
 ]
 
 export function RatingInteraction({ onChange, className }: RatingInteractionProps) {
@@ -30,7 +31,7 @@ export function RatingInteraction({ onChange, className }: RatingInteractionProp
 
   return (
     <div className={cn("flex flex-col items-center gap-6", className)}>
-      {/* Emoji rating buttons */}
+      {/* Mood icon rating buttons */}
       <div className="flex items-center gap-3">
         {ratingData.map((item, i) => {
           const value = i + 1
@@ -52,17 +53,15 @@ export function RatingInteraction({ onChange, className }: RatingInteractionProp
                   isActive ? "scale-110" : "scale-100 group-hover:scale-105",
                 )}
               >
-                {/* Emoji with smooth grayscale transition */}
-                <span
+                {/* Mood icon with smooth opacity transition */}
+                <item.icon
                   className={cn(
-                    "text-3xl transition-all duration-300 ease-out select-none",
+                    "h-7 w-7 transition-all duration-300 ease-out",
                     isActive
-                      ? "grayscale-0 drop-shadow-lg"
-                      : "grayscale opacity-40 group-hover:opacity-70 group-hover:grayscale-[0.3]",
+                      ? "text-foreground drop-shadow-lg"
+                      : "text-muted-foreground opacity-40 group-hover:opacity-70",
                   )}
-                >
-                  {item.emoji}
-                </span>
+                />
               </div>
             </button>
           )

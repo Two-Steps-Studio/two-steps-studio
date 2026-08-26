@@ -26,9 +26,9 @@
   --color-dark: #000000;
   --color-border: var(--border-color);
 
-  --font-space: var(--font-space-grotesk), "Space Grotesk", sans-serif;
-  --font-space-grotesk: "Space Grotesk", sans-serif;
-  --font-outfit: var(--font-outfit), "Outfit", sans-serif;
+  --font-space: var(--font-metropolis), "Metropolis", sans-serif;
+  --font-space-grotesk: var(--font-metropolis), "Metropolis", sans-serif;
+  --font-outfit: var(--font-metropolis), "Metropolis", sans-serif;
 }
 
 :root {
@@ -156,11 +156,6 @@ h1, h2, h3, h4, h5, h6 {
     min-width: 44px;
     padding: 0.75rem 1rem;
   }
-
-  /* Font sizes dla mobile */
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.25rem; }
 
   /* Hide desktop sidebar on mobile */
   aside[aria-hidden="true"] {

@@ -54,7 +54,7 @@ export function BottomNavigation() {
       size: 18,
       color: isActive
           ? "var(--color-general-current)"
-          : "rgb(0,0,0)",
+          : "var(--text)",
       className: cn(
           "transition-all duration-300",
           isActive
@@ -75,9 +75,9 @@ export function BottomNavigation() {
   };
 
   return (
-      <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-[var(--border-color)]">
-        <div className="mx-auto max-w-[1400px] px-4">
-          <ul className="flex items-center justify-around h-16">
+      <nav className="fixed left-4 right-4 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto max-w-md">
+          <ul className="flex items-center justify-around gap-1 h-16 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -87,8 +87,8 @@ export function BottomNavigation() {
                     <Link
                         href={item.href}
                         className={cn(
-                            "flex flex-col items-center justify-center gap-1 py-3 transition-all",
-                            isActive ? "opacity-100" : "opacity-60 hover:opacity-90"
+                            "flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all",
+                            isActive ? "opacity-100 bg-[var(--color-general)]/10" : "opacity-60 hover:opacity-90"
                         )}
                     >
                       {getIcon(item.href)}

@@ -108,7 +108,10 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
           messages_today: data.messages_today || 0,
         });
       } catch (error) {
-        console.error('[Sidebar] Fetch stats failed:', error);
+        // Transient network hiccup on a background 60s poll - not worth
+        // surfacing as a hard error (Next's dev overlay treats console.error
+        // as a reportable error even though this is already handled).
+        console.warn('[Sidebar] Fetch stats failed:', error);
       }
     };
 

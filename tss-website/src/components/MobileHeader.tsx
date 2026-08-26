@@ -1,11 +1,11 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Moon, Sun, Bell, Menu } from "lucide-react";
+import { Moon, Sun, Bell, LogIn } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
-import { useSidebar } from "@/hooks/use-sidebar";
 import { useSectionTheme } from "@/hooks/use-section-theme";
+import { useLanguage } from "@/hooks/use-translation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,23 +14,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function MobileHeader() {
-  const { theme, setTheme } = useTheme();
-  const [resolvedTheme, setResolvedTheme] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    setResolvedTheme("light");
-    const themeChange = () => setResolvedTheme(mediaQuery ? "dark" : "light");
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeChange);
-    theme?.onChange?.(themeChange);
-    return () => {
-      window.matchMedia("(prefers-color-scheme: dark)").removeEventListener("change", themeChange);
-    };
-  }, [theme]);
-  const { toggle } = useSidebar();
+  const { setTheme, resolvedTheme } = useTheme();
+  // next-themes can't know the real theme during SSR (it lives in
+  // localStorage), so resolvedTheme differs between the server-rendered
+  // markup and the client's first paint. Gate the icon on mount - same
+  // pattern Sidebar.tsx uses for its own theme toggle - instead of
+  // rendering it from a value that disagrees with the server.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   // Same source the sidebar uses, so both swap to the section's own logo
   // (Games / Records / DEV / E-Sport / main) as the user moves around.
   const { logo, color: sectionColor } = useSectionTheme();
+  const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
@@ -104,14 +99,8 @@ export function MobileHeader() {
   return (
     <header className="lg:hidden fixed top-0 left-0 right-0 z-40 glass border-b border-[var(--border-color)]">
       <div className="h-16 flex items-center justify-between px-4">
-        {/* Lewa strona: Logo i menu */}
+        {/* Lewa strona: Logo */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={toggle}
-            className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
-          >
-            <Menu size={22} className="text-[var(--text)]" />
-          </button>
           <Link
             href="/"
             aria-label="Two Steps Studio — strona główna"
@@ -146,13 +135,13 @@ export function MobileHeader() {
           >
             <AnimatePresence mode="wait">
               <motion.div
-                key={resolvedTheme}
+                key={mounted ? resolvedTheme : "placeholder"}
                 initial={{ opacity: 0, rotate: -90 }}
                 animate={{ opacity: 1, rotate: 0 }}
                 exit={{ opacity: 0, rotate: 90 }}
                 transition={{ duration: 0.2 }}
               >
-                {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                {mounted ? (resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />) : <Moon size={20} className="opacity-0" />}
               </motion.div>
             </AnimatePresence>
           </Button>
@@ -172,17 +161,26 @@ export function MobileHeader() {
             </Button>
           </Link>
 
-          <Link href="/profile">
-            <Button variant="ghost" size="icon" aria-label="Profil" className="rounded-xl w-10 h-10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-              <Avatar className="w-8 h-8 border border-[var(--border-color)]">
-                {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} alt="Avatar" />
-                ) : (
-                  <AvatarFallback className="text-xs">{displayName?.[0]?.toUpperCase()}</AvatarFallback>
-                )}
-              </Avatar>
-            </Button>
-          </Link>
+          {!loading && user ? (
+            <Link href="/profile">
+              <Button variant="ghost" size="icon" aria-label="Profil" className="rounded-xl w-10 h-10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <Avatar className="w-8 h-8 border border-[var(--border-color)]">
+                  {avatarUrl ? (
+                    <AvatarImage src={avatarUrl} alt="Avatar" />
+                  ) : (
+                    <AvatarFallback className="text-xs">{displayName?.[0]?.toUpperCase()}</AvatarFallback>
+                  )}
+                </Avatar>
+              </Button>
+            </Link>
+          ) : !loading ? (
+            <Link href="/login">
+              <Button variant="ghost" className="rounded-xl h-10 px-3 gap-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                <LogIn size={18} className="text-[var(--text)]" />
+                <span className="text-sm font-bold text-[var(--text)]">{t.nav.login}</span>
+              </Button>
+            </Link>
+          ) : null}
         </div>
       </div>
     </header>

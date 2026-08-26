@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2 } from "lucide-react";
+import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins } from "lucide-react";
 import LogoutButton from "./logout-button";
 import Image from "next/image";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -375,13 +375,13 @@ export default function ProfilePage() {
                                     onClick={() => setTopTab("level")}
                                     className={`flex-1 py-1.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${topTab === "level" ? "bg-[var(--color-general)] text-[var(--text)]" : "bg-[var(--bg)] text-[var(--text)] opacity-60 border-[var(--border-color)] hover:opacity-100 "}`}
                                 >
-                                    🏆 Poziomy
+                                    <Trophy size={14} className="inline mr-1.5 -mt-0.5" /> Poziomy
                                 </button>
                                 <button
                                     onClick={() => setTopTab("money")}
                                     className={`flex-1 py-1.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${topTab === "money" ? "bg-[var(--color-general)] text-[var(--text)] " : "bg-[var(--bg)] text-[var(--text)] opacity-60 border-[var(--border-color)] hover:opacity-100"}`}
                                 >
-                                    💰 Pieniądze
+                                    <Coins size={14} className="inline mr-1.5 -mt-0.5" /> Pieniądze
                                 </button>
                             </div>
                         </CardHeader>
