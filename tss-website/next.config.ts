@@ -42,6 +42,14 @@ const nextConfig: NextConfig = {
             key: 'Content-Type',
             value: 'application/xml',
           },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'",
+          },
         ],
       },
       {
@@ -54,6 +62,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Type',
             value: 'text/plain',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
           },
         ],
       },

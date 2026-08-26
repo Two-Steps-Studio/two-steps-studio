@@ -20,13 +20,41 @@ export function OnlineChart() {
       .then((d: Partial<Resp>) => {
         console.log("API response:", d);
         console.log("Buckets:", d?.buckets);
+        if (!d || !Array.isArray(d.buckets)) {
+          console.error("Invalid API response - buckets not an array");
+          setData({
+            buckets: [],
+            bucket_minutes: 15,
+            window_hours: 24,
+          });
+          return;
+        }
+        const validBuckets = d.buckets.filter((b: any) =>
+          b != null &&
+          typeof b === 'object' &&
+          typeof b.total === 'number' &&
+          typeof b.logged_in === 'number' &&
+          typeof b.anonymous === 'number' &&
+          typeof b.t === 'string' &&
+          !isNaN(b.total) &&
+          !isNaN(b.logged_in) &&
+          !isNaN(b.anonymous)
+        );
+        console.log("Valid buckets:", validBuckets);
         setData({
-          buckets: Array.isArray(d?.buckets) ? (d!.buckets as Bucket[]) : [],
-          bucket_minutes: typeof d?.bucket_minutes === "number" ? d!.bucket_minutes : 15,
-          window_hours: typeof d?.window_hours === "number" ? d!.window_hours : 24,
+          buckets: validBuckets as Bucket[],
+          bucket_minutes: typeof d.bucket_minutes === "number" ? d.bucket_minutes : 15,
+          window_hours: typeof d.window_hours === "number" ? d.window_hours : 24,
         });
       })
-      .catch((e) => console.error("Fetch error:", e));
+      .catch((e) => {
+        console.error("Fetch error:", e);
+        setData({
+          buckets: [],
+          bucket_minutes: 15,
+          window_hours: 24,
+        });
+      });
   }, []);
 
   const width = 900;
@@ -36,19 +64,30 @@ export function OnlineChart() {
   const chart = useMemo(() => {
     try {
       if (!data || !Array.isArray(data.buckets)) return null;
-      const buckets = data.buckets.filter((b): b is Bucket => 
-          b != null && 
+      const buckets = data.buckets.filter((b): b is Bucket =>
+          b != null &&
           typeof b === 'object' &&
+          b !== null &&
+          'total' in b &&
+          'logged_in' in b &&
+          'anonymous' in b &&
+          't' in b &&
           typeof b.total === 'number' &&
           typeof b.logged_in === 'number' &&
           typeof b.anonymous === 'number' &&
-          typeof b.t === 'string'
+          typeof b.t === 'string' &&
+          !isNaN(b.total) &&
+          !isNaN(b.logged_in) &&
+          !isNaN(b.anonymous)
         );
       if (!buckets || buckets.length === 0) return null;
-      const xs = buckets.map((b) => new Date(b.t).getTime());
-      const ys = buckets.map((b) => b.total);
-      const ysLogged = buckets.map((b) => b.logged_in);
-      const ysAnon = buckets.map((b) => b.anonymous);
+      const xs = buckets.map((b) => {
+        const date = new Date(b.t);
+        return isNaN(date.getTime()) ? Date.now() : date.getTime();
+      });
+      const ys = buckets.map((b) => isNaN(b.total) ? 0 : b.total);
+      const ysLogged = buckets.map((b) => isNaN(b.logged_in) ? 0 : b.logged_in);
+      const ysAnon = buckets.map((b) => isNaN(b.anonymous) ? 0 : b.anonymous);
       if (xs.length === 0 || ys.length === 0) return null;
       const xMin = Math.min(...xs);
       const xMax = Math.max(...xs);
