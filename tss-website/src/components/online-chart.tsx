@@ -89,7 +89,10 @@ export function OnlineChart() {
       const ysAnon: number[] = [];
 
       for (const b of buckets) {
-        if (!b || typeof b !== 'object') continue;
+        if (!b || typeof b !== 'object') {
+          console.log("Skipping invalid bucket:", b);
+          continue;
+        }
         const date = new Date(b.t);
         const time = isNaN(date.getTime()) ? Date.now() : date.getTime();
         xs.push(time);
@@ -97,6 +100,7 @@ export function OnlineChart() {
         ysLogged.push(typeof b.logged_in === 'number' && !isNaN(b.logged_in) ? b.logged_in : 0);
         ysAnon.push(typeof b.anonymous === 'number' && !isNaN(b.anonymous) ? b.anonymous : 0);
       }
+      console.log("Processed arrays:", { xs: xs.length, ys: ys.length, ysLogged: ysLogged.length, ysAnon: ysAnon.length });
 
       if (xs.length === 0 || ys.length === 0) return null;
       const xMin = Math.min(...xs);
