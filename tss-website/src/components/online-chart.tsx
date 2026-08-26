@@ -82,13 +82,22 @@ export function OnlineChart() {
           !isNaN(b.anonymous)
         );
       if (!buckets || buckets.length === 0) return null;
-      const xs = buckets.map((b) => {
+
+      const xs: number[] = [];
+      const ys: number[] = [];
+      const ysLogged: number[] = [];
+      const ysAnon: number[] = [];
+
+      for (const b of buckets) {
+        if (!b || typeof b !== 'object') continue;
         const date = new Date(b.t);
-        return isNaN(date.getTime()) ? Date.now() : date.getTime();
-      });
-      const ys = buckets.map((b) => isNaN(b.total) ? 0 : b.total);
-      const ysLogged = buckets.map((b) => isNaN(b.logged_in) ? 0 : b.logged_in);
-      const ysAnon = buckets.map((b) => isNaN(b.anonymous) ? 0 : b.anonymous);
+        const time = isNaN(date.getTime()) ? Date.now() : date.getTime();
+        xs.push(time);
+        ys.push(typeof b.total === 'number' && !isNaN(b.total) ? b.total : 0);
+        ysLogged.push(typeof b.logged_in === 'number' && !isNaN(b.logged_in) ? b.logged_in : 0);
+        ysAnon.push(typeof b.anonymous === 'number' && !isNaN(b.anonymous) ? b.anonymous : 0);
+      }
+
       if (xs.length === 0 || ys.length === 0) return null;
       const xMin = Math.min(...xs);
       const xMax = Math.max(...xs);
