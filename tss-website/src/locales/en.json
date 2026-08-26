@@ -782,5 +782,9 @@
       "indie": "Indie",
       "other": "Other"
     }
+  },
+  "devPodcastsAdmin": {
+    "title": "Podcast Management",
+    "subtitle": "Manage podcasts and episodes"
   }
 }
