@@ -735,5 +735,16 @@
     "acceptButton": "I accept the Regulations",
     "backButton": "Back to registration",
     "lastUpdatedFooter": "Last updated: 2026-04-02"
+  },
+  "adminGames": {
+    "title": "Game Management",
+    "subtitle": "Manage games and releases",
+    "noAccessTitle": "Access Denied",
+    "noAccessDescription": "You don't have administrator permissions to view this page.",
+    "gamesLabel": "Games",
+    "noGames": "No games to display"
+  },
+  "devCrudCommon": {
+    "loading": "Loading..."
   }
 }

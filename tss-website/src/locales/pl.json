@@ -735,5 +735,16 @@
     "acceptButton": "Akceptuję regulamin",
     "backButton": "Powrót do rejestracji",
     "lastUpdatedFooter": "Ostatnia aktualizacja: 2026-04-02"
+  },
+  "adminGames": {
+    "title": "Zarządzanie Grą",
+    "subtitle": "Zarządzaj grami i wydaniami",
+    "noAccessTitle": "Brak dostępu",
+    "noAccessDescription": "Nie masz uprawnień administratora do przeglądania tej strony.",
+    "gamesLabel": "Gry",
+    "noGames": "Brak gier do wyświetlenia"
+  },
+  "devCrudCommon": {
+    "loading": "Ładowanie..."
   }
 }

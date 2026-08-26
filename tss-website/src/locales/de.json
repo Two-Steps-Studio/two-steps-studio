@@ -735,5 +735,16 @@
     "acceptButton": "Ich akzeptiere die Regeln",
     "backButton": "Zurück zur Registrierung",
     "lastUpdatedFooter": "Zuletzt aktualisiert: 2026-04-02"
+  },
+  "adminGames": {
+    "title": "Spielverwaltung",
+    "subtitle": "Verwalte Spiele und Releases",
+    "noAccessTitle": "Zugriff verweigert",
+    "noAccessDescription": "Sie haben keine Administratorberechtigungen, um diese Seite anzuzeigen.",
+    "gamesLabel": "Spiele",
+    "noGames": "Keine Spiele zum Anzeigen"
+  },
+  "devCrudCommon": {
+    "loading": "Laden..."
   }
 }

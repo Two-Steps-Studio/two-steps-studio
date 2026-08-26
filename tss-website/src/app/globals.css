@@ -214,3 +214,30 @@ picture:has(img[src$=".png"]) {
 picture:has(img[src$=".avif"]) {
   display: block;
 }
+
+/* Remove scrollbar background */
+[data-radix-scroll-area-scrollbar] {
+  background: transparent !important;
+}
+
+[data-radix-scroll-area-thumb] {
+  background: transparent !important;
+}
+
+/* Remove browser scrollbar background */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 139, 139, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 139, 139, 0.8);
+}
