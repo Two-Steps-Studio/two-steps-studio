@@ -53,6 +53,15 @@ export const metadata: Metadata = {
   description: "Welcome to Two Steps Studio",
   manifest: "/manifest.json",
   metadataBase: new URL('https://twostepsstudio.gg'),
+  // Without this, iOS Safari's data detectors auto-linkify anything that
+  // looks like an email/phone/address in the page text - underlined,
+  // blue, tap-to-compose - which is what made the email badge on /profile
+  // look like a broken/unstyled link specifically on mobile Safari.
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
     title: 'Two Steps Studio',
     description: 'Welcome to Two Steps Studio',

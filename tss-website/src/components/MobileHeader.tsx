@@ -126,44 +126,47 @@ export function MobileHeader() {
         </div>
 
         {/* Prawa strona: Akcje */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-xl w-10 h-10 bg-black/5 dark:bg-white/5"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mounted ? resolvedTheme : "placeholder"}
-                initial={{ opacity: 0, rotate: -90 }}
-                animate={{ opacity: 1, rotate: 0 }}
-                exit={{ opacity: 0, rotate: 90 }}
-                transition={{ duration: 0.2 }}
-              >
-                {mounted ? (resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />) : <Moon size={20} className="opacity-0" />}
-              </motion.div>
-            </AnimatePresence>
-          </Button>
-
-          <Link href="/notifications">
+        <div className="flex items-center gap-1.5">
+          {/* Tryb + powiadomienia trzymane razem, ciaśniej niż reszta */}
+          <div className="flex items-center gap-0.5">
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-xl w-10 h-10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative"
+              className="rounded-xl w-10 h-10 bg-black/5 dark:bg-white/5"
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             >
-              <Bell size={20} className="text-[var(--text)]" />
-              {unread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-[var(--color-general)] text-white text-[9px] font-black flex items-center justify-center border border-[var(--border-color)]">
-                  {unread}
-                </span>
-              )}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mounted ? resolvedTheme : "placeholder"}
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {mounted ? (resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />) : <Moon size={20} className="opacity-0" />}
+                </motion.div>
+              </AnimatePresence>
             </Button>
-          </Link>
+
+            <Link href="/notifications">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl w-10 h-10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative"
+              >
+                <Bell size={20} className="text-[var(--text)]" />
+                {unread > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-[var(--color-general)] text-white text-[9px] font-black flex items-center justify-center border border-[var(--border-color)]">
+                    {unread}
+                  </span>
+                )}
+              </Button>
+            </Link>
+          </div>
 
           {!loading && user ? (
             <Link href="/profile">
-              <Button variant="ghost" size="icon" aria-label={t.nav.profile} className="rounded-xl w-10 h-10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+              <Button variant="ghost" aria-label={t.nav.profile} className="rounded-xl h-10 pl-1.5 pr-2.5 gap-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <Avatar className="w-8 h-8 border border-[var(--border-color)]">
                   {avatarUrl ? (
                     <AvatarImage src={avatarUrl} alt="Avatar" />
@@ -171,6 +174,9 @@ export function MobileHeader() {
                     <AvatarFallback className="text-xs">{displayName?.[0]?.toUpperCase()}</AvatarFallback>
                   )}
                 </Avatar>
+                {displayName && (
+                  <span className="text-sm font-bold text-[var(--text)] max-w-[84px] truncate">{displayName}</span>
+                )}
               </Button>
             </Link>
           ) : !loading ? (
