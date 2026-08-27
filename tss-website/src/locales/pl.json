@@ -597,7 +597,7 @@
   },
   "shopPage": {
     "title": "Sklep Two Steps Studio",
-    "subtitle": "Kupuj skórki, emblematy, motywy i więcej!",
+    "subtitle": "Kupuj ramki na avatar i kolory nicku za zarobione monety!",
     "emptyTitle": "Sklep jest jeszcze w przygotowaniu",
     "emptyDesc1": "Pracujemy nad uruchomieniem naszego sklepu. Wkrótce pojawią się tutaj pierwsze produkty związane z Two Steps Studio i naszymi projektami.",
     "emptyDesc2": "Nie ma jeszcze czego kupić - ale to się zmieni.",
@@ -607,7 +607,18 @@
     "currency": "TSS Credits",
     "addedToCartPrefix": "Dodano do koszyka: ",
     "pricePrefix": "Cena: ",
-    "footerNote": "Wszystkie produkty są testowane i sprawdzane pod kątem bezpieczeństwa"
+    "footerNote": "Wszystkie produkty są testowane i sprawdzane pod kątem bezpieczeństwa",
+    "buy": "Kup",
+    "owned": "Posiadane",
+    "buying": "Kupowanie...",
+    "insufficientBalance": "Za mało monet",
+    "alreadyOwned": "Już to masz",
+    "purchaseError": "Błąd zakupu",
+    "purchaseSuccessPrefix": "Kupiono: ",
+    "yourBalance": "Twoje saldo",
+    "categoryFrame": "Ramki",
+    "categoryNickColor": "Kolory nicku",
+    "loginRequired": "Zaloguj się, aby kupować"
   },
   "loginExtra": {
     "connectionErrorTitle": "Błąd połączenia z serwerem",

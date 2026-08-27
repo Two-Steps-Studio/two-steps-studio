@@ -597,7 +597,7 @@
   },
   "shopPage": {
     "title": "Two Steps Studio Shop",
-    "subtitle": "Buy skins, emblems, themes, and more!",
+    "subtitle": "Buy avatar frames and nick colors with coins you've earned!",
     "emptyTitle": "The shop is still being prepared",
     "emptyDesc1": "We're working on launching our shop. The first Two Steps Studio and project-related products will appear here soon.",
     "emptyDesc2": "There's nothing to buy yet - but that's about to change.",
@@ -607,7 +607,18 @@
     "currency": "TSS Credits",
     "addedToCartPrefix": "Added to cart: ",
     "pricePrefix": "Price: ",
-    "footerNote": "All products are tested and checked for safety"
+    "footerNote": "All products are tested and checked for safety",
+    "buy": "Buy",
+    "owned": "Owned",
+    "buying": "Buying...",
+    "insufficientBalance": "Not enough coins",
+    "alreadyOwned": "You already own this",
+    "purchaseError": "Purchase failed",
+    "purchaseSuccessPrefix": "Purchased: ",
+    "yourBalance": "Your balance",
+    "categoryFrame": "Frames",
+    "categoryNickColor": "Nick colors",
+    "loginRequired": "Log in to buy items"
   },
   "loginExtra": {
     "connectionErrorTitle": "Server connection error",

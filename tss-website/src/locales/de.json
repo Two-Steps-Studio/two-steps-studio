@@ -597,7 +597,7 @@
   },
   "shopPage": {
     "title": "Two Steps Studio Shop",
-    "subtitle": "Kaufe Skins, Embleme, Themes und mehr!",
+    "subtitle": "Kaufe Avatar-Rahmen und Nick-Farben mit verdienten Münzen!",
     "emptyTitle": "Der Shop wird noch vorbereitet",
     "emptyDesc1": "Wir arbeiten daran, unseren Shop zu eröffnen. Die ersten Produkte rund um Two Steps Studio und unsere Projekte erscheinen hier bald.",
     "emptyDesc2": "Es gibt noch nichts zu kaufen - aber das wird sich ändern.",
@@ -607,7 +607,18 @@
     "currency": "TSS Credits",
     "addedToCartPrefix": "Zum Warenkorb hinzugefügt: ",
     "pricePrefix": "Preis: ",
-    "footerNote": "Alle Produkte werden getestet und auf Sicherheit geprüft"
+    "footerNote": "Alle Produkte werden getestet und auf Sicherheit geprüft",
+    "buy": "Kaufen",
+    "owned": "Im Besitz",
+    "buying": "Wird gekauft...",
+    "insufficientBalance": "Nicht genug Münzen",
+    "alreadyOwned": "Du besitzt das bereits",
+    "purchaseError": "Kauf fehlgeschlagen",
+    "purchaseSuccessPrefix": "Gekauft: ",
+    "yourBalance": "Dein Guthaben",
+    "categoryFrame": "Rahmen",
+    "categoryNickColor": "Nick-Farben",
+    "loginRequired": "Melde dich an, um zu kaufen"
   },
   "loginExtra": {
     "connectionErrorTitle": "Serververbindungsfehler",
