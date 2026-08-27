@@ -294,10 +294,10 @@ export default function ProfilePage() {
             <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-2xl shadow-2xl">
                 {/* Discord profile-card background - the same 1000x500 asset the bot
                     draws onto its canvas. A real aspect-[2/1] banner (not just an
-                    inset-0 layer cropped to whatever height the content needs) so
-                    it actually renders at that resolution/ratio, capped at its
-                    native 500px height so it's never upscaled. */}
-                <div className="relative w-full aspect-[2/1] max-h-[500px] overflow-hidden">
+                    inset-0 layer cropped to whatever height the content needs), so
+                    it always scales to the card's full width at a strict 2:1
+                    width:height ratio. */}
+                <div className="relative w-full aspect-[2/1] overflow-hidden">
                     <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{ backgroundImage: `url(/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png)` }}
