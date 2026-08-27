@@ -77,14 +77,15 @@ export function BottomNavigation() {
   };
 
   return (
-      // Bez max-w-md i z węższymi marginesami (left-2/right-2 zamiast
-      // left-4/right-4) pasek dostaje więcej realnej szerokości na telefonie
-      // - przy 6 pozycjach i długich etykietach (np. niem. "Benachrichtigungen")
-      // to wciąż za mało samo w sobie, więc etykieta łamie się do 2 linii
-      // (usunięty `truncate`) zamiast obcinać się wielokropkiem w środku słowa.
-      <nav className="fixed left-2 right-2 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
-        <div className="mx-auto max-w-lg">
-          <ul className="flex items-start justify-around gap-0.5 py-2 px-1.5 rounded-3xl glass border border-[var(--border-color)] shadow-lg shadow-black/10">
+      // Back to a full pill (rounded-full) with a single-line label - the
+      // 2-line wrap attempt made the whole bar taller and looked broken
+      // against the pill shape. Instead the bar itself is pushed much wider
+      // (left-1/right-1 insets, no max-width cap) so there's enough room for
+      // the label on one line without needing to wrap; `truncate` stays only
+      // as a last-resort safety net for whichever language's word is longest.
+      <nav className="fixed left-1 right-1 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto">
+          <ul className="flex items-center justify-around gap-0.5 h-16 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -94,12 +95,12 @@ export function BottomNavigation() {
                     <Link
                         href={item.href}
                         className={cn(
-                            "flex flex-col items-center justify-center gap-1 py-1.5 px-0.5 rounded-2xl transition-all",
+                            "flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all",
                             isActive ? "opacity-100 bg-[var(--color-general)]/10" : "opacity-60 hover:opacity-90"
                         )}
                     >
                       {getIcon(item.href)}
-                      <span className="w-full px-0.5 text-center text-[8px] font-bold leading-[1.15] text-[var(--text)] break-words">
+                      <span className="w-full truncate px-0.5 text-center text-[8px] font-bold leading-none text-[var(--text)]">
                         {item.label}
                       </span>
                     </Link>

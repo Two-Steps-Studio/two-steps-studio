@@ -1,4 +1,11 @@
-const CACHE_NAME = 'tss-pwa-cache-v2';
+// Bumped v2 -> v3: the old CACHE_NAME never changed across deploys, and the
+// document handler below served the CACHED page forever once cached (no
+// revalidation), so anyone who'd visited once could get permanently stuck
+// on a frozen HTML snapshot from that first visit - no fix pushed after
+// that point could ever reach them. Bumping this forces the activate
+// handler's existing stale-cache cleanup (below) to actually run for
+// everyone, on top of switching the strategy itself to network-first.
+const CACHE_NAME = 'tss-pwa-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -56,25 +63,19 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // AJAX requests - stale while revalidate
+  // Page navigations - network-first, cache only as an offline fallback.
+  // Was cache-first with no revalidation: once a page was cached, it was
+  // served forever, even after new deploys - the only way anyone would ever
+  // see a fix was a hard refresh or clearing site data.
   if (request.headers.get('Sec-Fetch-Destination') === 'document') {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) {
-          console.log('[SW] Serving from cache:', request.url);
-          return cached;
+      fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
         }
-        return fetch(request).then((response) => {
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              console.log('[SW] Caching response:', request.url);
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        });
-      })
+        return response;
+      }).catch(() => caches.match(request))
     );
   }
 
