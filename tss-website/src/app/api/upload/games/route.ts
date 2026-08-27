@@ -23,9 +23,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // SECURITY: Validate gameId is a number to prevent injection
+    // SECURITY: gameId must be either a positive integer (existing game) or
+    // the literal 'temp' sentinel the create-game form sends before the game
+    // has a real id yet (see dev/games/page.tsx's handleImageUpload) - it's
+    // only ever used to namespace the storage path, not looked up in the DB,
+    // so 'temp' is safe to allow. Without this, uploading a thumbnail/banner
+    // while CREATING a game always failed with this same 400, which is why
+    // every game ended up with no cover image at all.
     const gameIdNum = parseInt(gameId, 10);
-    if (isNaN(gameIdNum) || gameIdNum <= 0) {
+    const isValidId = gameId === 'temp' || (!isNaN(gameIdNum) && gameIdNum > 0);
+    if (!isValidId) {
       return NextResponse.json(
         { error: "Nieprawidłowe ID gry" },
         { status: 400 }

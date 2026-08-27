@@ -15,7 +15,8 @@ import {
   Clock,
   Calendar,
   Music,
-  ExternalLink
+  ExternalLink,
+  VolumeX
 } from "lucide-react";
 import Link from "next/link";
 import type { MusicTrack, MusicGenre } from "@/types/games-records";
@@ -186,52 +187,67 @@ export default function MusicDetailPage({ params }: { params: Promise<{ id: stri
                 />
               )}
 
-              <div className="space-y-4">
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <Slider
-                    value={[currentTime]}
-                    max={track.duration_seconds || 0}
-                    step={0.1}
-                    onValueChange={handleSeek}
-                    className="cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-zinc-400">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatDuration(track.duration_seconds)}</span>
+              {track.audio_file_url ? (
+                <div className="space-y-4">
+                  {/* Progress Bar */}
+                  <div className="space-y-2">
+                    <Slider
+                      value={[currentTime]}
+                      max={track.duration_seconds || 0}
+                      step={0.1}
+                      onValueChange={handleSeek}
+                      className="cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-zinc-400">
+                      <span>{formatTime(currentTime)}</span>
+                      <span>{formatDuration(track.duration_seconds)}</span>
+                    </div>
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center justify-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-zinc-400 hover:text-white">
+                      <SkipBack size={24} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      onClick={handlePlayPause}
+                      className="w-16 h-16 rounded-full bg-[var(--color-records)] hover:bg-[var(--color-records)]/90 text-white"
+                    >
+                      {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-zinc-400 hover:text-white">
+                      <SkipForward size={24} />
+                    </Button>
+                  </div>
+
+                  {/* Volume */}
+                  <div className="flex items-center gap-3 justify-center">
+                    <Volume2 size={18} className="text-zinc-400" />
+                    <Slider
+                      value={[volume]}
+                      max={100}
+                      step={1}
+                      onValueChange={handleVolumeChange}
+                      className="w-32 cursor-pointer"
+                    />
                   </div>
                 </div>
-
-                {/* Controls */}
-                <div className="flex items-center justify-center gap-4">
-                  <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-zinc-400 hover:text-white">
-                    <SkipBack size={24} />
-                  </Button>
-                  <Button
-                    size="icon"
-                    onClick={handlePlayPause}
-                    disabled={!track.audio_file_url}
-                    className="w-16 h-16 rounded-full bg-[var(--color-records)] hover:bg-[var(--color-records)]/90 text-white"
-                  >
-                    {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-zinc-400 hover:text-white">
-                    <SkipForward size={24} />
-                  </Button>
+              ) : (
+                // Was a fully-interactive player with only the play button
+                // disabled (seek/skip/volume still there and doing nothing) -
+                // that reads as broken, not "no audio yet". Tracks can be
+                // published without an audio file attached (no upload
+                // requirement in the admin form), so this needs to look
+                // intentional instead.
+                <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5">
+                    <VolumeX size={26} className="text-zinc-500" />
+                  </div>
+                  <p className="text-sm font-semibold text-zinc-400">Brak pliku audio</p>
+                  <p className="text-xs text-zinc-500">Ten utwór nie ma jeszcze dodanego audio do odsłuchu.</p>
                 </div>
-
-                {/* Volume */}
-                <div className="flex items-center gap-3 justify-center">
-                  <Volume2 size={18} className="text-zinc-400" />
-                  <Slider
-                    value={[volume]}
-                    max={100}
-                    step={1}
-                    onValueChange={handleVolumeChange}
-                    className="w-32 cursor-pointer"
-                  />
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 

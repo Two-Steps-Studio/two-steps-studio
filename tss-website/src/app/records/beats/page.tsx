@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Music, Calendar, Play, ShoppingCart, Filter, Check } from "lucide-react";
+import { Music, Calendar, Play, ShoppingCart, Filter, Check, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/hooks/use-translation";
 
@@ -304,14 +304,32 @@ export default function BeatyPage() {
                         <Music className="h-6 w-6 text-[var(--color-records)]" />
                       </div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handlePlay(beat)}
-                      className="h-12 w-12 rounded-full bg-[var(--color-records)]/10 text-[var(--color-records)] hover:bg-[var(--color-records)]/20"
-                    >
-                      <Play size={20} className={playingId === beat.id ? "fill-current" : ""} />
-                    </Button>
+                    {/* Was a fully-active-looking play button regardless of
+                        whether there's actually anything to play - clicking
+                        it just fired an error toast, which reads as broken
+                        rather than "no preview yet". Beats can be published
+                        with no audio attached (no upload requirement in the
+                        admin form), so this needs to look intentional. */}
+                    {beat.preview_url || beat.audio_url ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handlePlay(beat)}
+                        className="h-12 w-12 rounded-full bg-[var(--color-records)]/10 text-[var(--color-records)] hover:bg-[var(--color-records)]/20"
+                      >
+                        <Play size={20} className={playingId === beat.id ? "fill-current" : ""} />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled
+                        title={t.recordsBeats.noPreviewAvailable}
+                        className="h-12 w-12 rounded-full bg-white/5 text-zinc-500 opacity-60"
+                      >
+                        <VolumeX size={20} />
+                      </Button>
+                    )}
                     <div>
                       <CardTitle className="text-2xl font-bold text-white font-[family-name:var(--font-space)]">
                         {beat.title}
