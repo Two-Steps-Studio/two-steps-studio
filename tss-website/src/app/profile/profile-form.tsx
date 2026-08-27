@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NextImage from "next/image";
 import AvatarFrame from "@/components/AvatarFrame";
+import { useLanguage } from "@/hooks/use-translation";
 
 interface OwnedItem {
   id: string;
@@ -40,6 +41,7 @@ export default function ProfileForm({
   onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number; background?: string; equipped_frame?: string | null; equipped_nick_color?: string | null }) => void;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState(profile?.username || "");
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
@@ -118,7 +120,7 @@ export default function ProfileForm({
         details: (error as any)?.details,
         hint: (error as any)?.hint,
       });
-      setSaveErrorMsg(error.message || "Błąd zapisu zmian");
+      setSaveErrorMsg(error.message || t.profileForm.genericSaveError);
     }
   };
 
@@ -156,7 +158,7 @@ export default function ProfileForm({
           .upload(filePath, file, { upsert: true });
 
         if (uploadError) {
-          setErrorMsg(json.error || uploadError.message || "Błąd wgrywania pliku");
+          setErrorMsg(json.error || uploadError.message || t.profileForm.genericUploadError);
         } else {
           // For private bucket, we need signed URL for public access
           const { data: urlData } = await supabase.storage
@@ -193,7 +195,7 @@ export default function ProfileForm({
         router.refresh();
       }
     } catch (err: any) {
-      setErrorMsg("Błąd połączenia podczas wgrywania pliku");
+      setErrorMsg(t.profileForm.connectionUploadError);
     }
 
     setUploading(false);
@@ -205,7 +207,7 @@ export default function ProfileForm({
 
       <CardHeader className="relative z-10 border-b border-[var(--border-color)] pb-6">
         <CardTitle className="font-[family-name:var(--font-space)] text-xl flex items-center gap-2">
-          <User className="text-[var(--color-general)]" /> Edytuj Profil
+          <User className="text-[var(--color-general)]" /> {t.profileForm.editProfile}
         </CardTitle>
       </CardHeader>
 
@@ -214,20 +216,20 @@ export default function ProfileForm({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-2">
               <Label htmlFor="username" className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
-                <User size={14} /> Nazwa Użytkownika
+                <User size={14} /> {t.profileForm.usernameLabel}
               </Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="rounded-2xl border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text)] placeholder:text-zinc-500 focus:border-[var(--color-general)] focus:ring-[var(--color-general)]/20 transition-all duration-300 h-12"
-                placeholder="Wpisz nazwę..."
+                placeholder={t.profileForm.usernamePlaceholder}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="avatarFile" className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
-                <ImageIcon size={14} /> Wgraj plik z komputera
+                <ImageIcon size={14} /> {t.profileForm.uploadFileLabel}
               </Label>
               <Input
                 id="avatarFile"
@@ -237,7 +239,7 @@ export default function ProfileForm({
                 className="rounded-2xl border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text)] file:text-[var(--text)] file:bg-[var(--color-general)] file:border-0 file:rounded-xl file:px-4 file:py-2 h-12"
               />
               <p className="text-xs text-[var(--text)] font-[family-name:var(--font-outfit)]">
-                {uploading ? "Wgrywanie..." : "Obsługiwane formaty: JPG, PNG, WEBP"}
+                {uploading ? t.profileForm.uploading : t.profileForm.supportedFormats}
               </p>
               {errorMsg && <p className="text-xs text-red-500 font-[family-name:var(--font-outfit)]">{errorMsg}</p>}
             </div>
@@ -245,7 +247,7 @@ export default function ProfileForm({
 
           <div className="space-y-2">
             <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
-              <ImageIcon size={14} /> Tło profilu
+              <ImageIcon size={14} /> {t.profileForm.backgroundLabel}
             </Label>
             <div className="flex flex-wrap gap-2">
               {BACKGROUND_OPTIONS.map((bg) => (
@@ -279,11 +281,11 @@ export default function ProfileForm({
 
           <div className="space-y-2">
             <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
-              <Frame size={14} /> Ramka avatara
+              <Frame size={14} /> {t.profileForm.frameLabel}
             </Label>
             {ownedFrames.length === 0 ? (
               <p className="text-xs text-[var(--text)] opacity-60 font-[family-name:var(--font-outfit)]">
-                Nie masz jeszcze żadnej ramki - <Link href="/shop" className="text-[var(--color-general)] underline">odwiedź sklep</Link>.
+                {t.profileForm.noFramesOwnedPrefix}<Link href="/shop" className="text-[var(--color-general)] underline">{t.profileForm.visitShop}</Link>.
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -295,9 +297,9 @@ export default function ProfileForm({
                       ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40"
                       : "border-[var(--border-color)] opacity-70 hover:opacity-100"
                   }`}
-                  title="Brak"
+                  title={t.profileForm.noFrame}
                 >
-                  Brak
+                  {t.profileForm.noFrame}
                 </button>
                 {ownedFrames.map((f) => (
                   <button
@@ -320,11 +322,11 @@ export default function ProfileForm({
 
           <div className="space-y-2">
             <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
-              <Palette size={14} /> Kolor nicku
+              <Palette size={14} /> {t.profileForm.nickColorLabel}
             </Label>
             {ownedNickColors.length === 0 ? (
               <p className="text-xs text-[var(--text)] opacity-60 font-[family-name:var(--font-outfit)]">
-                Nie masz jeszcze żadnego koloru - <Link href="/shop" className="text-[var(--color-general)] underline">odwiedź sklep</Link>.
+                {t.profileForm.noColorsOwnedPrefix}<Link href="/shop" className="text-[var(--color-general)] underline">{t.profileForm.visitShop}</Link>.
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -336,7 +338,7 @@ export default function ProfileForm({
                       ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40"
                       : "border-[var(--border-color)] opacity-70 hover:opacity-100"
                   }`}
-                  title="Domyślny"
+                  title={t.profileForm.defaultColor}
                 />
                 {ownedNickColors.map((c) => (
                   <button
@@ -369,12 +371,12 @@ export default function ProfileForm({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Zapisywanie...
+                  {t.profileForm.saving}
                 </>
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Zapisz Zmiany
+                  {t.profileForm.saveChanges}
                 </>
               )}
             </Button>

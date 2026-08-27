@@ -101,6 +101,7 @@ interface Achievement {
     name: string;
     description: string;
     icon: string | null;
+    image_url: string | null; // real artwork, once designed - takes priority over the emoji/lucide icon fallback
     rarity: string;
     requirement_type: "level" | "messages" | "voice_minutes" | null;
     requirement_value: number | null;
@@ -306,7 +307,7 @@ export default function ProfilePage() {
     useEffect(() => {
         supabase
             .from("achievements")
-            .select("id, name, description, icon, rarity, requirement_type, requirement_value")
+            .select("id, name, description, icon, image_url, rarity, requirement_type, requirement_value")
             .not("requirement_type", "is", null)
             .order("requirement_type")
             .order("requirement_value")
@@ -423,12 +424,19 @@ export default function ProfilePage() {
                                 <DiscordRolesPanel discordRoles={discordRoles} />
                             </div>
 
-                            <div className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-white/15">
+                            {/* --accent-color drives the level-progress icon/%/bar - the purchased
+                                nick color is meant to recolor "nick + accents like lvl" (explicit
+                                user request), not just the name text. Falls back to the site's
+                                Ocean theme color when no nick color is equipped. */}
+                            <div
+                                className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-white/15"
+                                style={{ "--accent-color": nickColorValue || "var(--color-general)" } as React.CSSProperties}
+                            >
                                 <div className="flex items-center justify-between text-sm mb-1">
-                                    <span className="font-bold flex items-center gap-2 text-white text-base"><Trophy size={15} className="text-[var(--color-general)]" /> {t.profile.levelProgress}</span>
-                                    <span className="font-black text-[var(--color-general)] text-base">{Math.round(progress)}%</span>
+                                    <span className="font-bold flex items-center gap-2 text-white text-base"><Trophy size={15} className="text-[var(--accent-color)]" /> {t.profile.levelProgress}</span>
+                                    <span className="font-black text-[var(--accent-color)] text-base">{Math.round(progress)}%</span>
                                 </div>
-                                <Progress value={progress} className="h-4 rounded-full bg-white/10 border-white/15" />
+                                <Progress value={progress} className="h-4 rounded-full bg-white/10 border-white/15" indicatorClassName="bg-[var(--accent-color)]" />
                                 <div className="flex justify-between text-xs uppercase font-black opacity-60 text-white">
                                     <span>{xp} XP</span><span>{nextLevelXp} XP</span>
                                 </div>
@@ -528,7 +536,7 @@ export default function ProfilePage() {
                 <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-xl">
                     <Card className="bg-transparent border-0 shadow-none rounded-[2.5rem]">
                         <CardHeader className="border-b border-black/10 dark:border-white/5 text-[var(--text)] font-bold italic flex items-center">
-                            <Award size={18} className="mr-2 text-[var(--color-general)]" /> Osiągnięcia
+                            <Award size={18} className="mr-2 text-[var(--color-general)]" /> {t.profile.achievements}
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -554,10 +562,17 @@ export default function ProfilePage() {
                                             style={unlocked ? { borderColor: `${color}55`, boxShadow: `0 0 0 1px ${color}22` } : { borderColor: "var(--border-color)" }}
                                         >
                                             <div
-                                                className="h-11 w-11 rounded-full flex items-center justify-center text-lg shrink-0"
-                                                style={{ backgroundColor: unlocked ? `${color}22` : "transparent", color: unlocked ? color : "var(--text)" }}
+                                                className={cn(
+                                                    "h-11 w-11 rounded-full flex items-center justify-center text-lg shrink-0 overflow-hidden",
+                                                    !unlocked && !a.image_url && "grayscale"
+                                                )}
+                                                style={a.image_url ? undefined : { backgroundColor: unlocked ? `${color}22` : "transparent", color: unlocked ? color : "var(--text)" }}
                                             >
-                                                {a.icon || icon}
+                                                {a.image_url ? (
+                                                    <Image src={a.image_url} alt="" width={44} height={44} className="h-full w-full object-cover" />
+                                                ) : (
+                                                    a.icon || icon
+                                                )}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5">
