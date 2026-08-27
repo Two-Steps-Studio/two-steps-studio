@@ -68,7 +68,19 @@ export default function ProfileForm({
       // Was silently swallowed before - a blocked write (e.g. an RLS policy
       // rejecting the upsert) looked identical to a successful save with no
       // feedback at all. Surface it like handleFileChange already does.
-      console.error("[ProfileForm] upsert failed:", error);
+      //
+      // Logged as separate primitives, not the raw error object: a native
+      // Error/AbortError (e.g. from the supabase-js auth lock being stolen
+      // by a concurrent request) has non-enumerable message/name/stack, so
+      // `console.error(label, error)` prints it as "{}" in the browser
+      // console - useless for diagnosing which failure actually happened.
+      console.error("[ProfileForm] upsert failed:", {
+        name: (error as any)?.name,
+        message: error.message,
+        code: (error as any)?.code,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint,
+      });
       setSaveErrorMsg(error.message || "Błąd zapisu zmian");
     }
   };
