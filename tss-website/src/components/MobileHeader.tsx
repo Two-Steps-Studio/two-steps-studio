@@ -166,7 +166,10 @@ export function MobileHeader() {
 
           {!loading && user ? (
             <Link href="/profile">
-              <Button variant="ghost" aria-label={t.nav.profile} className="rounded-xl h-10 pl-1.5 pr-2.5 gap-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+              <Button variant="ghost" aria-label={t.nav.profile} className="rounded-xl h-10 pl-2.5 pr-1.5 gap-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                {displayName && (
+                  <span className="text-xs font-bold text-[var(--text)] max-w-[84px] truncate">{displayName}</span>
+                )}
                 <Avatar className="w-8 h-8 border border-[var(--border-color)]">
                   {avatarUrl ? (
                     <AvatarImage src={avatarUrl} alt="Avatar" />
@@ -174,9 +177,6 @@ export function MobileHeader() {
                     <AvatarFallback className="text-xs">{displayName?.[0]?.toUpperCase()}</AvatarFallback>
                   )}
                 </Avatar>
-                {displayName && (
-                  <span className="text-sm font-bold text-[var(--text)] max-w-[84px] truncate">{displayName}</span>
-                )}
               </Button>
             </Link>
           ) : !loading ? (
