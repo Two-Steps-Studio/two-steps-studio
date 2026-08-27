@@ -26,6 +26,7 @@ interface RankedUser {
     discord_id: string;
     username?: string;
     discord_name?: string;
+    avatar_url?: string;
     level?: number;
     xp?: number;
     money?: number;
@@ -33,8 +34,8 @@ interface RankedUser {
 }
 
 const fetchRankingData = async () => {
-    const { data: levelUsers } = await supabase.from("profiles").select("id, discord_id, username, level, xp").order("level", { ascending: false }).limit(100);
-    const { data: moneyUsers } = await supabase.from("profiles").select("id, discord_id, username, money").order("money", { ascending: false }).limit(100);
+    const { data: levelUsers } = await supabase.from("profiles").select("id, discord_id, username, avatar_url, level, xp").order("level", { ascending: false }).limit(100);
+    const { data: moneyUsers } = await supabase.from("profiles").select("id, discord_id, username, avatar_url, money").order("money", { ascending: false }).limit(100);
 
     const usersByLevel: RankedUser[] = (levelUsers || []).map((u, idx: number) => ({
         ...u,
@@ -99,6 +100,19 @@ export default function ProfilePage() {
 
             // Set profile (but don't call setProfile twice for same event)
             setProfile(profileData);
+
+            // Backfill profiles.avatar_url from the live Discord OAuth session the
+            // first time it's missing - the bot never writes this column, so
+            // anyone who never manually uploaded a custom avatar has it null,
+            // and the public /profile/[id] view (no access to this session) had
+            // nothing to fall back to. Fire-and-forget: doesn't block rendering,
+            // and it's fine if it lands a moment after this render.
+            const liveDiscordAvatar = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
+            if (initialProfile && !initialProfile.avatar_url && liveDiscordAvatar) {
+                supabase.from("profiles").update({ avatar_url: liveDiscordAvatar }).eq("id", discordId).then(({ error }) => {
+                    if (error) console.error("[Profile] avatar_url backfill failed:", error.message);
+                });
+            }
 
             // Subscribe AFTER setting initial state.
             //
@@ -404,7 +418,11 @@ export default function ProfilePage() {
                                 <div className="text-center opacity-40 text-sm pt-8">{t.profile.loading}</div>
                             )}
                             {topList.map((u, idx) => (
-                                <Link key={u.id} href={`/profile/${u.discord_id}`} className={cn("w-full flex items-center justify-between p-4 rounded-xl border transition-colors hover:border-[var(--color-general)]/40",
+                                // Route by u.id (profiles.id, the Discord snowflake used
+                                // consistently everywhere else - proxy.ts, RLS, RPCs) rather
+                                // than the separate profiles.discord_id column, which can be
+                                // empty/stale and pointed the public profile lookup at nothing.
+                                <Link key={u.id} href={`/profile/${u.id}`} className={cn("w-full flex items-center justify-between p-4 rounded-xl border transition-colors hover:border-[var(--color-general)]/40",
                                     u.id === discordId ? "bg-[var(--color-general)]/10 border-[var(--color-general)]/30" : "",
                                     idx === 0 ? "bg-yellow-500/10" : "",
                                     idx === 1 ? "bg-zinc-500/10" : "",
@@ -413,9 +431,14 @@ export default function ProfilePage() {
                                 )}>
                                     <div className="flex items-center gap-4">
                                         <span className="font-black w-6 text-center">{u.rank}</span>
-                                        <div className="w-6"></div>
+                                        <Avatar className="h-9 w-9 shrink-0">
+                                            <AvatarImage src={u.avatar_url} />
+                                            <AvatarFallback className="text-xs bg-white text-black font-bold">
+                                                {(u.username || u.discord_name || "?")[0]}
+                                            </AvatarFallback>
+                                        </Avatar>
                                         <div className="flex-1 min-w-0">
-                                            <div className={cn("font-bold truncate text-sm", u.discord_id === discordId ? "text-[var(--color-general)]" : "")}>{u.username || u.discord_name || u.email?.split("@")[0] || (u.discord_id ? u.discord_id.slice(0, 14) : t.profile.unknown)}</div>
+                                            <div className={cn("font-bold truncate text-sm", u.id === discordId ? "text-[var(--color-general)]" : "")}>{u.username || u.discord_name || u.email?.split("@")[0] || (u.discord_id ? u.discord_id.slice(0, 14) : t.profile.unknown)}</div>
                                             <div className="text-xs opacity-50">
                                                 {topTab === "level" ? `${t.profile.levelLabel} ${u.level}` : `${(u.money / 1000).toFixed(1)}K ${t.profile.coinsShort}`}
                                             </div>
