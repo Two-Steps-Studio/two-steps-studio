@@ -3,7 +3,17 @@ import { createServerClient } from "@supabase/ssr";
 
 // --- Rate Limiting & Security ---
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-const MAX_REQUESTS = 100;
+// This counts EVERY request through this middleware from one IP - not just
+// logins/API calls, page navigations too - and several components poll
+// /api/ping and /api/stats every few seconds. 100/min was calibrated for
+// something like a login-brute-force guard, not general site traffic: one
+// real visitor's background polling alone could approach it, and a shared
+// home IP (two phones + a PC, same NAT) hitting it multiple times over adds
+// up fast with no way for the window to ever catch up. The result wasn't a
+// blocked attacker, it was every request - including /api/admin/auth -
+// silently getting a 429 that the frontend read as "not an admin"/
+// "no access", indistinguishable from a real permissions problem.
+const MAX_REQUESTS = 600;
 const WINDOW_MS = 60000; // 1 minute
 
 function checkRateLimit(ip: string): boolean {
