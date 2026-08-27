@@ -278,12 +278,27 @@ export default function ProfilePage() {
     const nextLevelXp = Math.round(nextLevelStartXP);
     const discordRoles = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
     const topList = topTab === "level" ? rankingData.usersByLevel : rankingData.usersByMoney;
+    // Same 19 backgrounds the Discord bot's profile card draws onto its
+    // 1000x500 canvas (tss-dc-bot/assets/discord/backgrounds) - copied into
+    // public/ under the same filenames so a profile.background value maps
+    // 1:1 to an asset here. "Two Steps Studio" mirrors the bot's own
+    // fallback for an unset/unrecognized background value.
+    const profileBackground = profile?.background && profile.background !== "default"
+        ? profile.background
+        : "Two Steps Studio";
 
     return (
         <div className="container mx-auto p-6 space-y-8 mt-20 max-w-6xl pb-16" suppressHydrationWarning>
 
             {/* ── PROFIL ── */}
             <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-2xl shadow-2xl">
+                {/* Discord profile-card background - same 1000x500 asset the bot
+                    draws onto its canvas, cropped (not stretched) to fill this card */}
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png)` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-[var(--card-bg)]/70 to-[var(--card-bg)]/30" />
                 <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-general)]/15 via-transparent to-transparent opacity-90" />
                 <CardContent className="relative z-10 p-8 md:p-12">
                     <div className="flex flex-col md:flex-row items-center gap-8">
