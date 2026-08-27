@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/hooks/use-translation";
 import registerUser from "./actions";
@@ -17,6 +17,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 export default function RegisterPage() {
   const { t, language } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const ref = searchParams.get("ref") || undefined;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -44,7 +46,7 @@ export default function RegisterPage() {
 
     try {
       // 1. Register user via server action
-      const result = await registerUser({ ...formData, language });
+      const result = await registerUser({ ...formData, language, ref });
 
       if (result.error) {
         toast.error(t.auth.registerError, {

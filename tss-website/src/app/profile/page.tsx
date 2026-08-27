@@ -11,7 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic } from "lucide-react";
+import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic, Copy, Check, Gift } from "lucide-react";
+import { toast } from "sonner";
 import LogoutButton from "./logout-button";
 import Image from "next/image";
 import Link from "next/link";
@@ -63,6 +64,7 @@ export default function ProfilePage() {
     const [authChecked, setAuthChecked] = useState(false);
     const [rankingData, setRankingData] = useState<{ usersByLevel: any[]; usersByMoney: any[] }>({ usersByLevel: [], usersByMoney: [] });
     const [topTab, setTopTab] = useState<"level" | "money">("level");
+    const [refLinkCopied, setRefLinkCopied] = useState(false);
     // Resolved hex value for profile?.equipped_nick_color, which stores a
     // shop_items.id reference, not the color directly.
     const [nickColorValue, setNickColorValue] = useState<string | null>(null);
@@ -111,6 +113,21 @@ export default function ProfilePage() {
             if (initialProfile && !initialProfile.avatar_url && liveDiscordAvatar) {
                 supabase.from("profiles").update({ avatar_url: liveDiscordAvatar }).eq("id", discordId).then(({ error }) => {
                     if (error) console.error("[Profile] avatar_url backfill failed:", error.message);
+                });
+            }
+
+            // Referral bonus: pay the referrer 500 coins once THIS account
+            // shows a real, linked Discord identity - see
+            // db/migrations/add-referrals.sql for why it's gated on that
+            // rather than on signup itself. pay_referral_reward is a no-op
+            // (returns false) if there's no referrer or it was already paid,
+            // so it's safe to just call this on every visit rather than
+            // tracking whether it's "worth" trying.
+            const isCurrentlyDiscordLinked = currentUser.app_metadata?.provider === 'discord'
+                || currentUser.identities?.some((id: any) => id.provider === 'discord');
+            if (initialProfile?.referred_by && !initialProfile?.referral_reward_paid && isCurrentlyDiscordLinked) {
+                supabase.rpc('pay_referral_reward', { p_user_id: discordId }).then(({ error }) => {
+                    if (error) console.error("[Profile] referral payout failed:", error.message);
                 });
             }
 
@@ -274,6 +291,20 @@ export default function ProfilePage() {
     const profileBackground = profile?.background && BACKGROUND_OPTIONS.includes(profile.background)
         ? profile.background
         : "Two Steps Studio";
+    const referralLink = discordId && typeof window !== "undefined"
+        ? `${window.location.origin}/rejestracja?ref=${discordId}`
+        : "";
+
+    const copyReferralLink = async () => {
+        try {
+            await navigator.clipboard.writeText(referralLink);
+            setRefLinkCopied(true);
+            toast.success(t.profile.referralCopied);
+            setTimeout(() => setRefLinkCopied(false), 2000);
+        } catch {
+            toast.error(t.profile.referralCopyError);
+        }
+    };
 
     return (
         <div className="container mx-auto p-6 space-y-8 mt-20 max-w-6xl pb-16" suppressHydrationWarning>
@@ -364,6 +395,34 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </Card>
+
+            {/* ── PROGRAM POLECEŃ ── */}
+            <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-xl">
+                <Card className="bg-transparent border-0 shadow-none rounded-[2.5rem]">
+                    <CardContent className="p-6 flex flex-col md:flex-row items-center gap-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="h-11 w-11 rounded-full bg-[var(--color-general)]/15 flex items-center justify-center shrink-0">
+                                <Gift size={20} className="text-[var(--color-general)]" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-bold text-sm text-[var(--text)]">{t.profile.referralTitle}</p>
+                                <p className="text-xs text-[var(--text)] opacity-60">{t.profile.referralDescription}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                            <input
+                                readOnly
+                                value={referralLink}
+                                onFocus={(e) => e.target.select()}
+                                className="flex-1 md:w-64 rounded-2xl border border-[var(--border-color)] bg-[var(--bg)] text-[var(--text)] text-xs px-3 h-10 truncate"
+                            />
+                            <Button type="button" onClick={copyReferralLink} className="rounded-2xl bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white h-10 shrink-0">
+                                {refLinkCopied ? <Check size={16} /> : <Copy size={16} />}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
 
             {/* ── STATYSTYKI + TOPKA ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
