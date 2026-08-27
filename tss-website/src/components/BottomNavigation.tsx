@@ -104,7 +104,7 @@ export function BottomNavigation() {
                         )}
                     >
                       {getIcon(item.href)}
-                      <span className="w-full truncate px-0.5 text-center text-[9px] font-bold leading-none text-[var(--text)]">
+                      <span className="w-full truncate px-0.5 text-center text-[11px] font-bold leading-none text-[var(--text)]">
                         {item.label}
                       </span>
                     </Link>
