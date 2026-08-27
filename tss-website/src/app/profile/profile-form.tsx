@@ -6,8 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, User, Image as ImageIcon, Save } from "lucide-react";
+import { Loader2, User, Image as ImageIcon, Save, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import NextImage from "next/image";
+
+// Same 19 backgrounds the Discord bot's profile card can draw (see
+// tss-dc-bot/assets/discord/backgrounds and profileGenerator.js's
+// availableBackgrounds) - mirrored under tss-website/public/assets/discord/
+// backgrounds/ so a filename picked here renders identically on both.
+const BACKGROUND_OPTIONS = [
+  "Two Steps Studio", "Two Steps DEV", "Two Steps Games", "Two Steps Records", "Two Steps E-Sport",
+  "Blue", "Light Blue", "Green", "Light Green", "Yellow", "Orange", "Red", "Pink", "Purple", "Brown",
+  "Triangles", "Flowers", "Zebra", "Cow", "Panther",
+];
 
 export default function ProfileForm({
   user,
@@ -18,7 +29,7 @@ export default function ProfileForm({
   user: any;
   discordId: string;
   profile: any;
-  onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number }) => void;
+  onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number; background?: string }) => void;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -26,6 +37,7 @@ export default function ProfileForm({
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
   const [balance, setBalance] = useState(profile?.pln_balance || 0);
   const [money, setMoney] = useState(profile?.money || 0);
+  const [background, setBackground] = useState(profile?.background && profile.background !== "default" ? profile.background : "Two Steps Studio");
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -42,13 +54,13 @@ export default function ProfileForm({
         avatar_url: avatarUrl,
         pln_balance: balance,
         money: money,
-        background: profile?.background || "default",
+        background,
         updated_at: new Date().toISOString(),
       });
 
     setLoading(false);
     if (!error) {
-      onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money });
+      onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money, background });
       router.refresh();
     }
   };
@@ -103,11 +115,11 @@ export default function ProfileForm({
               avatar_url: urlData.signedUrl,
               pln_balance: balance,
               money: money,
-              background: profile?.background || "default",
+              background,
               updated_at: new Date().toISOString(),
             });
 
-            onUpdated?.({ username, avatar_url: urlData.signedUrl, pln_balance: balance, money: money });
+            onUpdated?.({ username, avatar_url: urlData.signedUrl, pln_balance: balance, money: money, background });
             window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: urlData.signedUrl, username } }));
             router.refresh();
           } else {
@@ -169,6 +181,40 @@ export default function ProfileForm({
                 {uploading ? "Wgrywanie..." : "Obsługiwane formaty: JPG, PNG, WEBP"}
               </p>
               {errorMsg && <p className="text-xs text-red-500 font-[family-name:var(--font-outfit)]">{errorMsg}</p>}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
+              <ImageIcon size={14} /> Tło profilu
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {BACKGROUND_OPTIONS.map((bg) => (
+                <button
+                  key={bg}
+                  type="button"
+                  onClick={() => setBackground(bg)}
+                  title={bg}
+                  className={`relative w-24 aspect-[2/1] rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                    background === bg
+                      ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40"
+                      : "border-[var(--border-color)] opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <NextImage
+                    src={`/assets/discord/backgrounds/${encodeURIComponent(bg)}.png`}
+                    alt={bg}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                  />
+                  {background === bg && (
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Check size={18} className="text-white drop-shadow" />
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 

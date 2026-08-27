@@ -292,13 +292,18 @@ export default function ProfilePage() {
 
             {/* ── PROFIL ── */}
             <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-2xl shadow-2xl">
-                {/* Discord profile-card background - same 1000x500 asset the bot
-                    draws onto its canvas, cropped (not stretched) to fill this card */}
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png)` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-[var(--card-bg)]/70 to-[var(--card-bg)]/30" />
+                {/* Discord profile-card background - the same 1000x500 asset the bot
+                    draws onto its canvas. A real aspect-[2/1] banner (not just an
+                    inset-0 layer cropped to whatever height the content needs) so
+                    it actually renders at that resolution/ratio, capped at its
+                    native 500px height so it's never upscaled. */}
+                <div className="relative w-full aspect-[2/1] max-h-[500px] overflow-hidden">
+                    <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png)` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-transparent to-transparent" />
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-general)]/15 via-transparent to-transparent opacity-90" />
                 <CardContent className="relative z-10 p-8 md:p-12">
                     <div className="flex flex-col md:flex-row items-center gap-8">
