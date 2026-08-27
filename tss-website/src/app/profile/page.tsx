@@ -16,6 +16,7 @@ import LogoutButton from "./logout-button";
 import Image from "next/image";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BACKGROUND_OPTIONS } from "./profile-form";
+import AvatarFrame from "@/components/AvatarFrame";
 
 const ROLE_PRIORITY: Array<{ key: string; color: string; label: string }> = [
     { key: "〔 👑︱Owner 〕", color: "#dc3545", label: "OWNER" },
@@ -153,9 +154,9 @@ export default function ProfilePage() {
     const [authChecked, setAuthChecked] = useState(false);
     const [rankingData, setRankingData] = useState<{ usersByLevel: any[]; usersByMoney: any[] }>({ usersByLevel: [], usersByMoney: [] });
     const [topTab, setTopTab] = useState<"level" | "money">("level");
-    // Resolved cosmetics for profile?.equipped_frame / equipped_nick_color,
-    // which store shop_items.id references, not the CSS value directly.
-    const [equippedCosmetics, setEquippedCosmetics] = useState<{ frameValue: string | null; nickColorValue: string | null }>({ frameValue: null, nickColorValue: null });
+    // Resolved hex value for profile?.equipped_nick_color, which stores a
+    // shop_items.id reference, not the color directly.
+    const [nickColorValue, setNickColorValue] = useState<string | null>(null);
     const [achievements, setAchievements] = useState<Achievement[]>([]);
 
     useEffect(() => {
@@ -283,25 +284,21 @@ export default function ProfilePage() {
     }, [router]);
 
     useEffect(() => {
-        const frameId = profile?.equipped_frame;
+        // Frames render straight from the shop_items.id (AvatarFrame picks
+        // the matching SVG design) - only nick_color still needs its raw
+        // hex value resolved from shop_items.
         const nickColorId = profile?.equipped_nick_color;
-        if (!frameId && !nickColorId) {
-            setEquippedCosmetics({ frameValue: null, nickColorValue: null });
+        if (!nickColorId) {
+            setNickColorValue(null);
             return;
         }
-        const ids = [frameId, nickColorId].filter(Boolean);
         supabase
             .from("shop_items")
-            .select("id, value")
-            .in("id", ids)
-            .then(({ data }) => {
-                const byId = new Map((data || []).map((row: any) => [row.id, row.value]));
-                setEquippedCosmetics({
-                    frameValue: frameId ? byId.get(frameId) ?? null : null,
-                    nickColorValue: nickColorId ? byId.get(nickColorId) ?? null : null,
-                });
-            });
-    }, [profile?.equipped_frame, profile?.equipped_nick_color]);
+            .select("value")
+            .eq("id", nickColorId)
+            .maybeSingle()
+            .then(({ data }) => setNickColorValue(data?.value ?? null));
+    }, [profile?.equipped_nick_color]);
 
     // Public catalog (RLS: "Anyone can view achievements") - fetched once,
     // "unlocked" is computed below from profile.level/total_messages/
@@ -391,16 +388,7 @@ export default function ProfilePage() {
                                 {/* Purchased avatar frame (shop_items category 'frame') - a sibling
                                     ring behind the Avatar, not a wrapper around it, so an animated
                                     frame can spin without rotating the avatar image itself. */}
-                                {equippedCosmetics.frameValue && (
-                                    <div
-                                        className={`absolute -inset-1 rounded-full ${equippedCosmetics.frameValue === "rgb-animated" ? "animate-spin" : ""}`}
-                                        style={{
-                                            background: equippedCosmetics.frameValue === "rgb-animated"
-                                                ? "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)"
-                                                : equippedCosmetics.frameValue,
-                                        }}
-                                    />
-                                )}
+                                <AvatarFrame frameId={profile?.equipped_frame} />
                                 <Avatar className="relative h-36 w-36 md:h-44 md:w-44 ring-4 ring-[var(--color-general)]/30 border-2 border-white/30">
                                     <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
                                     <AvatarFallback className="text-4xl bg-white text-black font-bold">{discordName?.[0]}</AvatarFallback>
@@ -413,8 +401,8 @@ export default function ProfilePage() {
                             <div className="text-center md:text-left space-y-3 min-w-0 md:max-w-md">
                                 <div>
                                     <h1
-                                        className={`text-3xl md:text-4xl font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] ${equippedCosmetics.nickColorValue ? "" : "text-white"}`}
-                                        style={equippedCosmetics.nickColorValue ? { color: equippedCosmetics.nickColorValue } : undefined}
+                                        className={`text-3xl md:text-4xl font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] ${nickColorValue ? "" : "text-white"}`}
+                                        style={nickColorValue ? { color: nickColorValue } : undefined}
                                     >
                                         {discordName}
                                     </h1>

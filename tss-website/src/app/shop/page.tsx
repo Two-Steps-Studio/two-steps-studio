@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ShoppingCart, Shield, Frame, Palette, Check, Coins, Loader2 } from "lucide-react";
+import AvatarFrame from "@/components/AvatarFrame";
 
 interface Product {
   id: string;
@@ -101,18 +102,12 @@ export default function ShopPage() {
         />
       );
     }
-    // Frame preview: a ring in the frame's color/gradient around a neutral circle.
-    const isAnimated = product.value === "rgb-animated";
+    // Frame preview: the same Nitro-style SVG design used on the profile
+    // and in the settings picker, so what you buy is what you'll see.
     return (
-      <div
-        className="h-16 w-16 rounded-full shrink-0 flex items-center justify-center"
-        style={{
-          background: isAnimated
-            ? "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)"
-            : product.value,
-        }}
-      >
+      <div className="relative h-16 w-16 rounded-full shrink-0 flex items-center justify-center">
         <div className="h-11 w-11 rounded-full bg-[var(--bg)]" />
+        <AvatarFrame frameId={product.id} className="absolute -inset-0.5" />
       </div>
     );
   };

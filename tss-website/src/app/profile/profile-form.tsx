@@ -10,6 +10,7 @@ import { Loader2, User, Image as ImageIcon, Save, Check, Frame, Palette } from "
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NextImage from "next/image";
+import AvatarFrame from "@/components/AvatarFrame";
 
 interface OwnedItem {
   id: string;
@@ -307,14 +308,10 @@ export default function ProfileForm({
                     className={`relative h-12 w-12 rounded-full shrink-0 cursor-pointer flex items-center justify-center transition-all ${
                       equippedFrame === f.id ? "ring-2 ring-offset-2 ring-offset-[var(--bg)] ring-[var(--color-general)]" : ""
                     }`}
-                    style={{
-                      background: f.value === "rgb-animated"
-                        ? "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)"
-                        : f.value,
-                    }}
                   >
                     <span className="h-8 w-8 rounded-full bg-[var(--bg)]" />
-                    {equippedFrame === f.id && <Check size={14} className="absolute text-white drop-shadow" />}
+                    <AvatarFrame frameId={f.id} className="absolute -inset-0.5" />
+                    {equippedFrame === f.id && <Check size={14} className="absolute text-white drop-shadow z-10" />}
                   </button>
                 ))}
               </div>
