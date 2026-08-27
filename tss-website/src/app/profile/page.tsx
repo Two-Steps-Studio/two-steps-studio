@@ -320,7 +320,11 @@ export default function ProfilePage() {
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-general)]/15 via-transparent to-transparent opacity-90" />
                 <CardContent className="relative z-10 p-8 md:p-12">
-                    <div className="flex flex-col md:flex-row items-center gap-8">
+                    {/* justify-center + dropping flex-1 from the name block below (was
+                        forcing it to grow and shove the level box to the card's far
+                        right edge, leaving a big empty gap) - now the avatar/name/level
+                        trio sizes to its own content and sits centered as a group. */}
+                    <div className="flex flex-col md:flex-row items-center md:justify-center gap-8">
                         <div className="relative group flex-shrink-0">
                             <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-[var(--color-general)] to-transparent opacity-60 blur-md" />
                             <Avatar className="h-48 w-48 ring-4 ring-[var(--color-general)]/20 border-2 border-[var(--color-general)]/30">
@@ -332,7 +336,7 @@ export default function ProfilePage() {
                             </Badge>
                         </div>
 
-                        <div className="text-center md:text-left space-y-3 flex-1 min-w-0">
+                        <div className="text-center md:text-left space-y-3 min-w-0 md:max-w-md">
                             <div>
                                 <h1 className="text-4xl font-bold text-[var(--text)] tracking-tight">{discordName}</h1>
                                 {isDiscordLinked ? (
