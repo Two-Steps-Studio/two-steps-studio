@@ -77,32 +77,34 @@ export function BottomNavigation() {
   };
 
   return (
-      // Back to a full pill (rounded-full) with a single-line label - the
-      // 2-line wrap attempt made the whole bar taller and looked broken
-      // against the pill shape. Instead the bar itself is pushed much wider
-      // (left-1/right-1 insets, no max-width cap) so there's enough room for
-      // the label on one line without needing to wrap; `truncate` stays only
-      // as a last-resort safety net for whichever language's word is longest.
-      <nav className="fixed left-1 right-1 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
-        <div className="mx-auto">
-          <ul className="flex items-center justify-around gap-0.5 h-16 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
+      // With 6 items + longer translations ("Powiadomienia", "Benachrichtigungen"),
+      // showing a label under every icon always ran out of room and truncated
+      // no matter how wide the bar got. Instead only the ACTIVE item shows its
+      // label (next to the icon, in a widened pill) - inactive items are
+      // icon-only, which both guarantees nothing ever truncates and gives
+      // every icon more breathing room.
+      <nav className="fixed left-2 right-2 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto max-w-md">
+          <ul className="flex items-center justify-around gap-0.5 h-14 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
 
               return (
-                  <li key={key} className="min-w-0 flex-1">
+                  <li key={key} className="min-w-0">
                     <Link
                         href={item.href}
                         className={cn(
-                            "flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all",
-                            isActive ? "opacity-100 bg-[var(--color-general)]/10" : "opacity-60 hover:opacity-90"
+                            "flex items-center justify-center gap-1.5 h-10 rounded-full transition-all whitespace-nowrap",
+                            isActive ? "opacity-100 bg-[var(--color-general)]/10 px-3.5" : "opacity-60 hover:opacity-90 w-10"
                         )}
                     >
                       {getIcon(item.href)}
-                      <span className="w-full truncate px-0.5 text-center text-[8px] font-bold leading-none text-[var(--text)]">
-                        {item.label}
-                      </span>
+                      {isActive && (
+                          <span className="text-[11px] font-bold leading-none text-[var(--text)]">
+                            {item.label}
+                          </span>
+                      )}
                     </Link>
                   </li>
               );
