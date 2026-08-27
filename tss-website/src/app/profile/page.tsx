@@ -297,17 +297,17 @@ export default function ProfilePage() {
         <div className="container mx-auto p-6 space-y-8 mt-20 max-w-6xl pb-16" suppressHydrationWarning>
 
             {/* ── PROFIL ── */}
-            {/* py-0 gap-0 override Card's own default `py-6 flex flex-col gap-6` -
-                without them the banner sat inset from the rounded top corners
-                with a 24px gap before the content below, instead of being a
-                flush, edge-to-edge 2:1 banner. */}
-            <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-2xl shadow-2xl py-0 gap-0">
-                {/* Discord profile-card background - the same 1000x500 asset the bot
-                    draws onto its canvas. A real aspect-[2/1] banner (not just an
-                    inset-0 layer cropped to whatever height the content needs), so
-                    it always scales to the card's full width at a strict 2:1
-                    width:height ratio. */}
-                <div className="relative w-full aspect-[2/1] overflow-hidden bg-[var(--bg)]">
+            {/* Content now lives directly on the banner instead of in a separate
+                near-black CardContent block below it (that block was `bg-[var(--card-bg)]`,
+                #020202 in dark mode - the solid black area the user asked to remove).
+                It's an absolute, centered overlay on top of the image with a soft
+                scrim (not a solid block) for legibility. On mobile the banner uses a
+                flexible min-height instead of the strict ratio, since the stacked
+                avatar/name/level content needs more room than a squat 2:1 box would
+                give it at narrow widths; from md: up there's enough space at 2:1 to
+                hold the row layout, so the strict ratio kicks in there. */}
+            <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] shadow-2xl py-0 gap-0">
+                <div className="relative w-full min-h-[480px] md:min-h-0 md:aspect-[2/1] overflow-hidden bg-[var(--bg)]">
                     <Image
                         src={`/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png`}
                         alt=""
@@ -316,58 +316,55 @@ export default function ProfilePage() {
                         className="object-cover"
                         sizes="(max-width: 1152px) 100vw, 1152px"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-transparent to-transparent" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-general)]/15 via-transparent to-transparent opacity-90" />
-                <CardContent className="relative z-10 p-8 md:p-12">
-                    {/* justify-center + dropping flex-1 from the name block below (was
-                        forcing it to grow and shove the level box to the card's far
-                        right edge, leaving a big empty gap) - now the avatar/name/level
-                        trio sizes to its own content and sits centered as a group. */}
-                    <div className="flex flex-col md:flex-row items-center md:justify-center gap-8">
-                        <div className="relative group flex-shrink-0">
-                            <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-[var(--color-general)] to-transparent opacity-60 blur-md" />
-                            <Avatar className="h-48 w-48 ring-4 ring-[var(--color-general)]/20 border-2 border-[var(--color-general)]/30">
-                                <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
-                                <AvatarFallback className="text-4xl bg-white text-[var(--text)] font-bold">{discordName?.[0]}</AvatarFallback>
-                            </Avatar>
-                            <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-[var(--text)] font-bold rounded-full" style={{ backgroundColor: roleInfo.color }}>
-                                {roleInfo.label}
-                            </Badge>
-                        </div>
+                    <div className="absolute inset-0 bg-black/35" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-general)]/15 via-transparent to-transparent opacity-90" />
 
-                        <div className="text-center md:text-left space-y-3 min-w-0 md:max-w-md">
-                            <div>
-                                <h1 className="text-4xl font-bold text-[var(--text)] tracking-tight">{discordName}</h1>
-                                {isDiscordLinked ? (
-                                    <Badge variant="outline" className="mt-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-400 gap-1.5">
-                                        <CheckCircle2 size={12} /> {t.profile.discordVerified}
-                                    </Badge>
-                                ) : (
-                                    <Button variant="outline" size="sm" className="mt-2 h-7 bg-indigo-500/10 border-indigo-500/30 text-indigo-400 text-xs rounded-full gap-2">
-                                        <LinkIcon size={12} /> {t.profile.connectDiscord}
-                                    </Button>
-                                )}
+                    <div className="absolute inset-0 flex items-center justify-center p-6 md:p-10">
+                        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-4xl justify-center">
+                            <div className="relative group flex-shrink-0">
+                                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-[var(--color-general)] to-transparent opacity-60 blur-md" />
+                                <Avatar className="h-36 w-36 md:h-44 md:w-44 ring-4 ring-[var(--color-general)]/30 border-2 border-white/30">
+                                    <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
+                                    <AvatarFallback className="text-4xl bg-white text-black font-bold">{discordName?.[0]}</AvatarFallback>
+                                </Avatar>
+                                <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-white font-bold rounded-full shadow-lg" style={{ backgroundColor: roleInfo.color }}>
+                                    {roleInfo.label}
+                                </Badge>
                             </div>
-                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-[var(--text)]">
-                                <span className="flex items-center gap-1.5 bg-[var(--bg)] px-3 py-1 rounded-full border border-[var(--border-color)] text-sm"><Mail size={13} /> {user?.email}</span>
-                                <span className="flex items-center gap-1.5 bg-[var(--bg)] px-3 py-1 rounded-full border border-[var(--border-color)] text-sm"><Shield size={13} /> ID: {user?.id.slice(0, 8)}</span>
-                            </div>
-                            <DiscordRolesPanel discordRoles={discordRoles} />
-                        </div>
 
-                        <div className="w-full md:w-72 space-y-3 bg-[var(--bg)] p-5 rounded-2xl border border-[var(--border-color)] backdrop-blur-sm">
-                            <div className="flex items-center justify-between text-sm mb-1">
-                                <span className="font-bold flex items-center gap-2 text-[var(--text)] text-base"><Trophy size={15} className="text-[var(--color-general)]" /> {t.profile.levelProgress}</span>
-                                <span className="font-black text-[var(--color-general)] text-base">{Math.round(progress)}%</span>
+                            <div className="text-center md:text-left space-y-3 min-w-0 md:max-w-md">
+                                <div>
+                                    <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">{discordName}</h1>
+                                    {isDiscordLinked ? (
+                                        <Badge variant="outline" className="mt-2 border-emerald-400/40 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 gap-1.5">
+                                            <CheckCircle2 size={12} /> {t.profile.discordVerified}
+                                        </Badge>
+                                    ) : (
+                                        <Button variant="outline" size="sm" className="mt-2 h-7 bg-indigo-500/20 backdrop-blur-sm border-indigo-400/40 text-indigo-300 text-xs rounded-full gap-2">
+                                            <LinkIcon size={12} /> {t.profile.connectDiscord}
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-white">
+                                    <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-sm"><Mail size={13} /> {user?.email}</span>
+                                    <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-sm"><Shield size={13} /> ID: {user?.id.slice(0, 8)}</span>
+                                </div>
+                                <DiscordRolesPanel discordRoles={discordRoles} />
                             </div>
-                            <Progress value={progress} className="h-4 rounded-full bg-white/10 border-[var(--border-color)]"  />
-                            <div className="flex justify-between text-xs uppercase font-black opacity-40 text-[var(--text)]">
-                                <span>{xp} XP</span><span>{nextLevelXp} XP</span>
+
+                            <div className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-white/15">
+                                <div className="flex items-center justify-between text-sm mb-1">
+                                    <span className="font-bold flex items-center gap-2 text-white text-base"><Trophy size={15} className="text-[var(--color-general)]" /> {t.profile.levelProgress}</span>
+                                    <span className="font-black text-[var(--color-general)] text-base">{Math.round(progress)}%</span>
+                                </div>
+                                <Progress value={progress} className="h-4 rounded-full bg-white/10 border-white/15" />
+                                <div className="flex justify-between text-xs uppercase font-black opacity-60 text-white">
+                                    <span>{xp} XP</span><span>{nextLevelXp} XP</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             {/* ── STATYSTYKI + TOPKA ── */}
