@@ -75,14 +75,25 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
   // Fetch user profile
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, avatar_url, settings, rank")
+    .select("id, username, avatar_url, settings, rank, discord_roles")
     .eq("id", discordId)
     .maybeSingle();
 
-  // Determine user roles from current system (settings.isAdmin)
+  // Determine user roles. The 'OWNER' GlobalRole existed in the type/
+  // hierarchy above and requireAdmin() already checked for it, but nothing
+  // ever actually granted it — the real Discord "Owner"/"Owner Records"
+  // role (the same ones DiscordRolesPanel badges on the profile page) didn't
+  // translate into any elevated access here, only the separate manually-set
+  // profiles.settings.isAdmin flag did.
+  const OWNER_DISCORD_ROLES = new Set(["〔 👑︱Owner 〕", "〔 👑︱Owner Records 〕"]);
+  const discordRoles: string[] = Array.isArray((profile as any)?.discord_roles) ? (profile as any).discord_roles : [];
+  const hasOwnerDiscordRole = discordRoles.some((r) => OWNER_DISCORD_ROLES.has(r.trim()));
+
   const roles: GlobalRole[] = [];
-  
-  if (profile?.settings?.isAdmin === true) {
+
+  if (hasOwnerDiscordRole) {
+    roles.push('OWNER');
+  } else if (profile?.settings?.isAdmin === true) {
     roles.push('ADMIN');
   } else {
     roles.push('USER');
