@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Logowanie - Two Steps Studio",
-  description: "Zaloguj się do swojego konta Two Steps Studio, aby uzyskać dostęp do profilu, sklepu i funkcji społeczności.",
+  title: "Login - Two Steps Studio",
+  description: "Log in to your Two Steps Studio account to access your profile, the shop, and community features.",
   openGraph: {
-    title: "Logowanie - Two Steps Studio",
-    description: "Zaloguj się do swojego konta Two Steps Studio, aby uzyskać dostęp do profilu, sklepu i funkcji społeczności.",
+    title: "Login - Two Steps Studio",
+    description: "Log in to your Two Steps Studio account to access your profile, the shop, and community features.",
     url: "https://twostepsstudio.vercel.app/login",
   },
 };

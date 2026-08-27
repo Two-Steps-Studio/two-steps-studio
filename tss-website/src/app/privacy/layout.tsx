@@ -2,10 +2,10 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - Two Steps Studio",
-  description: "Polityka prywatności Two Steps Studio - dowiedz się, jakie dane zbieramy, jak je wykorzystujemy i jakie masz prawa.",
+  description: "Two Steps Studio's privacy policy - learn what data we collect, how we use it, and what rights you have.",
   openGraph: {
     title: "Privacy Policy - Two Steps Studio",
-    description: "Polityka prywatności Two Steps Studio - dowiedz się, jakie dane zbieramy, jak je wykorzystujemy i jakie masz prawa.",
+    description: "Two Steps Studio's privacy policy - learn what data we collect, how we use it, and what rights you have.",
     url: "https://twostepsstudio.vercel.app/privacy",
   },
 };

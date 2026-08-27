@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Rejestracja - Two Steps Studio",
-  description: "Załóż konto Two Steps Studio i dołącz do społeczności - zyskaj dostęp do profilu, sklepu i funkcji społecznościowych.",
+  title: "Registration - Two Steps Studio",
+  description: "Create a Two Steps Studio account and join the community - get access to your profile, the shop, and community features.",
   openGraph: {
-    title: "Rejestracja - Two Steps Studio",
-    description: "Załóż konto Two Steps Studio i dołącz do społeczności - zyskaj dostęp do profilu, sklepu i funkcji społecznościowych.",
+    title: "Registration - Two Steps Studio",
+    description: "Create a Two Steps Studio account and join the community - get access to your profile, the shop, and community features.",
     url: "https://twostepsstudio.vercel.app/registration",
   },
 };

@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Beaty - Two Steps Studio",
-  description: "Przeglądaj i kupuj beaty Two Steps Studio - od darmowych licencji po ekskluzywne prawa autorskie.",
+  title: "Beats - Two Steps Studio",
+  description: "Browse and buy Two Steps Studio beats - from free licenses to exclusive full rights.",
   openGraph: {
-    title: "Beaty - Two Steps Studio",
-    description: "Przeglądaj i kupuj beaty Two Steps Studio - od darmowych licencji po ekskluzywne prawa autorskie.",
+    title: "Beats - Two Steps Studio",
+    description: "Browse and buy Two Steps Studio beats - from free licenses to exclusive full rights.",
     url: "https://twostepsstudio.vercel.app/records/beats",
   },
 };

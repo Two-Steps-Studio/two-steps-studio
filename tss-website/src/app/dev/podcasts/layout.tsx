@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Zarządzanie Podcastami - Two Steps Studio",
-  description: "Panel DEV do dodawania, edytowania i usuwania podcastów w bazie Two Steps Studio.",
+  title: "Podcast Management - Two Steps Studio",
+  description: "DEV panel for adding, editing and removing podcasts in the Two Steps Studio database.",
   openGraph: {
-    title: "Zarządzanie Podcastami - Two Steps Studio",
-    description: "Panel DEV do dodawania, edytowania i usuwania podcastów w bazie Two Steps Studio.",
+    title: "Podcast Management - Two Steps Studio",
+    description: "DEV panel for adding, editing and removing podcasts in the Two Steps Studio database.",
     url: "https://twostepsstudio.vercel.app/dev/podcasts",
   },
 };

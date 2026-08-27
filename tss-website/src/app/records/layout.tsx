@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Beaty, Podcasty i Muzyka - Two Steps Studio',
-  description: 'Beattmapy, podcasty i oryginalna muzyka. Odkryj najnowsze wydania ze Studia Two Steps. Łącz się z fanami i twórcami.',
+  title: 'Beats, Podcasts and Music - Two Steps Studio',
+  description: 'Beatmaps, podcasts and original music. Discover the latest releases from Two Steps Studio. Connect with fans and creators.',
   openGraph: {
-    title: 'Beatmapy i Muzyka - Two Steps Studio',
-    description: 'Beaty, podcasty i oryginalna muzyka. Odkryj najnowsze wydania ze Studia Two Steps.',
+    title: 'Beats and Music - Two Steps Studio',
+    description: 'Beats, podcasts and original music. Discover the latest releases from Two Steps Studio.',
     url: 'https://twostepsstudio.vercel.app/records',
   },
 };

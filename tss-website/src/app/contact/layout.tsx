@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Kontakt - Two Steps Studio",
-  description: "Masz pytania lub chcesz zaproponować coś nowego? Skontaktuj się z zespołem Two Steps Studio przez formularz kontaktowy.",
+  title: "Contact - Two Steps Studio",
+  description: "Have questions or a new idea to propose? Get in touch with the Two Steps Studio team through our contact form.",
   openGraph: {
-    title: "Kontakt - Two Steps Studio",
-    description: "Masz pytania lub chcesz zaproponować coś nowego? Skontaktuj się z zespołem Two Steps Studio przez formularz kontaktowy.",
+    title: "Contact - Two Steps Studio",
+    description: "Have questions or a new idea to propose? Get in touch with the Two Steps Studio team through our contact form.",
     url: "https://twostepsstudio.vercel.app/contact",
   },
 };

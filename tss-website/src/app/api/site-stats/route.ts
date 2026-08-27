@@ -12,12 +12,8 @@ export async function GET() {
     );
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Brak autoryzacji' }, { status: 401 });
-  }
-
+  // Public, read-only aggregate counts (no PII) - rendered on the public
+  // homepage for anonymous visitors too, so this must not require auth.
   // Use RPC function for optimized single-query statistics
   const { data, error } = await supabase.rpc('get_site_stats');
 

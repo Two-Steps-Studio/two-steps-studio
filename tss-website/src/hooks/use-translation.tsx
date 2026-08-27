@@ -17,8 +17,10 @@ import {
   type Locale,
   type LocaleMessages,
 } from "@/locales";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/lib/supabase";
 
-// PL is bundled eagerly, so real strings are available synchronously on the
+// EN is bundled eagerly, so real strings are available synchronously on the
 // very first render — server and client alike.
 const DEFAULT_MESSAGES = bundledMessages[DEFAULT_LOCALE];
 
@@ -121,7 +123,7 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   // hydration pass rendered through the fallback.
   const [messages, setMessages] = useState<LocaleMessages>(DEFAULT_MESSAGES);
 
-  // Initial load: synchronously serve PL (already eager), then hydrate from
+  // Initial load: synchronously serve EN (already eager), then hydrate from
   // localStorage and switch if necessary.
   useEffect(() => {
     let cancelled = false;
@@ -151,6 +153,30 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
       setMessages(data);
     });
   }, []);
+
+  const { user } = useAuth();
+
+  // A logged-in user's saved language preference (profiles.language) wins
+  // over whatever's in localStorage - covers logging in on a different
+  // browser/device than where the preference was originally set.
+  useEffect(() => {
+    if (!user || !supabase) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("language")
+        .eq("id", user.id)
+        .single();
+      const dbLocale = data?.language as Locale | undefined;
+      if (!cancelled && dbLocale && (LOCALES as readonly string[]).includes(dbLocale)) {
+        setLocale(dbLocale);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, setLocale]);
 
   const value = useMemo<TranslationContextValue>(
     () => ({

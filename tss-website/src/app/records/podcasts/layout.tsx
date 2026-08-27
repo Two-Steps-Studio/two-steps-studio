@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Podcasty - Two Steps Studio",
-  description: "Posłuchaj podcastów i rozmów z naszego studia - przeglądaj odcinki według sezonu i twórców.",
+  title: "Podcasts - Two Steps Studio",
+  description: "Listen to podcasts and conversations from our studio - browse episodes by season and creator.",
   openGraph: {
-    title: "Podcasty - Two Steps Studio",
-    description: "Posłuchaj podcastów i rozmów z naszego studia - przeglądaj odcinki według sezonu i twórców.",
+    title: "Podcasts - Two Steps Studio",
+    description: "Listen to podcasts and conversations from our studio - browse episodes by season and creator.",
     url: "https://twostepsstudio.vercel.app/records/podcasts",
   },
 };

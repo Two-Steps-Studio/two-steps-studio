@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Biblioteka - Two Steps Studio",
-  description: "Biblioteka zainstalowanych gier Two Steps Studio dostępna w aplikacji desktopowej - zarządzaj swoimi grami i sprawdzaj wersje instalacji.",
+  title: "Library - Two Steps Studio",
+  description: "Your library of installed Two Steps Studio games, available in the desktop app - manage your games and check installed versions.",
   openGraph: {
-    title: "Biblioteka - Two Steps Studio",
-    description: "Biblioteka zainstalowanych gier Two Steps Studio dostępna w aplikacji desktopowej - zarządzaj swoimi grami i sprawdzaj wersje instalacji.",
+    title: "Library - Two Steps Studio",
+    description: "Your library of installed Two Steps Studio games, available in the desktop app - manage your games and check installed versions.",
     url: "https://twostepsstudio.vercel.app/games/library",
   },
 };

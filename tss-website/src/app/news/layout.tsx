@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Aktualności - Two Steps Studio",
-  description: "Ostatnie wiadomości i ogłoszenia ze Studia Two Steps - bądź na bieżąco z nowymi projektami i wydarzeniami.",
+  title: "News - Two Steps Studio",
+  description: "The latest news and announcements from Two Steps Studio - stay up to date with new projects and events.",
   openGraph: {
-    title: "Aktualności - Two Steps Studio",
-    description: "Ostatnie wiadomości i ogłoszenia ze Studia Two Steps - bądź na bieżąco z nowymi projektami i wydarzeniami.",
+    title: "News - Two Steps Studio",
+    description: "The latest news and announcements from Two Steps Studio - stay up to date with new projects and events.",
     url: "https://twostepsstudio.vercel.app/news",
   },
 };

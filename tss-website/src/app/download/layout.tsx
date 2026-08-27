@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pobierz - Two Steps Studio",
-  description: "Pobierz aplikację desktopową Two Steps Studio na Windows - powiadomienia systemowe, praca w zasobniku i automatyczne aktualizacje.",
+  title: "Download - Two Steps Studio",
+  description: "Download the Two Steps Studio desktop app for Windows - system notifications, tray support, and automatic updates.",
   openGraph: {
-    title: "Pobierz - Two Steps Studio",
-    description: "Pobierz aplikację desktopową Two Steps Studio na Windows - powiadomienia systemowe, praca w zasobniku i automatyczne aktualizacje.",
+    title: "Download - Two Steps Studio",
+    description: "Download the Two Steps Studio desktop app for Windows - system notifications, tray support, and automatic updates.",
     url: "https://twostepsstudio.vercel.app/download",
   },
 };

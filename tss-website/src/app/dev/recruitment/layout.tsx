@@ -2,10 +2,10 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Recruitment - Two Steps Studio",
-  description: "Dołącz do zespołu deweloperskiego Two Steps Studio - szukamy osób gotowych tworzyć, eksperymentować i rozwijać własne pomysły razem z nami.",
+  description: "Join the Two Steps Studio development team - we're looking for people ready to build, experiment, and grow their own ideas with us.",
   openGraph: {
     title: "Recruitment - Two Steps Studio",
-    description: "Dołącz do zespołu deweloperskiego Two Steps Studio - szukamy osób gotowych tworzyć, eksperymentować i rozwijać własne pomysły razem z nami.",
+    description: "Join the Two Steps Studio development team - we're looking for people ready to build, experiment, and grow their own ideas with us.",
     url: "https://twostepsstudio.vercel.app/dev/recruitment",
   },
 };

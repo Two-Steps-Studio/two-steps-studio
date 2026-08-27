@@ -8,16 +8,17 @@ const registerSchema = z.object({
   email: z.string().email("Niepoprawny format adresu e-mail"),
   password: z.string().min(8, "Hasło musi mieć co najmniej 8 znaków"),
   fullName: z.string().min(2, "Imię i nazwisko jest wymagane"),
+  language: z.enum(["pl", "en", "de"]).default("en"),
 });
 
-export default async function registerUser(formData: { email: string; password: string; fullName: string }) {
+export default async function registerUser(formData: { email: string; password: string; fullName: string; language?: string }) {
   const validated = registerSchema.safeParse(formData);
-  
+
   if (!validated.success) {
     return { error: validated.error.issues[0].message };
   }
 
-  const { email, password, fullName } = validated.data;
+  const { email, password, fullName, language } = validated.data;
 
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email,
@@ -37,7 +38,8 @@ export default async function registerUser(formData: { email: string; password: 
         id: authData.user.id,
         username: fullName,
         xp: 0,
-        level: 1
+        level: 1,
+        language
       });
 
     if (profileError) {

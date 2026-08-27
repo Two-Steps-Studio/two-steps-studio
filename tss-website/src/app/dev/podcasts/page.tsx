@@ -200,11 +200,11 @@ export default function PodcastsAdminPage() {
         <Card className="rounded-3xl">
           <CardContent className="p-12 text-center">
             <Mic2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Brak podcastów</h3>
+            <h3 className="text-lg font-semibold mb-2">{t.devPodcastsAdmin.noPodcasts}</h3>
             <p className="text-muted-foreground">
               {searchQuery || selectedSeason !== "all"
-                ? "Nie znaleziono podcastów pasujących do filtrów."
-                : "Brak podcastów w bazie danych. Dodaj pierwszy podcast!"}
+                ? t.devCrudCommon.noResultsFiltered
+                : t.devPodcastsAdmin.noPodcastsInDb}
             </p>
           </CardContent>
         </Card>
@@ -219,7 +219,7 @@ export default function PodcastsAdminPage() {
                   </CardTitle>
                   {podcast.episode_number && (
                     <Badge variant="outline" className="text-xs">
-                      Ep. {podcast.episode_number}
+                      {t.devPodcastsAdmin.epPrefix}{podcast.episode_number}
                     </Badge>
                   )}
                 </div>
@@ -261,7 +261,7 @@ export default function PodcastsAdminPage() {
                     onClick={() => setEditingPodcast(podcast)}
                   >
                     <Edit size={14} className="mr-1" />
-                    Edytuj
+                    {t.devCrudCommon.edit}
                   </Button>
                   <Button
                     variant="outline"
@@ -270,7 +270,7 @@ export default function PodcastsAdminPage() {
                     onClick={() => handleDelete(podcast.id!)}
                   >
                     <Trash2 size={14} className="mr-1" />
-                    Usuń
+                    {t.devCrudCommon.delete}
                   </Button>
                 </div>
               </CardContent>
@@ -300,6 +300,7 @@ export default function PodcastsAdminPage() {
 
 // Podcast Form Modal Component
 function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | null; onClose: () => void; onSave: () => void }) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     series_id: podcast?.series_id || "",
     title: podcast?.title || "",
@@ -334,7 +335,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
       let podcastId = draftId;
       if (!podcastId) {
         if (!formData.title.trim()) {
-          toast.error("Podaj tytuł przed przesłaniem pliku");
+          toast.error(t.devPodcastsAdmin.errors.titleRequiredForUpload);
           setUploading(false);
           return;
         }
@@ -345,7 +346,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
         });
         const draftData = await draftRes.json();
         if (!draftRes.ok || !draftData.success) {
-          toast.error(draftData.error || 'Nie udało się utworzyć wpisu podcastu');
+          toast.error(draftData.error || t.devPodcastsAdmin.errors.createDraftFailed);
           setUploading(false);
           return;
         }
@@ -371,13 +372,13 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
         } else {
           setFormData({ ...formData, thumbnail_url: data.data.publicUrl });
         }
-        toast.success('Plik został przesłany');
+        toast.success(t.devCrudCommon.fileUploaded);
       } else {
-        toast.error(data.error || 'Błąd podczas przesyłania');
+        toast.error(data.error || t.devCrudCommon.errorUploading);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Wystąpił błąd podczas przesyłania');
+      toast.error(t.devCrudCommon.errorUploadingGeneric);
     } finally {
       setUploading(false);
     }
@@ -388,7 +389,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
 
     // Validation
     if (!formData.title.trim()) {
-      toast.error("Tytuł jest wymagany");
+      toast.error(t.devPodcastsAdmin.errors.titleRequired);
       return;
     }
 
@@ -419,19 +420,19 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || `Błąd HTTP: ${res.status}`);
+        toast.error(data.error || `${t.devCrudCommon.httpError}: ${res.status}`);
         return;
       }
 
       if (data.success) {
-        toast.success(podcast ? "Podcast zaktualizowany" : "Podcast utworzony");
+        toast.success(podcast ? t.devPodcastsAdmin.podcastUpdated : t.devPodcastsAdmin.podcastCreated);
         onSave();
       } else {
-        toast.error(data.error || "Błąd podczas zapisu");
+        toast.error(data.error || t.devCrudCommon.errorSaving);
       }
     } catch (error) {
       console.error("Błąd zapisu:", error);
-      toast.error("Wystąpił błąd podczas zapisu");
+      toast.error(t.devCrudCommon.errorSavingGeneric);
     }
   };
 
@@ -439,12 +440,12 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
         <CardHeader>
-          <CardTitle>{podcast ? "Edytuj podcast" : "Dodaj nowy podcast"}</CardTitle>
+          <CardTitle>{podcast ? t.devPodcastsAdmin.editPodcast : t.devPodcastsAdmin.addNewPodcast}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Tytuł *</label>
+              <label className="text-sm font-medium">{t.devGamesAdmin.fields.title} *</label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -453,7 +454,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
             </div>
 
             <div>
-              <label className="text-sm font-medium">Opis</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.description}</label>
               <textarea
                 className="w-full min-h-[80px] px-3 py-2 rounded-lg border border-input bg-background"
                 value={formData.description}
@@ -463,7 +464,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium">Numer odcinka</label>
+                <label className="text-sm font-medium">{t.devPodcastsAdmin.episodeNumberLabel}</label>
                 <Input
                   type="number"
                   value={formData.episode_number}
@@ -471,7 +472,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Sezon</label>
+                <label className="text-sm font-medium">{t.devPodcastsAdmin.seasonFieldLabel}</label>
                 <Input
                   type="number"
                   value={formData.season}
@@ -479,7 +480,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">ID serii</label>
+                <label className="text-sm font-medium">{t.devPodcastsAdmin.seriesIdLabel}</label>
                 <Input
                   type="number"
                   value={formData.series_id}
@@ -489,7 +490,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
             </div>
 
             <div>
-              <label className="text-sm font-medium">Prowadzący</label>
+              <label className="text-sm font-medium">{t.devPodcastsAdmin.hostFieldLabel}</label>
               <Input
                 value={formData.host}
                 onChange={(e) => setFormData({ ...formData, host: e.target.value })}
@@ -497,9 +498,9 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
             </div>
 
             <div>
-              <label className="text-sm font-medium">Goście (przecinkami)</label>
+              <label className="text-sm font-medium">{t.devPodcastsAdmin.guestsLabel}</label>
               <Input
-                placeholder="np. Jan Kowalski, Anna Nowak"
+                placeholder={t.devPodcastsAdmin.guestsPlaceholder}
                 value={formData.guests}
                 onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
               />
@@ -507,7 +508,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Data publikacji</label>
+                <label className="text-sm font-medium">{t.devPodcastsAdmin.publishDateLabel}</label>
                 <Input
                   type="date"
                   value={formData.published_date}
@@ -515,7 +516,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Czas trwania (sekundy)</label>
+                <label className="text-sm font-medium">{t.devMusicAdmin.fields.durationSeconds}</label>
                 <Input
                   type="number"
                   value={formData.duration_seconds}
@@ -525,11 +526,11 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
             </div>
 
             <div className="space-y-4">
-              <label className="text-sm font-medium">Pliki</label>
-              
+              <label className="text-sm font-medium">{t.devCrudCommon.filesLabel}</label>
+
               {/* Thumbnail Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Miniatura</label>
+                <label className="text-xs text-muted-foreground">{t.devPodcastsAdmin.thumbnailLabel}</label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -549,7 +550,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                     disabled={!thumbnailFile || uploading}
                   >
                     <Upload size={16} className="mr-1" />
-                    {uploading ? 'Przesyłanie...' : 'Prześlij'}
+                    {uploading ? t.devCrudCommon.uploading : t.devCrudCommon.upload}
                   </Button>
                 </div>
                 {formData.thumbnail_url && (
@@ -570,7 +571,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
 
               {/* Audio File Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Plik audio</label>
+                <label className="text-xs text-muted-foreground">{t.devMusicAdmin.fields.audioFile}</label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -590,13 +591,13 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                     disabled={!audioFile || uploading}
                   >
                     <Upload size={16} className="mr-1" />
-                    {uploading ? 'Przesyłanie...' : 'Prześlij'}
+                    {uploading ? t.devCrudCommon.uploading : t.devCrudCommon.upload}
                   </Button>
                 </div>
                 {formData.audio_file_url && (
                   <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
                     <Mic2 size={16} className="text-[var(--color-records)]" />
-                    <span className="text-sm text-zinc-300 truncate flex-1">Plik audio załadowany</span>
+                    <span className="text-sm text-zinc-300 truncate flex-1">{t.devCrudCommon.audioFileLoaded}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -611,9 +612,9 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
             </div>
 
             <div>
-              <label className="text-sm font-medium">Tagi (przecinkami)</label>
+              <label className="text-sm font-medium">{t.devCrudCommon.tagsCommaSeparated}</label>
               <Input
-                placeholder="np. technologia, gaming, wywiady"
+                placeholder={t.devPodcastsAdmin.tagsPlaceholder}
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
               />
@@ -621,15 +622,15 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium">Widoczność</label>
+                <label className="text-sm font-medium">{t.devCrudCommon.visibility}</label>
                 <select
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background"
                   value={formData.visibility}
                   onChange={(e) => setFormData({ ...formData, visibility: e.target.value as any })}
                 >
-                  <option value="private">Prywatna</option>
-                  <option value="public">Publiczna</option>
-                  <option value="unlisted">Niewidoczna</option>
+                  <option value="private">{t.devCrudCommon.visibilityPrivate}</option>
+                  <option value="public">{t.devCrudCommon.visibilityPublic}</option>
+                  <option value="unlisted">{t.devCrudCommon.visibilityUnlisted}</option>
                 </select>
               </div>
               <div className="col-span-2 flex items-end">
@@ -640,17 +641,17 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                     className="rounded"
                   />
-                  Wyróżniony
+                  {t.devCrudCommon.featured}
                 </label>
               </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
-                Anuluj
+                {t.devCrudCommon.cancel}
               </Button>
               <Button type="submit" className="bg-[var(--color-records)] text-white hover:bg-[var(--color-records)]/80">
-                {podcast ? "Zapisz zmiany" : "Utwórz podcast"}
+                {podcast ? t.devCrudCommon.saveChanges : t.devPodcastsAdmin.createPodcast}
               </Button>
             </div>
           </form>

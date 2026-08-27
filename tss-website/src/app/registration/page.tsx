@@ -9,12 +9,13 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RegisterPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,7 +44,7 @@ export default function RegisterPage() {
 
     try {
       // 1. Register user via server action
-      const result = await registerUser(formData);
+      const result = await registerUser({ ...formData, language });
 
       if (result.error) {
         toast.error(t.auth.registerError, {
@@ -130,6 +131,10 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 className="rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[var(--text)] placeholder:text-zinc-500 focus:border-[var(--color-general)] focus:ring-[var(--color-general)]/20 transition-all duration-300 h-12"
               />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-zinc-600 dark:text-zinc-300 ml-1 font-[family-name:var(--font-outfit)]">{t.settings.language}</Label>
+              <LanguageSelect />
             </div>
             <div className="flex items-start gap-2 py-2">
               <input

@@ -38,11 +38,11 @@ export function LanguageSelect({
     setUploading(true);
     try {
       const text = await file.text();
-      // Tutaj możesz dodać logikę importu tłumaczeń
-      console.log("Importowanie tłumaczeń z:", file.name);
-      console.log("Treść pliku:", text);
+      // Translation import logic can be added here
+      console.log("Importing translations from:", file.name);
+      console.log("File contents:", text);
     } catch (error) {
-      console.error("Błąd podczas importu tłumaczeń:", error);
+      console.error("Error importing translations:", error);
     } finally {
       setUploading(false);
     }
@@ -101,7 +101,7 @@ export function LanguageSelect({
             className="p-3 pt-2 border-t border-white/10"
           >
             <div className="text-xs font-medium text-muted-foreground mb-2 px-1">
-              Importuj własne tłumaczenia
+              Import your own translations
             </div>
             <div className="space-y-2 px-1">
               <label
@@ -113,7 +113,7 @@ export function LanguageSelect({
                 )}
               >
                 <Upload size={14} />
-                <span>Wybierz plik .json</span>
+                <span>Choose a .json file</span>
                 <input
                   id="translation-upload"
                   type="file"
@@ -124,19 +124,19 @@ export function LanguageSelect({
               </label>
 
               <div className="text-[10px] text-muted-foreground px-2">
-                <p className="mb-1">Format JSON:</p>
+                <p className="mb-1">JSON format:</p>
                 <pre className={cn(
                   "text-[10px] p-2 rounded bg-black/30 overflow-auto max-h-[80px]",
                   "font-mono text-white/70",
                 )}>
 {`{
   "settings": {
-    "title": "Moja tytuł",
-    "subtitle": "Moje podtytuł",
+    "title": "My title",
+    "subtitle": "My subtitle",
     ...
   },
   "nav": {
-    "home": "Moja główna",
+    "home": "My home",
     ...
   },
   ...

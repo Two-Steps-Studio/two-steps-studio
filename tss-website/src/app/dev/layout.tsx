@@ -2,10 +2,10 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "DEV - Two Steps Studio",
-  description: "Zespół deweloperski Two Steps Studio - projekty",
+  description: "The Two Steps Studio development team - projects",
   openGraph: {
     title: "DEV - Two Steps Studio",
-    description: "Zespół deweloperski Two Steps Studio - projekty",
+    description: "The Two Steps Studio development team - projects",
     url: "https://twostepsstudio.vercel.app/dev",
   },
 };

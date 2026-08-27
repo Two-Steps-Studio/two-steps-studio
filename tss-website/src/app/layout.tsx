@@ -51,15 +51,15 @@ const metropolis = localFont({
 
 export const metadata: Metadata = {
   title: "Two Steps Studio",
-  description: "Witaj w Two Steps Studio",
+  description: "Welcome to Two Steps Studio",
   manifest: "/manifest.json",
   metadataBase: new URL('https://twostepsstudio.vercel.app'),
   openGraph: {
     title: 'Two Steps Studio',
-    description: 'Witaj w Two Steps Studio',
+    description: 'Welcome to Two Steps Studio',
     url: 'https://twostepsstudio.vercel.app',
     siteName: 'Two Steps Studio',
-    locale: 'pl_PL',
+    locale: 'en_US',
     type: 'website',
   },
 };
@@ -71,7 +71,7 @@ export function generateJsonLd() {
     name: 'Two Steps Studio',
     url: 'https://twostepsstudio.vercel.app',
     logo: 'https://twostepsstudio.vercel.app/logo.png',
-    description: 'Witaj w Two Steps Studio',
+    description: 'Welcome to Two Steps Studio',
     sameAs: [
       'https://discord.gg/twostepsstudio',
     ],

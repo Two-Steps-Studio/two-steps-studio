@@ -8,12 +8,12 @@ import { motion } from "framer-motion";
 import { HomeHero } from "./home-hero";
 
 export const metadata = {
-  title: 'Two Steps Studio — Beatmapy, Gry i Społeczność',
-  description: 'Strona internetowa Two Steps Studio — platforma z beatmapami, grami, podcastami . Dołącz do innych użytkowników i odkryj świat!',
-  keywords: [ 'gry', 'discord', 'muzyka', 'podcasty'],
+  title: 'Two Steps Studio — Beatmaps, Games and Community',
+  description: 'The Two Steps Studio website — a platform with beatmaps, games, and podcasts. Join other users and discover the world!',
+  keywords: [ 'games', 'discord', 'music', 'podcasts'],
   openGraph: {
     type: 'website',
-    locale: 'pl_PL',
+    locale: 'en_US',
     url: 'https://tss.net',
     siteName: 'Two Steps Studio',
     images: [
@@ -115,7 +115,7 @@ const t = {
 
 export function HomeClient() {
   const { language, t: translations } = useLanguage();
-  const content = t[language as keyof typeof t] || t.pl;
+  const content = t[language as keyof typeof t] || t.en;
 
   return (
     <div className="flex flex-col gap-16 md:gap-32 pb-20">

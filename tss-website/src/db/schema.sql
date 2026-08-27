@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     games_visible BOOLEAN DEFAULT TRUE,   -- Category visibility settings
     records_visible BOOLEAN DEFAULT TRUE,
     dev_visible BOOLEAN DEFAULT TRUE,
+    language TEXT DEFAULT 'en',           -- UI language preference (pl/en/de), set at registration
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
