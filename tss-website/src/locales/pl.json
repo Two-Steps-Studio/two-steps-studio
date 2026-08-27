@@ -647,7 +647,11 @@
     "saveChanges": "Zapisz Zmiany",
     "genericUploadError": "Błąd wgrywania pliku",
     "genericSaveError": "Błąd zapisu zmian",
-    "connectionUploadError": "Błąd połączenia podczas wgrywania pliku"
+    "connectionUploadError": "Błąd połączenia podczas wgrywania pliku",
+    "cropTitle": "Dopasuj zdjęcie",
+    "cropHint": "Przeciągnij, aby przesunąć, suwakiem przybliż",
+    "cropCancel": "Anuluj",
+    "cropConfirm": "Zapisz i wgraj"
   },
   "loginExtra": {
     "connectionErrorTitle": "Błąd połączenia z serwerem",

@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NextImage from "next/image";
 import AvatarFrame from "@/components/AvatarFrame";
+import AvatarCropper from "@/components/AvatarCropper";
 import { useLanguage } from "@/hooks/use-translation";
 
 interface OwnedItem {
@@ -56,6 +57,7 @@ export default function ProfileForm({
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [saveErrorMsg, setSaveErrorMsg] = useState("");
+  const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
 
   // What this user has actually bought in /shop - only owned frames/nick
   // colors are selectable here, same restriction the purchase_shop_item RPC
@@ -110,7 +112,7 @@ export default function ProfileForm({
     } else {
       // Was silently swallowed before - a blocked write (e.g. an RLS policy
       // rejecting the upsert) looked identical to a successful save with no
-      // feedback at all. Surface it like handleFileChange already does.
+      // feedback at all. Surface it like uploadAvatarFile already does.
       //
       // Logged as separate primitives, not the raw error object: a native
       // Error/AbortError (e.g. from the supabase-js auth lock being stolen
@@ -128,9 +130,21 @@ export default function ProfileForm({
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Raw <input type="file"> just hands the picked file to the cropper -
+  // the actual upload only happens once the user confirms a crop.
+  const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPendingCropFile(file);
+    e.target.value = ""; // allow re-picking the exact same file later
+  };
+
+  const handleCropped = (blob: Blob) => {
+    setPendingCropFile(null);
+    uploadAvatarFile(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
+  };
+
+  const uploadAvatarFile = async (file: File) => {
     setUploading(true);
     setErrorMsg("");
 
@@ -239,7 +253,7 @@ export default function ProfileForm({
                 id="avatarFile"
                 type="file"
                 accept="image/*"
-                onChange={handleFileChange}
+                onChange={onFileSelected}
                 className="rounded-2xl border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text)] file:text-[var(--text)] file:bg-[var(--color-general)] file:border-0 file:rounded-xl file:px-4 file:py-2 h-12"
               />
               <p className="text-xs text-[var(--text)] font-[family-name:var(--font-outfit)]">
@@ -396,6 +410,7 @@ export default function ProfileForm({
           </div>
         </form>
       </CardContent>
+      <AvatarCropper file={pendingCropFile} onCancel={() => setPendingCropFile(null)} onCropped={handleCropped} />
     </Card>
   );
 }

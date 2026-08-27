@@ -647,7 +647,11 @@
     "saveChanges": "Änderungen Speichern",
     "genericUploadError": "Datei-Upload fehlgeschlagen",
     "genericSaveError": "Speichern fehlgeschlagen",
-    "connectionUploadError": "Verbindungsfehler beim Hochladen der Datei"
+    "connectionUploadError": "Verbindungsfehler beim Hochladen der Datei",
+    "cropTitle": "Foto anpassen",
+    "cropHint": "Ziehen zum Verschieben, Regler zum Zoomen",
+    "cropCancel": "Abbrechen",
+    "cropConfirm": "Speichern & hochladen"
   },
   "loginExtra": {
     "connectionErrorTitle": "Serververbindungsfehler",

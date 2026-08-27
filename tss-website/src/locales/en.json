@@ -647,7 +647,11 @@
     "saveChanges": "Save Changes",
     "genericUploadError": "Failed to upload file",
     "genericSaveError": "Failed to save changes",
-    "connectionUploadError": "Connection error while uploading the file"
+    "connectionUploadError": "Connection error while uploading the file",
+    "cropTitle": "Adjust your photo",
+    "cropHint": "Drag to reposition, use the slider to zoom",
+    "cropCancel": "Cancel",
+    "cropConfirm": "Save & upload"
   },
   "loginExtra": {
     "connectionErrorTitle": "Server connection error",
