@@ -1322,6 +1322,13 @@ client.on('messageCreate', async (message) => {
             return;
         }
 
+        // Per-user message counter for the "messages" achievement tier -
+        // apply_xp_money_reward doesn't track this (it only moves xp/money).
+        // Non-fatal: an achievement-tracking hiccup shouldn't drop XP/level
+        // updates that already succeeded above.
+        supabase.rpc('increment_message_count', { p_user_id: profile.id })
+            .then(({ error }) => { if (error) console.error('[ACHIEVEMENTS] message count error:', error.message); });
+
         if (newLevel > currentLevel) {
             await message.channel.send(
                 `🎉 Gratulacje <@${message.author.id}>! Awans na poziom **${newLevel}**! 🏆`
@@ -1363,6 +1370,14 @@ async function syncVoiceRewards(userId, minutes, member, username) {
             p_money_delta: minutes * 2,
             p_new_level: newLevel,
         });
+
+        // Per-user voice-minutes counter for the "voice_minutes" achievement
+        // tier - same non-fatal pattern as the message counter above.
+        const { error: voiceCountError } = await supabase.rpc('increment_voice_minutes', {
+            p_user_id: profile.id,
+            p_minutes: minutes,
+        });
+        if (voiceCountError) console.error('[ACHIEVEMENTS] voice minutes error:', voiceCountError.message);
 
         if (newLevel > currentLevel && member) {
             await syncLevelRole(member, newLevel);

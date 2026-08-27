@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins } from "lucide-react";
+import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic } from "lucide-react";
 import LogoutButton from "./logout-button";
 import Image from "next/image";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -95,6 +95,23 @@ const ROLE_MAP_BADGE: Record<string, { color: string; label: string }> = Object.
     ROLE_PRIORITY.map((r) => [r.key, { color: r.color, label: r.label }])
 );
 
+interface Achievement {
+    id: number;
+    name: string;
+    description: string;
+    icon: string | null;
+    rarity: string;
+    requirement_type: "level" | "messages" | "voice_minutes" | null;
+    requirement_value: number | null;
+}
+
+const RARITY_COLOR: Record<string, string> = {
+    common: "#9e9e9e",
+    rare: "#2da4f3",
+    epic: "#ad83f8",
+    legendary: "#ffcb2f",
+};
+
 interface RankedUser {
     id: string;
     discord_id: string;
@@ -139,6 +156,7 @@ export default function ProfilePage() {
     // Resolved cosmetics for profile?.equipped_frame / equipped_nick_color,
     // which store shop_items.id references, not the CSS value directly.
     const [equippedCosmetics, setEquippedCosmetics] = useState<{ frameValue: string | null; nickColorValue: string | null }>({ frameValue: null, nickColorValue: null });
+    const [achievements, setAchievements] = useState<Achievement[]>([]);
 
     useEffect(() => {
         let channel: any = null;
@@ -285,6 +303,19 @@ export default function ProfilePage() {
             });
     }, [profile?.equipped_frame, profile?.equipped_nick_color]);
 
+    // Public catalog (RLS: "Anyone can view achievements") - fetched once,
+    // "unlocked" is computed below from profile.level/total_messages/
+    // total_voice_minutes rather than a separate user_achievements query.
+    useEffect(() => {
+        supabase
+            .from("achievements")
+            .select("id, name, description, icon, rarity, requirement_type, requirement_value")
+            .not("requirement_type", "is", null)
+            .order("requirement_type")
+            .order("requirement_value")
+            .then(({ data }) => setAchievements((data as Achievement[]) || []));
+    }, []);
+
     if (!authChecked || (loading && !user)) {
         return <div className="p-20 text-center italic">{t.profile.loading}</div>;
     }
@@ -316,6 +347,16 @@ export default function ProfilePage() {
     const profileBackground = profile?.background && BACKGROUND_OPTIONS.includes(profile.background)
         ? profile.background
         : "Two Steps Studio";
+
+    // Achievement unlock state is computed here, not stored - it's a pure
+    // function of profile stats vs. each achievement's requirement, so
+    // there's nothing to keep in sync with a separate user_achievements row.
+    const statForRequirement = (type: Achievement["requirement_type"]) => {
+        if (type === "level") return profile?.level || 1;
+        if (type === "messages") return profile?.total_messages || 0;
+        if (type === "voice_minutes") return profile?.total_voice_minutes || 0;
+        return 0;
+    };
 
     return (
         <div className="container mx-auto p-6 space-y-8 mt-20 max-w-6xl pb-16" suppressHydrationWarning>
@@ -493,6 +534,63 @@ export default function ProfilePage() {
                     </Card>
                 </div>
             </div>
+
+            {/* ── OSIĄGNIĘCIA ── */}
+            {achievements.length > 0 && (
+                <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-xl">
+                    <Card className="bg-transparent border-0 shadow-none rounded-[2.5rem]">
+                        <CardHeader className="border-b border-black/10 dark:border-white/5 text-[var(--text)] font-bold italic flex items-center">
+                            <Award size={18} className="mr-2 text-[var(--color-general)]" /> Osiągnięcia
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {achievements.map((a) => {
+                                    const current = statForRequirement(a.requirement_type);
+                                    const target = a.requirement_value || 1;
+                                    const unlocked = current >= target;
+                                    const color = RARITY_COLOR[a.rarity] || RARITY_COLOR.common;
+                                    const icon = a.requirement_type === "messages"
+                                        ? <MessageSquare size={20} />
+                                        : a.requirement_type === "voice_minutes"
+                                        ? <Mic size={20} />
+                                        : <Trophy size={20} />;
+
+                                    return (
+                                        <div
+                                            key={a.id}
+                                            title={a.description}
+                                            className={cn(
+                                                "flex items-center gap-3 p-4 rounded-2xl border transition-all",
+                                                unlocked ? "bg-[var(--bg)]" : "bg-[var(--bg)] opacity-40 grayscale"
+                                            )}
+                                            style={unlocked ? { borderColor: `${color}55`, boxShadow: `0 0 0 1px ${color}22` } : { borderColor: "var(--border-color)" }}
+                                        >
+                                            <div
+                                                className="h-11 w-11 rounded-full flex items-center justify-center text-lg shrink-0"
+                                                style={{ backgroundColor: unlocked ? `${color}22` : "transparent", color: unlocked ? color : "var(--text)" }}
+                                            >
+                                                {a.icon || icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="font-bold text-sm text-[var(--text)] truncate">{a.name}</span>
+                                                    {!unlocked && <Lock size={11} className="text-[var(--text)] opacity-50 shrink-0" />}
+                                                </div>
+                                                <p className="text-xs text-[var(--text)] opacity-60 truncate">{a.description}</p>
+                                                {!unlocked && (
+                                                    <p className="text-[10px] font-bold opacity-50 text-[var(--text)] mt-0.5">
+                                                        {Math.min(current, target).toLocaleString()} / {target.toLocaleString()}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* ── USTAWIENIA ── */}
             <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] shadow-xl">

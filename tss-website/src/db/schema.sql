@@ -354,3 +354,9 @@ CREATE TABLE IF NOT EXISTS user_inventory (
 -- nullable (null = default look). Added via ALTER TABLE in the migration
 -- file rather than here, to match how pln_balance/vip_status etc. were
 -- added to the live profiles table.
+
+-- profiles.total_messages / total_voice_minutes (added via ALTER TABLE in
+-- migrations/add-achievement-tracking.sql) - per-user counters the bot
+-- increments alongside its existing XP awards, used to compute the level/
+-- messages/voice-time achievement tiers. achievements.requirement_type/
+-- requirement_value (added the same way) encode what unlocks each one.
