@@ -40,10 +40,12 @@ export default function ProfileForm({
   const [background, setBackground] = useState(profile?.background && profile.background !== "default" ? profile.background : "Two Steps Studio");
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [saveErrorMsg, setSaveErrorMsg] = useState("");
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSaveErrorMsg("");
 
     // ── KLUCZ: używamy discordId zamiast user.id ──
     const { error } = await supabase
@@ -62,6 +64,12 @@ export default function ProfileForm({
     if (!error) {
       onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money, background });
       router.refresh();
+    } else {
+      // Was silently swallowed before - a blocked write (e.g. an RLS policy
+      // rejecting the upsert) looked identical to a successful save with no
+      // feedback at all. Surface it like handleFileChange already does.
+      console.error("[ProfileForm] upsert failed:", error);
+      setSaveErrorMsg(error.message || "Błąd zapisu zmian");
     }
   };
 
@@ -217,6 +225,10 @@ export default function ProfileForm({
               ))}
             </div>
           </div>
+
+          {saveErrorMsg && (
+            <p className="text-sm text-red-500 font-[family-name:var(--font-outfit)] text-center md:text-right">{saveErrorMsg}</p>
+          )}
 
           <div className="flex justify-end pt-2">
             <Button
