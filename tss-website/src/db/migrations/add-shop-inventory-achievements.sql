@@ -66,11 +66,14 @@ CREATE TABLE IF NOT EXISTS user_achievements (
 -- Mirrors the bot's increment_profile_money pattern (single RPC instead of
 -- separate read-then-write calls from the client, which could race or
 -- leave a user charged without the item on a mid-flight failure).
+-- new_money must match profiles.money's actual column type (INTEGER) -
+-- declaring it BIGINT here made RETURN QUERY fail with "structure of query
+-- does not match function result type" on every call.
 CREATE OR REPLACE FUNCTION purchase_shop_item(p_user_id TEXT, p_item_id TEXT)
-RETURNS TABLE(new_money BIGINT) AS $$
+RETURNS TABLE(new_money INTEGER) AS $$
 DECLARE
     v_price INTEGER;
-    v_current_money BIGINT;
+    v_current_money INTEGER;
     v_caller_id TEXT;
 BEGIN
     -- SECURITY DEFINER runs with elevated privileges (needed to update
