@@ -72,12 +72,23 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
   // requireAdmin() silently rejected every real admin.
   const discordId = (user.user_metadata as any)?.provider_id || user.id;
 
-  // Fetch user profile
-  const { data: profile } = await supabase
+  // Fetch user profile.
+  // NOTE: 'rank' is deliberately excluded from this select list - it's a
+  // reserved SQL word (the RANK() ordered-set aggregate), and PostgREST
+  // chokes on it unquoted in an explicit column list ("WITHIN GROUP is
+  // required for ordered-set aggregate rank"). That made this ENTIRE query
+  // fail - silently, since the error below was never checked - so `profile`
+  // was always null and neither settings.isAdmin nor the OWNER role check
+  // could ever see real data. profile.rank isn't used anywhere in this
+  // file, so it's just dropped rather than quoted.
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, username, avatar_url, settings, rank, discord_roles")
+    .select("id, username, avatar_url, settings, discord_roles")
     .eq("id", discordId)
     .maybeSingle();
+  if (profileError) {
+    console.error("[requireAuth] profile lookup failed:", profileError.message);
+  }
 
   // Determine user roles. The 'OWNER' GlobalRole existed in the type/
   // hierarchy above and requireAdmin() already checked for it, but nothing
