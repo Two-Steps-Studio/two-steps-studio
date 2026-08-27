@@ -87,9 +87,9 @@ export function BottomNavigation() {
       // not the full page-title translations) fixes the actual overflow
       // instead of hiding text: with real words this short, `truncate` is
       // just a safety net that shouldn't normally trigger.
-      <nav className="fixed left-2 right-2 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
-        <div className="mx-auto max-w-md">
-          <ul className="flex items-center justify-around gap-0.5 h-16 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
+      <nav className="fixed left-1 right-1 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto max-w-lg">
+          <ul className="flex items-center justify-around gap-0 h-16 px-1.5 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
