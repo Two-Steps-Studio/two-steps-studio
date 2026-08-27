@@ -89,7 +89,7 @@ export function BottomNavigation() {
       // just a safety net that shouldn't normally trigger.
       <nav className="fixed left-1 right-1 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
         <div className="mx-auto max-w-lg">
-          <ul className="flex items-center justify-around gap-0 h-16 px-1.5 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
+          <ul className="flex items-center justify-around gap-0 h-16 px-0.5 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -104,7 +104,7 @@ export function BottomNavigation() {
                         )}
                     >
                       {getIcon(item.href)}
-                      <span className="w-full truncate px-0.5 text-center text-[8px] font-bold leading-none text-[var(--text)]">
+                      <span className="w-full truncate px-0 text-center text-[9px] font-bold leading-none text-[var(--text)]">
                         {item.label}
                       </span>
                     </Link>
