@@ -558,7 +558,7 @@ export default function ProfilePage() {
                                                 {a.image_url ? (
                                                     <Image src={a.image_url} alt="" width={44} height={44} className="h-full w-full object-cover" />
                                                 ) : (
-                                                    a.icon || icon
+                                                    icon
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
