@@ -136,6 +136,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Images matched the catch-all '/(.*)' above too, inheriting its
+      // Cache-Control: no-store - iOS Safari specifically is known to fail
+      // to render (or randomly blank out) images served with no-store, so
+      // every image on the site could silently fail to draw there while
+      // working fine elsewhere. These entries come after the catch-all, so
+      // for these paths this Cache-Control overrides no-store instead of
+      // stacking with it.
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, must-revalidate' },
+        ],
+      },
+      {
+        source: '/assets/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
     ];
   },
   async redirects() {
