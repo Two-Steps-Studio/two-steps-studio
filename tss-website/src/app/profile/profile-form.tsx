@@ -52,6 +52,7 @@ export default function ProfileForm({
   const [equippedNickColor, setEquippedNickColor] = useState<string | null>(profile?.equipped_nick_color ?? null);
   const [ownedFrames, setOwnedFrames] = useState<OwnedItem[]>([]);
   const [ownedNickColors, setOwnedNickColors] = useState<OwnedItem[]>([]);
+  const [ownedBackgrounds, setOwnedBackgrounds] = useState<OwnedItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [saveErrorMsg, setSaveErrorMsg] = useState("");
@@ -68,14 +69,17 @@ export default function ProfileForm({
       .then(({ data }) => {
         const frames: OwnedItem[] = [];
         const colors: OwnedItem[] = [];
+        const backgrounds: OwnedItem[] = [];
         for (const row of (data as any[]) || []) {
           const item = row.shop_items;
           if (!item) continue;
           if (item.category === "frame") frames.push(item);
           else if (item.category === "nick_color") colors.push(item);
+          else if (item.category === "background") backgrounds.push(item);
         }
         setOwnedFrames(frames);
         setOwnedNickColors(colors);
+        setOwnedBackgrounds(backgrounds);
       });
   }, [discordId]);
 
@@ -249,8 +253,17 @@ export default function ProfileForm({
             <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
               <ImageIcon size={14} /> {t.profileForm.backgroundLabel}
             </Label>
+            {/* "Two Steps Studio" stays free/always-selectable (the shared
+                default both the bot and website fall back to) - every other
+                background is now a shop_items purchase, same restriction as
+                frames/nick colors. */}
+            {ownedBackgrounds.length === 0 && (
+              <p className="text-xs text-[var(--text)] opacity-60 font-[family-name:var(--font-outfit)]">
+                {t.profileForm.noBackgroundsOwnedPrefix}<Link href="/shop" className="text-[var(--color-general)] underline">{t.profileForm.visitShop}</Link>.
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
-              {BACKGROUND_OPTIONS.map((bg) => (
+              {["Two Steps Studio", ...ownedBackgrounds.map((b) => b.value)].map((bg) => (
                 <button
                   key={bg}
                   type="button"

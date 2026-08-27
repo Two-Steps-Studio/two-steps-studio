@@ -622,6 +622,7 @@
     "purchaseError": "Kauf fehlgeschlagen",
     "purchaseSuccessPrefix": "Gekauft: ",
     "yourBalance": "Dein Guthaben",
+    "categoryBackground": "Profilhintergründe",
     "categoryFrame": "Rahmen",
     "categoryNickColor": "Nick-Farben",
     "loginRequired": "Melde dich an, um zu kaufen"
@@ -637,6 +638,7 @@
     "frameLabel": "Avatar-Rahmen",
     "noFrame": "Keiner",
     "noFramesOwnedPrefix": "Du besitzt noch keinen Rahmen - ",
+    "noBackgroundsOwnedPrefix": "Du hast nur den Standard-Hintergrund - weitere im Shop: ",
     "visitShop": "Shop besuchen",
     "nickColorLabel": "Nick-Farbe",
     "defaultColor": "Standard",

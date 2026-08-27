@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const querySchema = z.object({
-  category: z.enum(['frame', 'nick_color']).optional(),
+  category: z.enum(['frame', 'nick_color', 'background']).optional(),
 });
 
 export async function GET(request: NextRequest) {

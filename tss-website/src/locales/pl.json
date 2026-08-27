@@ -622,6 +622,7 @@
     "purchaseError": "Błąd zakupu",
     "purchaseSuccessPrefix": "Kupiono: ",
     "yourBalance": "Twoje saldo",
+    "categoryBackground": "Tła profilu",
     "categoryFrame": "Ramki",
     "categoryNickColor": "Kolory nicku",
     "loginRequired": "Zaloguj się, aby kupować"
@@ -637,6 +638,7 @@
     "frameLabel": "Ramka avatara",
     "noFrame": "Brak",
     "noFramesOwnedPrefix": "Nie masz jeszcze żadnej ramki - ",
+    "noBackgroundsOwnedPrefix": "Masz tylko domyślne tło - więcej kupisz w sklepie: ",
     "visitShop": "odwiedź sklep",
     "nickColorLabel": "Kolor nicku",
     "defaultColor": "Domyślny",

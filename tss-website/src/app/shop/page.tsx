@@ -8,12 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ShoppingCart, Shield, Frame, Palette, Check, Coins, Loader2 } from "lucide-react";
+import { ShoppingCart, Shield, Frame, Palette, Image as ImageIcon, Check, Coins, Loader2 } from "lucide-react";
+import NextImage from "next/image";
 import AvatarFrame from "@/components/AvatarFrame";
 
 interface Product {
   id: string;
-  category: "frame" | "nick_color";
+  category: "frame" | "nick_color" | "background";
   name: string;
   description: string;
   price: number;
@@ -102,6 +103,19 @@ export default function ShopPage() {
         />
       );
     }
+    if (product.category === "background") {
+      return (
+        <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-white/20 shrink-0">
+          <NextImage
+            src={`/assets/discord/backgrounds/${encodeURIComponent(product.value)}.png`}
+            alt={product.name}
+            fill
+            sizes="64px"
+            className="object-cover"
+          />
+        </div>
+      );
+    }
     // Frame preview: the same Nitro-style SVG design used on the profile
     // and in the settings picker, so what you buy is what you'll see.
     return (
@@ -113,6 +127,7 @@ export default function ShopPage() {
   };
 
   const categories: Array<{ key: Product["category"]; label: string; icon: React.ReactNode }> = [
+    { key: "background", label: t.shopPage.categoryBackground, icon: <ImageIcon size={18} /> },
     { key: "frame", label: t.shopPage.categoryFrame, icon: <Frame size={18} /> },
     { key: "nick_color", label: t.shopPage.categoryNickColor, icon: <Palette size={18} /> },
   ];

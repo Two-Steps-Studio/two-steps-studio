@@ -622,6 +622,7 @@
     "purchaseError": "Purchase failed",
     "purchaseSuccessPrefix": "Purchased: ",
     "yourBalance": "Your balance",
+    "categoryBackground": "Profile backgrounds",
     "categoryFrame": "Frames",
     "categoryNickColor": "Nick colors",
     "loginRequired": "Log in to buy items"
@@ -637,6 +638,7 @@
     "frameLabel": "Avatar frame",
     "noFrame": "None",
     "noFramesOwnedPrefix": "You don't own any frame yet - ",
+    "noBackgroundsOwnedPrefix": "You only have the default background - get more in the shop: ",
     "visitShop": "visit the shop",
     "nickColorLabel": "Nick color",
     "defaultColor": "Default",
