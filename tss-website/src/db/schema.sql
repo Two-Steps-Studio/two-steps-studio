@@ -326,3 +326,31 @@ ALTER TABLE dev_projects ADD CONSTRAINT IF NOT EXISTS dev_projects_name_not_empt
 ALTER TABLE dev_projects ADD CONSTRAINT IF NOT EXISTS dev_projects_color_format CHECK (color ~ '^#[0-9A-Fa-f]{6}$');
 ALTER TABLE dev_tasks ADD CONSTRAINT IF NOT EXISTS dev_tasks_title_not_empty CHECK (LENGTH(TRIM(title)) > 0);
 ALTER TABLE dev_tasks ADD CONSTRAINT IF NOT EXISTS dev_tasks_priority_check CHECK (priority IN ('low', 'medium', 'high', 'critical'));
+
+-- Profile customization shop: purchasable avatar frames + nick colors,
+-- paid for with the existing profiles.money coin balance
+-- (see migrations/add-shop-inventory-achievements.sql for the full
+-- migration incl. the purchase_shop_item() RPC and RLS policies).
+CREATE TABLE IF NOT EXISTS shop_items (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL CHECK (category IN ('frame', 'nick_color')),
+    name TEXT NOT NULL,
+    description TEXT,
+    price INTEGER NOT NULL CHECK (price >= 0),
+    value TEXT NOT NULL,          -- frame: CSS ring/gradient spec; nick_color: hex
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_inventory (
+    id BIGSERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    item_id TEXT NOT NULL REFERENCES shop_items(id) ON DELETE CASCADE,
+    purchased_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, item_id)
+);
+
+-- profiles.equipped_frame / equipped_nick_color reference shop_items(id),
+-- nullable (null = default look). Added via ALTER TABLE in the migration
+-- file rather than here, to match how pln_balance/vip_status etc. were
+-- added to the live profiles table.
