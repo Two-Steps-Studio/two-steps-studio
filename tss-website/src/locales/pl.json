@@ -142,7 +142,11 @@
     "availableOn": "DOSTĘPNE NA WINDOWS & MAC",
     "ourApp": "NASZA APLIKACJA",
     "connectionError": "Błąd połączenia",
-    "somethingWrong": "Coś poszło nie tak"
+    "somethingWrong": "Coś poszło nie tak",
+    "onlineOnSite": "Online na stronie",
+    "accountsCreated": "Kont utworzonych",
+    "onlineLoggedIn": "Online zalogowani",
+    "onlineAnonymous": "Online anonimowi"
   },
   "auth": {
     "registerTitle": "Dołącz do nas",

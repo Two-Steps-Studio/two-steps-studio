@@ -142,7 +142,11 @@
     "availableOn": "AVAILABLE ON WINDOWS & MAC",
     "ourApp": "OUR APP",
     "connectionError": "Connection error",
-    "somethingWrong": "Something went wrong"
+    "somethingWrong": "Something went wrong",
+    "onlineOnSite": "Online on site",
+    "accountsCreated": "Accounts created",
+    "onlineLoggedIn": "Online, logged in",
+    "onlineAnonymous": "Online, anonymous"
   },
   "auth": {
     "registerTitle": "Join us",

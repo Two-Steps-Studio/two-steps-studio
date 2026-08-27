@@ -30,10 +30,10 @@ export const HomeSiteStats = memo(function HomeSiteStats() {
   if (!stats) return null;
 
   const items = [
-    { label: "Online na stronie", value: (stats.online_site || 0).toLocaleString(), icon: Users, color: "var(--color-general)" },
-    { label: "Kont utworzonych", value: (stats.total_profiles || 0).toLocaleString(), icon: IdCard, color: "var(--color-dev)" },
-    ...(typeof stats.online_logged_in === "number" ? [{ label: "Online zalogowani", value: (stats.online_logged_in || 0).toLocaleString(), icon: Users, color: "var(--color-e-sport)" }] : []),
-    ...(typeof stats.online_anonymous === "number" ? [{ label: "Online anonimowi", value: (stats.online_anonymous || 0).toLocaleString(), icon: Users, color: "var(--color-records)" }] : []),
+    { label: t.home.onlineOnSite, value: (stats.online_site || 0).toLocaleString(), icon: Users, color: "var(--color-general)" },
+    { label: t.home.accountsCreated, value: (stats.total_profiles || 0).toLocaleString(), icon: IdCard, color: "var(--color-dev)" },
+    ...(typeof stats.online_logged_in === "number" ? [{ label: t.home.onlineLoggedIn, value: (stats.online_logged_in || 0).toLocaleString(), icon: Users, color: "var(--color-e-sport)" }] : []),
+    ...(typeof stats.online_anonymous === "number" ? [{ label: t.home.onlineAnonymous, value: (stats.online_anonymous || 0).toLocaleString(), icon: Users, color: "var(--color-records)" }] : []),
   ] as const;
 
   return (

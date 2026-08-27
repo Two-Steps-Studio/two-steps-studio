@@ -142,7 +142,11 @@
     "availableOn": "VERFÜGBAR FÜR WINDOWS & MAC",
     "ourApp": "UNSERE APP",
     "connectionError": "Verbindungsfehler",
-    "somethingWrong": "Etwas ist schiefgelaufen"
+    "somethingWrong": "Etwas ist schiefgelaufen",
+    "onlineOnSite": "Online auf der Seite",
+    "accountsCreated": "Erstellte Konten",
+    "onlineLoggedIn": "Online, angemeldet",
+    "onlineAnonymous": "Online, anonym"
   },
   "auth": {
     "registerTitle": "Treten Sie uns bei",
