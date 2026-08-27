@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Registration - Two Steps Studio",
     description: "Create a Two Steps Studio account and join the community - get access to your profile, the shop, and community features.",
-    url: "https://twostepsstudio.vercel.app/registration",
+    url: "https://twostepsstudio.gg/registration",
   },
 };
 

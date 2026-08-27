@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "About Games - Two Steps Studio",
     description: "Poznaj proces tworzenia gier w Two Steps Studio - od pierwszego prototypu, przez eksperymentowanie z mechanikami, po gotowe produkcje.",
-    url: "https://twostepsstudio.vercel.app/games/about",
+    url: "https://twostepsstudio.gg/games/about",
   },
 };
 

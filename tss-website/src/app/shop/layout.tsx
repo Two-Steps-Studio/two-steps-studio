@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Shop - Two Steps Studio",
     description: "The Two Steps Studio shop for profile cosmetics - skins, badges, themes and other add-ons purchased with TSS Credits.",
-    url: "https://twostepsstudio.vercel.app/shop",
+    url: "https://twostepsstudio.gg/shop",
   },
 };
 

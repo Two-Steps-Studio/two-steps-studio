@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Download - Two Steps Studio",
     description: "Download the Two Steps Studio desktop app for Windows - system notifications, tray support, and automatic updates.",
-    url: "https://twostepsstudio.vercel.app/download",
+    url: "https://twostepsstudio.gg/download",
   },
 };
 

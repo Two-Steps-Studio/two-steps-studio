@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DEV - Two Steps Studio",
     description: "The Two Steps Studio development team - projects",
-    url: "https://twostepsstudio.vercel.app/dev",
+    url: "https://twostepsstudio.gg/dev",
   },
 };
 

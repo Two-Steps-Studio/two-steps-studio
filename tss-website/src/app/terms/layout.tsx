@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Terms of Service - Two Steps Studio",
     description: "Two Steps Studio's terms of service - rules for using our games, websites, apps, and Discord community.",
-    url: "https://twostepsstudio.vercel.app/terms",
+    url: "https://twostepsstudio.gg/terms",
   },
 };
 
