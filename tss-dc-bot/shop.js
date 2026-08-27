@@ -58,11 +58,43 @@ const ITEMS_PER_PAGE = 10;
 // fishing/*, wedka.js) — this file was the only one on a different id.
 const COIN = '<:CoinTSS:1486049846132605042>';
 
+// ── Kosmetyki z tej samej tabeli co sklep na stronie (frame/nick_color/
+//    background w shop_items) — pobierane na żywo, żeby oba miejsca
+//    zawsze sprzedawały to samo, bez duplikowania katalogu w kodzie bota. ──
+async function fetchCosmeticItems(supabase) {
+    const { data, error } = await supabase
+        .from('shop_items')
+        .select('id, category, name, description, price')
+        .eq('active', true)
+        .order('category')
+        .order('price');
+
+    if (error) {
+        console.error('[SHOP] Błąd pobierania kosmetyków:', error.message);
+        return [];
+    }
+
+    return (data || []).map(row => ({
+        name: row.id,
+        label: row.name,
+        price: row.price,
+        description: row.description || row.name,
+        type: 'cosmetic',
+        dbId: row.id,
+        category: row.category,
+    }));
+}
+
+async function getAllShopItems(supabase) {
+    const cosmetics = await fetchCosmeticItems(supabase);
+    return [...SHOP_ITEMS.map(i => ({ ...i, type: 'role' })), ...cosmetics];
+}
+
 // ── Budowanie embed sklepu ───────────────────────────────────
-function buildShopEmbed(page, money) {
-    const totalPages = Math.ceil(SHOP_ITEMS.length / ITEMS_PER_PAGE);
+function buildShopEmbed(allItems, page, money) {
+    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
     const start = page * ITEMS_PER_PAGE;
-    const pageItems = SHOP_ITEMS.slice(start, start + ITEMS_PER_PAGE);
+    const pageItems = allItems.slice(start, start + ITEMS_PER_PAGE);
 
     const embed = new EmbedBuilder()
         .setTitle('🛒 Sklep serwera')
@@ -83,10 +115,10 @@ function buildShopEmbed(page, money) {
 }
 
 // ── Budowanie komponentów (przyciski + dropdown) ─────────────
-function buildShopComponents(page, money) {
-    const totalPages = Math.ceil(SHOP_ITEMS.length / ITEMS_PER_PAGE);
+function buildShopComponents(allItems, page, money) {
+    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
     const start = page * ITEMS_PER_PAGE;
-    const pageItems = SHOP_ITEMS.slice(start, start + ITEMS_PER_PAGE);
+    const pageItems = allItems.slice(start, start + ITEMS_PER_PAGE);
 
     const select = new StringSelectMenuBuilder()
         .setCustomId(`shop_buy_${page}`)
@@ -123,8 +155,9 @@ function buildShopComponents(page, money) {
 // więc tutaj używamy tylko editReply()
 async function handleShop(interaction, supabase, profile) {
     const money = profile?.money || 0;
-    const embed = buildShopEmbed(0, money);
-    const components = buildShopComponents(0, money);
+    const allItems = await getAllShopItems(supabase);
+    const embed = buildShopEmbed(allItems, 0, money);
+    const components = buildShopComponents(allItems, 0, money);
 
     // interaction jest już zdeferowane przez index.js
     await interaction.editReply({ embeds: [embed], components });
@@ -146,8 +179,9 @@ async function handleShopInteraction(interaction, supabase) {
             .maybeSingle();
 
         const money = profile?.money || 0;
-        const embed = buildShopEmbed(page, money);
-        const components = buildShopComponents(page, money);
+        const allItems = await getAllShopItems(supabase);
+        const embed = buildShopEmbed(allItems, page, money);
+        const components = buildShopComponents(allItems, page, money);
 
         return interaction.update({ embeds: [embed], components });
     }
@@ -157,7 +191,8 @@ async function handleShopInteraction(interaction, supabase) {
         const itemName = interaction.values?.[0];
         if (!itemName) return;
 
-        const item = SHOP_ITEMS.find(i => i.name === itemName);
+        const allItems = await getAllShopItems(supabase);
+        const item = allItems.find(i => i.name === itemName);
         if (!item) return interaction.reply({ content: '❌ Nie znaleziono przedmiotu.', flags: 1 << 6 });
 
         const userId = interaction.user.id;
@@ -173,6 +208,38 @@ async function handleShopInteraction(interaction, supabase) {
         if (money < item.price) {
             return interaction.reply({
                 content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${item.price.toLocaleString('pl-PL')} ${COIN}**, masz **${money} ${COIN}**.`,
+                flags: 1 << 6,
+            });
+        }
+
+        // Kosmetyki (ramka/kolor nicku/tło) - te same przedmioty co na stronie
+        // (shop_items), kupione przez purchase_shop_item() zamiast osobnej
+        // logiki tutaj. RPC dopuszcza wywołania bota (service_role) od
+        // migracji add-background-shop-items.sql.
+        if (item.type === 'cosmetic') {
+            const { data: purchaseData, error: purchaseError } = await supabase.rpc('purchase_shop_item', {
+                p_user_id: profile.id,
+                p_item_id: item.dbId,
+            });
+
+            if (purchaseError) {
+                const msg = purchaseError.message || '';
+                if (msg.includes('already owned')) {
+                    return interaction.reply({ content: `❌ Masz już **${item.label}**.`, flags: 1 << 6 });
+                }
+                if (msg.includes('Insufficient balance')) {
+                    return interaction.reply({
+                        content: `❌ Nie masz wystarczająco monet! Potrzebujesz **${item.price.toLocaleString('pl-PL')} ${COIN}**, masz **${money} ${COIN}**.`,
+                        flags: 1 << 6,
+                    });
+                }
+                console.error('[SHOP] Błąd zakupu kosmetyku:', purchaseError.message);
+                return interaction.reply({ content: '❌ Błąd zakupu. Spróbuj ponownie.', flags: 1 << 6 });
+            }
+
+            const newMoney = purchaseData?.[0]?.new_money ?? (money - item.price);
+            return interaction.reply({
+                content: `✅ Kupiłeś **${item.label}** za **${item.price.toLocaleString('pl-PL')} ${COIN}**! Ustaw to na stronie w Profilu → Ustawienia. Pozostało: **${newMoney} ${COIN}**.`,
                 flags: 1 << 6,
             });
         }
