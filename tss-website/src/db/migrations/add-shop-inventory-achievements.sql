@@ -71,7 +71,16 @@ RETURNS TABLE(new_money BIGINT) AS $$
 DECLARE
     v_price INTEGER;
     v_current_money BIGINT;
+    v_caller_id TEXT;
 BEGIN
+    -- SECURITY DEFINER runs with elevated privileges (needed to update
+    -- profiles.money past RLS) - without this check, any authenticated
+    -- caller could pass someone else's p_user_id and spend their coins.
+    v_caller_id := COALESCE((auth.jwt() -> 'user_metadata'::text) ->> 'provider_id'::text, (auth.uid())::text);
+    IF v_caller_id IS NULL OR v_caller_id != p_user_id THEN
+        RAISE EXCEPTION 'Unauthorized';
+    END IF;
+
     SELECT price INTO v_price FROM shop_items WHERE id = p_item_id AND active = TRUE;
     IF v_price IS NULL THEN
         RAISE EXCEPTION 'Item not found or inactive';
