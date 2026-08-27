@@ -85,9 +85,21 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
   // role (the same ones DiscordRolesPanel badges on the profile page) didn't
   // translate into any elevated access here, only the separate manually-set
   // profiles.settings.isAdmin flag did.
-  const OWNER_DISCORD_ROLES = new Set(["〔 👑︱Owner 〕", "〔 👑︱Owner Records 〕"]);
+  //
+  // Live role strings aren't the clean "〔 👑︱Owner 〕" key alone - e.g.
+  // "〔 👑︱Owner 〕//" - the bot/Discord side appends things like a
+  // trailing "//". An exact-string match against the bare key silently
+  // matched nothing. DiscordRolesPanel.tsx's findRole() already solves this
+  // by extracting just the text between "︱" and "〕" and comparing that -
+  // mirroring the same approach here instead of inventing a second, looser
+  // one.
+  const OWNER_ROLE_LABELS = new Set(["owner", "owner records"]);
   const discordRoles: string[] = Array.isArray((profile as any)?.discord_roles) ? (profile as any).discord_roles : [];
-  const hasOwnerDiscordRole = discordRoles.some((r) => OWNER_DISCORD_ROLES.has(r.trim()));
+  const hasOwnerDiscordRole = discordRoles.some((r) => {
+    const match = r.match(/︱\s*(.+?)\s*〕/);
+    const inner = match?.[1]?.trim().toLowerCase();
+    return !!inner && OWNER_ROLE_LABELS.has(inner);
+  });
 
   const roles: GlobalRole[] = [];
 
