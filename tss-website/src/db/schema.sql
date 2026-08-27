@@ -1,14 +1,12 @@
 -- Database schema for Two Steps Studio website (PostgreSQL/Supabase version)
-
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP WITH TIME ZONE
-);
+--
+-- Pruned 2026-08-27: removed CREATE TABLE blocks for tables dropped by
+-- migrations/drop-unused-tables.sql (users, level_thresholds, badges,
+-- user_badges, daily_quests/user_daily_progress, weekly_quests/
+-- user_weekly_progress, seasons + its child tables, monthly_challenges/
+-- user_monthly_progress, user_achievements, daily_logins, weekly_activity,
+-- monthly_activity, user_preferences, notifications, dev_project_columns) -
+-- all had 0 rows and 0 references anywhere in tss-website/tss-dc-bot.
 
 -- Gamification profiles (core table with PLN balance)
 CREATE TABLE IF NOT EXISTS profiles (
@@ -35,153 +33,10 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Level thresholds (XP required for each level)
-CREATE TABLE IF NOT EXISTS level_thresholds (
-    level INTEGER PRIMARY KEY,
-    xp_required INTEGER NOT NULL
-);
-
--- Badges and achievements system
-CREATE TABLE IF NOT EXISTS badges (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
-    icon TEXT,
-    rarity VARCHAR(20) DEFAULT 'common',
-    xp_reward INTEGER DEFAULT 0,
-    pln_reward DECIMAL(10,2) DEFAULT 0.00,
-    image_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Award badges to users
-CREATE TABLE IF NOT EXISTS user_badges (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    badge_id INTEGER REFERENCES badges(id) ON DELETE CASCADE,
-    earned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, badge_id),
-    PRIMARY KEY (user_id, badge_id)
-);
-
--- Daily quests system
-CREATE TABLE IF NOT EXISTS daily_quests (
-    id SERIAL PRIMARY KEY,
-    quest_name VARCHAR(100) NOT NULL,
-    quest_type VARCHAR(50),
-    reward_xp INTEGER DEFAULT 0,
-    reward_pln DECIMAL(10,2) DEFAULT 0.00,
-    description TEXT,
-    icon VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (quest_name)
-);
-
--- User daily quest progress
-CREATE TABLE IF NOT EXISTS user_daily_progress (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    quest_id INTEGER REFERENCES daily_quests(id) ON DELETE CASCADE,
-    completed BOOLEAN DEFAULT FALSE,
-    completed_at TIMESTAMP WITH TIME ZONE,
-    PRIMARY KEY (user_id, quest_id)
-);
-
--- Weekly quests (7-day quests)
-CREATE TABLE IF NOT EXISTS weekly_quests (
-    id SERIAL PRIMARY KEY,
-    quest_name VARCHAR(100) NOT NULL,
-    quest_type VARCHAR(50),
-    reward_xp INTEGER DEFAULT 0,
-    reward_pln DECIMAL(10,2) DEFAULT 0.00,
-    description TEXT,
-    icon VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP WITH TIME ZONE,
-    UNIQUE (quest_name)
-);
-
--- User weekly quest progress
-CREATE TABLE IF NOT EXISTS user_weekly_progress (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    quest_id INTEGER REFERENCES weekly_quests(id) ON DELETE CASCADE,
-    completed BOOLEAN DEFAULT FALSE,
-    completed_at TIMESTAMP WITH TIME ZONE,
-    PRIMARY KEY (user_id, quest_id)
-);
-
--- Seasonal leaderboards and tournaments
-CREATE TABLE IF NOT EXISTS seasons (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    theme VARCHAR(100),
-    start_date TIMESTAMP WITH TIME ZONE,
-    end_date TIMESTAMP WITH TIME ZONE,
-    reward_xp INTEGER,
-    reward_pln DECIMAL(10,2),
-    bonus_xp INTEGER DEFAULT 0,
-    active BOOLEAN DEFAULT TRUE
-);
-
--- Seasonal quests
-CREATE TABLE IF NOT EXISTS season_quests (
-    id SERIAL PRIMARY KEY,
-    season_id INTEGER REFERENCES seasons(id) ON DELETE CASCADE,
-    quest_name VARCHAR(100),
-    quest_type VARCHAR(50),
-    reward_xp INTEGER,
-    reward_pln DECIMAL(10,2),
-    description TEXT,
-    icon VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Seasonal rewards and achievements
-CREATE TABLE IF NOT EXISTS season_rewards (
-    id SERIAL PRIMARY KEY,
-    season_id INTEGER REFERENCES seasons(id) ON DELETE CASCADE,
-    rank INTEGER NOT NULL,
-    name VARCHAR(100),
-    description TEXT,
-    image_url TEXT,
-    reward_xp INTEGER,
-    reward_pln DECIMAL(10,2),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Leaderboard rankings
-CREATE TABLE IF NOT EXISTS season_rankings (
-    id SERIAL PRIMARY KEY,
-    season_id INTEGER REFERENCES seasons(id) ON DELETE CASCADE,
-    rank INTEGER NOT NULL,
-    user_id TEXT REFERENCES profiles(id) ON DELETE SET NULL,
-    score INTEGER NOT NULL,
-    xp INTEGER,
-    pln DECIMAL(10,2),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (season_id, rank)
-);
-
--- Monthly challenges (monthly quests)
-CREATE TABLE IF NOT EXISTS monthly_challenges (
-    id SERIAL PRIMARY KEY,
-    challenge_name VARCHAR(100) UNIQUE NOT NULL,
-    challenge_type VARCHAR(50),
-    reward_xp INTEGER,
-    reward_pln DECIMAL(10,2),
-    description TEXT,
-    icon VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- User monthly challenge progress
-CREATE TABLE IF NOT EXISTS user_monthly_progress (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    challenge_id INTEGER REFERENCES monthly_challenges(id) ON DELETE CASCADE,
-    completed BOOLEAN DEFAULT FALSE,
-    completed_at TIMESTAMP WITH TIME ZONE,
-    PRIMARY KEY (user_id, challenge_id)
-);
-
--- Special achievements (milestones, rare accomplishments)
+-- Special achievements (milestones, rare accomplishments). Unlock state is
+-- computed live from profiles.level/total_messages/total_voice_minutes vs.
+-- requirement_type/requirement_value - there's no user_achievements table,
+-- it was dropped unused (see migrations/add-achievement-tracking.sql).
 CREATE TABLE IF NOT EXISTS achievements (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -192,66 +47,9 @@ CREATE TABLE IF NOT EXISTS achievements (
     pln_reward DECIMAL(10,2) DEFAULT 0.00,
     image_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    requirement_type TEXT CHECK (requirement_type IN ('level', 'messages', 'voice_minutes')),
+    requirement_value INTEGER,
     UNIQUE (name)
-);
-
--- User achievements
-CREATE TABLE IF NOT EXISTS user_achievements (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    achievement_id INTEGER REFERENCES achievements(id) ON DELETE CASCADE,
-    unlocked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, achievement_id),
-    PRIMARY KEY (user_id, achievement_id)
-);
-
--- Daily login streak tracking
-CREATE TABLE IF NOT EXISTS daily_logins (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    login_date DATE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, login_date),
-    PRIMARY KEY (user_id, login_date)
-);
-
--- Weekly activity tracking
-CREATE TABLE IF NOT EXISTS weekly_activity (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    week_start DATE NOT NULL,
-    activity_type VARCHAR(50),
-    count INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, week_start, activity_type),
-    PRIMARY KEY (user_id, week_start)
-);
-
--- Monthly activity tracking
-CREATE TABLE IF NOT EXISTS monthly_activity (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    month_start DATE NOT NULL,
-    activity_type VARCHAR(50),
-    count INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, month_start, activity_type),
-    PRIMARY KEY (user_id, month_start)
-);
-
--- User preferences (JSONB)
-CREATE TABLE IF NOT EXISTS user_preferences (
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    preferences JSONB DEFAULT '{"theme":"ocean","notifications":true,"language":"pl"}',
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id),
-    PRIMARY KEY (user_id)
-);
-
--- Notifications
-CREATE TABLE IF NOT EXISTS notifications (
-    id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
-    message TEXT NOT NULL,
-    type VARCHAR(20) DEFAULT 'info',
-    read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Developer tasks (DEV board) - MULTI-PROJECT SUPPORT
@@ -270,31 +68,23 @@ CREATE TABLE IF NOT EXISTS dev_projects (
     description TEXT,
     color VARCHAR(7) DEFAULT '#ffcb2f',
     status VARCHAR(20) DEFAULT 'active',
-    columns JSONB DEFAULT '[]',  -- Kolumny: [{id, name, color, position, icon}]
+    columns JSONB DEFAULT '[]',  -- Kolumny: [{id, name, color, position, icon}] - dev_project_columns table was dropped unused, this jsonb column is the real source
     settings JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Project columns (kanban kolumny dla każdego projektu)
-CREATE TABLE IF NOT EXISTS dev_project_columns (
-    id SERIAL PRIMARY KEY,
-    project_id INT NOT NULL REFERENCES dev_projects(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
-    color VARCHAR(7) DEFAULT '#3b82f6',
-    position INT DEFAULT 0,
-    icon VARCHAR(50),
-    settings JSONB DEFAULT '{}',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Tasks (z rozszerzonymi polami)
+-- NOTE: assigned_to has no FK constraint on the live table (verified against
+-- an actual `supabase db dump` from the user, 2026-08-27) - keeping it that
+-- way here rather than the old `REFERENCES users(id)`, since the `users`
+-- table (a pre-Supabase-Auth relic) was dropped.
 CREATE TABLE IF NOT EXISTS dev_tasks (
     id SERIAL PRIMARY KEY,
     project_id INT DEFAULT 1 REFERENCES dev_projects(id) ON DELETE SET DEFAULT,
     title VARCHAR(200),
     description TEXT,
-    assigned_to INT REFERENCES users(id) ON DELETE SET NULL,
+    assigned_to INT,
     status task_status DEFAULT 'pending',
     priority VARCHAR(20) DEFAULT 'medium',  -- low, medium, high, critical
     tags TEXT[] DEFAULT '{}',  -- Tagi: feature, bug, chore, design, etc.
@@ -303,6 +93,8 @@ CREATE TABLE IF NOT EXISTS dev_tasks (
     actual_hours DECIMAL(5,2),
     completed_at TIMESTAMP WITH TIME ZONE,
     custom_fields JSONB DEFAULT '{}',
+    progress_percent INTEGER DEFAULT 0 CHECK (progress_percent >= 0 AND progress_percent <= 100),
+    assignee_name TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -312,7 +104,6 @@ CREATE INDEX IF NOT EXISTS dev_tasks_project_status_idx ON dev_tasks(project_id,
 CREATE INDEX IF NOT EXISTS dev_tasks_priority_idx ON dev_tasks(priority);
 CREATE INDEX IF NOT EXISTS dev_tasks_assigned_idx ON dev_tasks(assigned_to);
 CREATE INDEX IF NOT EXISTS dev_tasks_due_date_idx ON dev_tasks(due_date);
-CREATE INDEX IF NOT EXISTS dev_project_columns_project_id_idx ON dev_project_columns(project_id);
 
 -- Additional performance indices for DEV module
 CREATE INDEX IF NOT EXISTS dev_projects_owner_id_idx ON dev_projects(owner_id);
@@ -360,3 +151,8 @@ CREATE TABLE IF NOT EXISTS user_inventory (
 -- increments alongside its existing XP awards, used to compute the level/
 -- messages/voice-time achievement tiers. achievements.requirement_type/
 -- requirement_value (added the same way) encode what unlocks each one.
+
+-- NOTE: this file does not document every live table (e.g. voice_sessions,
+-- fishing_gear, fishing_catches, games, music_tracks, podcasts, beats,
+-- api_keys, site_sessions...) - it was already a partial/stale copy before
+-- this prune, not the actual source of truth for the full live schema.
