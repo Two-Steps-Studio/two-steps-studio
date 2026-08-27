@@ -14,7 +14,7 @@ import NextImage from "next/image";
 // tss-dc-bot/assets/discord/backgrounds and profileGenerator.js's
 // availableBackgrounds) - mirrored under tss-website/public/assets/discord/
 // backgrounds/ so a filename picked here renders identically on both.
-const BACKGROUND_OPTIONS = [
+export const BACKGROUND_OPTIONS = [
   "Two Steps Studio", "Two Steps DEV", "Two Steps Games", "Two Steps Records", "Two Steps E-Sport",
   "Blue", "Light Blue", "Green", "Light Green", "Yellow", "Orange", "Red", "Pink", "Purple", "Brown",
   "Triangles", "Flowers", "Zebra", "Cow", "Panther",

@@ -15,6 +15,7 @@ import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins
 import LogoutButton from "./logout-button";
 import Image from "next/image";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { BACKGROUND_OPTIONS } from "./profile-form";
 
 const ROLE_PRIORITY: Array<{ key: string; color: string; label: string }> = [
     { key: "〔 👑︱Owner 〕", color: "#dc3545", label: "OWNER" },
@@ -282,8 +283,13 @@ export default function ProfilePage() {
     // 1000x500 canvas (tss-dc-bot/assets/discord/backgrounds) - copied into
     // public/ under the same filenames so a profile.background value maps
     // 1:1 to an asset here. "Two Steps Studio" mirrors the bot's own
-    // fallback for an unset/unrecognized background value.
-    const profileBackground = profile?.background && profile.background !== "default"
+    // fallback for an unset/unrecognized background value. Validated
+    // against BACKGROUND_OPTIONS (same check the bot does with
+    // availableBackgrounds.includes(...)) because some existing profiles
+    // carry a stale value that isn't one of these filenames (seen live:
+    // a full Supabase signed URL from an older/unrelated feature) - passing
+    // that straight into the asset path 404s instead of falling back.
+    const profileBackground = profile?.background && BACKGROUND_OPTIONS.includes(profile.background)
         ? profile.background
         : "Two Steps Studio";
 
