@@ -291,16 +291,24 @@ export default function ProfilePage() {
         <div className="container mx-auto p-6 space-y-8 mt-20 max-w-6xl pb-16" suppressHydrationWarning>
 
             {/* ── PROFIL ── */}
-            <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-2xl shadow-2xl">
+            {/* py-0 gap-0 override Card's own default `py-6 flex flex-col gap-6` -
+                without them the banner sat inset from the rounded top corners
+                with a 24px gap before the content below, instead of being a
+                flush, edge-to-edge 2:1 banner. */}
+            <Card className="relative overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] backdrop-blur-2xl shadow-2xl py-0 gap-0">
                 {/* Discord profile-card background - the same 1000x500 asset the bot
                     draws onto its canvas. A real aspect-[2/1] banner (not just an
                     inset-0 layer cropped to whatever height the content needs), so
                     it always scales to the card's full width at a strict 2:1
                     width:height ratio. */}
-                <div className="relative w-full aspect-[2/1] overflow-hidden">
-                    <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png)` }}
+                <div className="relative w-full aspect-[2/1] overflow-hidden bg-[var(--bg)]">
+                    <Image
+                        src={`/assets/discord/backgrounds/${encodeURIComponent(profileBackground)}.png`}
+                        alt=""
+                        fill
+                        priority
+                        className="object-cover"
+                        sizes="(max-width: 1152px) 100vw, 1152px"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-transparent to-transparent" />
                 </div>
