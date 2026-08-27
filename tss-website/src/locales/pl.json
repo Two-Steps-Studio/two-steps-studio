@@ -65,6 +65,14 @@
       "sunset": "Sunset"
     }
   },
+  "bottomNav": {
+    "home": "Strona",
+    "profile": "Profil",
+    "games": "Gry",
+    "records": "Muzyka",
+    "dev": "Dev",
+    "notifications": "Powiad."
+  },
   "nav": {
     "home": "Strona główna",
     "profile": "Profil",

@@ -65,6 +65,14 @@
       "sunset": "Sunset"
     }
   },
+  "bottomNav": {
+    "home": "Home",
+    "profile": "Profile",
+    "games": "Games",
+    "records": "Records",
+    "dev": "Dev",
+    "notifications": "Alerts"
+  },
   "nav": {
     "home": "Home",
     "profile": "Profile",

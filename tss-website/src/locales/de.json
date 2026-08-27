@@ -65,6 +65,14 @@
       "sunset": "Sonnenuntergang"
     }
   },
+  "bottomNav": {
+    "home": "Start",
+    "profile": "Profil",
+    "games": "Games",
+    "records": "Records",
+    "dev": "Dev",
+    "notifications": "Benachr."
+  },
   "nav": {
     "home": "Startseite",
     "profile": "Profil",

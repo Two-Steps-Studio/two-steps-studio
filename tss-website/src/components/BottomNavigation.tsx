@@ -20,13 +20,18 @@ export function BottomNavigation() {
   const [isMobile, setIsMobile] = useState(false);
   const mediaQuery = "(max-width: 1023px)";
 
+  // Dedicated, shorter labels just for this bar - t.nav.* is written for
+  // full page titles/headers ("Notifications" / "Benachrichtigungen") and
+  // never fits 6-across on a phone no matter how the bar is sized; a
+  // first-time visitor still needs *some* label under every icon, so this
+  // shortens the text at the source instead of hiding/truncating it.
   const BOTTOM_NAV_ITEMS = {
-    home: { label: t.nav.home, href: "/" },
-    profile: { label: t.nav.profile, href: "/profile" },
-    games: { label: t.nav.games, href: "/games" },
-    records: { label: "Records", href: "/records" },
-    dev: { label: t.nav.dev, href: "/dev" },
-    notifications: { label: t.nav.notifications, href: "/notifications" },
+    home: { label: t.bottomNav.home, href: "/" },
+    profile: { label: t.bottomNav.profile, href: "/profile" },
+    games: { label: t.bottomNav.games, href: "/games" },
+    records: { label: t.bottomNav.records, href: "/records" },
+    dev: { label: t.bottomNav.dev, href: "/dev" },
+    notifications: { label: t.bottomNav.notifications, href: "/notifications" },
   };
 
   useEffect(() => {
@@ -77,34 +82,31 @@ export function BottomNavigation() {
   };
 
   return (
-      // With 6 items + longer translations ("Powiadomienia", "Benachrichtigungen"),
-      // showing a label under every icon always ran out of room and truncated
-      // no matter how wide the bar got. Instead only the ACTIVE item shows its
-      // label (next to the icon, in a widened pill) - inactive items are
-      // icon-only, which both guarantees nothing ever truncates and gives
-      // every icon more breathing room.
+      // A first-time visitor can't tell what an icon-only nav means, so every
+      // item keeps a visible label - t.bottomNav.* (short, dedicated strings,
+      // not the full page-title translations) fixes the actual overflow
+      // instead of hiding text: with real words this short, `truncate` is
+      // just a safety net that shouldn't normally trigger.
       <nav className="fixed left-2 right-2 z-50" style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
         <div className="mx-auto max-w-md">
-          <ul className="flex items-center justify-around gap-0.5 h-14 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
+          <ul className="flex items-center justify-around gap-0.5 h-16 px-2 rounded-full glass border border-[var(--border-color)] shadow-lg shadow-black/10">
             {Object.entries(BOTTOM_NAV_ITEMS).map(([key, item]) => {
               const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
 
               return (
-                  <li key={key} className="min-w-0">
+                  <li key={key} className="min-w-0 flex-1">
                     <Link
                         href={item.href}
                         className={cn(
-                            "flex items-center justify-center gap-1.5 h-10 rounded-full transition-all whitespace-nowrap",
-                            isActive ? "opacity-100 bg-[var(--color-general)]/10 px-3.5" : "opacity-60 hover:opacity-90 w-10"
+                            "flex flex-col items-center justify-center gap-1 py-2.5 rounded-full transition-all",
+                            isActive ? "opacity-100 bg-[var(--color-general)]/10" : "opacity-60 hover:opacity-90"
                         )}
                     >
                       {getIcon(item.href)}
-                      {isActive && (
-                          <span className="text-[11px] font-bold leading-none text-[var(--text)]">
-                            {item.label}
-                          </span>
-                      )}
+                      <span className="w-full truncate px-0.5 text-center text-[9px] font-bold leading-none text-[var(--text)]">
+                        {item.label}
+                      </span>
                     </Link>
                   </li>
               );
