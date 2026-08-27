@@ -36,9 +36,12 @@ export async function GET() {
     // Pobierz całkowitą liczbę użytkowników z bazy profiles (nie z Discorda)
     let siteAccounts = 0;
     try {
+      // 'estimated' reads Postgres's own row-count statistics instead of doing
+      // a full COUNT(*) scan on every request - this widget only needs a
+      // rough number, not an exact one.
       const { count } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'estimated', head: true });
       siteAccounts = count || 0;
     } catch (e) {
       console.log('profiles table not available');
