@@ -248,8 +248,16 @@ export default function ProfilePage() {
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;
-    const currentProgressXP = xp - currentLevelStartXP;
-    const progress = Math.min(Math.max((currentProgressXP / neededXP) * 100, 0), 100);
+    // profiles.level defaults to 1 in the DB, but the bot's own
+    // getLevelFromXP formula says xp<100 is level 0 - so a fresh/low-activity
+    // profile can have `level` sitting ahead of what its actual `xp` supports
+    // (currentLevelStartXP > xp). That used to clamp progress to a flat,
+    // stuck-looking 0% while the XP numbers below the bar still showed real,
+    // moving values. Fall back to xp-over-nextLevelStartXP in that case so
+    // the bar fills sensibly instead of looking broken.
+    const currentProgressXP = xp >= currentLevelStartXP ? xp - currentLevelStartXP : xp;
+    const progressDenominator = xp >= currentLevelStartXP ? neededXP : nextLevelStartXP;
+    const progress = Math.min(Math.max((currentProgressXP / progressDenominator) * 100, 0), 100);
     const nextLevelXp = Math.round(nextLevelStartXP);
     const discordRoles = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
     const topList = topTab === "level" ? rankingData.usersByLevel : rankingData.usersByMoney;

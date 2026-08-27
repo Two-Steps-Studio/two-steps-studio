@@ -106,8 +106,13 @@ export default function PublicProfilePage() {
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;
-    const currentProgressXP = xp - currentLevelStartXP;
-    const progress = Math.min(Math.max((currentProgressXP / neededXP) * 100, 0), 100);
+    // See ../page.tsx for why this isn't a plain xp - currentLevelStartXP:
+    // profiles.level defaults to 1 even when actual xp doesn't support it yet
+    // under the bot's own getLevelFromXP formula, which used to clamp this to
+    // a stuck-looking flat 0%.
+    const currentProgressXP = xp >= currentLevelStartXP ? xp - currentLevelStartXP : xp;
+    const progressDenominator = xp >= currentLevelStartXP ? neededXP : nextLevelStartXP;
+    const progress = Math.min(Math.max((currentProgressXP / progressDenominator) * 100, 0), 100);
     const nextLevelXp = Math.round(nextLevelStartXP);
     const discordRoles = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
     const profileBackground = profile?.background && BACKGROUND_OPTIONS.includes(profile.background)
