@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, User, Image as ImageIcon, Save, Check } from "lucide-react";
+import { Loader2, User, Image as ImageIcon, Save, Check, Frame, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import NextImage from "next/image";
+
+interface OwnedItem {
+  id: string;
+  name: string;
+  value: string;
+}
 
 // Same 19 backgrounds the Discord bot's profile card can draw (see
 // tss-dc-bot/assets/discord/backgrounds and profileGenerator.js's
@@ -29,7 +36,7 @@ export default function ProfileForm({
   user: any;
   discordId: string;
   profile: any;
-  onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number; background?: string }) => void;
+  onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number; background?: string; equipped_frame?: string | null; equipped_nick_color?: string | null }) => void;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -38,9 +45,36 @@ export default function ProfileForm({
   const [balance, setBalance] = useState(profile?.pln_balance || 0);
   const [money, setMoney] = useState(profile?.money || 0);
   const [background, setBackground] = useState(profile?.background && profile.background !== "default" ? profile.background : "Two Steps Studio");
+  const [equippedFrame, setEquippedFrame] = useState<string | null>(profile?.equipped_frame ?? null);
+  const [equippedNickColor, setEquippedNickColor] = useState<string | null>(profile?.equipped_nick_color ?? null);
+  const [ownedFrames, setOwnedFrames] = useState<OwnedItem[]>([]);
+  const [ownedNickColors, setOwnedNickColors] = useState<OwnedItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [saveErrorMsg, setSaveErrorMsg] = useState("");
+
+  // What this user has actually bought in /shop - only owned frames/nick
+  // colors are selectable here, same restriction the purchase_shop_item RPC
+  // enforces server-side.
+  useEffect(() => {
+    if (!supabase || !discordId) return;
+    supabase
+      .from("user_inventory")
+      .select("shop_items(id, category, name, value)")
+      .eq("user_id", discordId)
+      .then(({ data }) => {
+        const frames: OwnedItem[] = [];
+        const colors: OwnedItem[] = [];
+        for (const row of (data as any[]) || []) {
+          const item = row.shop_items;
+          if (!item) continue;
+          if (item.category === "frame") frames.push(item);
+          else if (item.category === "nick_color") colors.push(item);
+        }
+        setOwnedFrames(frames);
+        setOwnedNickColors(colors);
+      });
+  }, [discordId]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,12 +91,14 @@ export default function ProfileForm({
         pln_balance: balance,
         money: money,
         background,
+        equipped_frame: equippedFrame,
+        equipped_nick_color: equippedNickColor,
         updated_at: new Date().toISOString(),
       });
 
     setLoading(false);
     if (!error) {
-      onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money, background });
+      onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
       router.refresh();
     } else {
       // Was silently swallowed before - a blocked write (e.g. an RLS policy
@@ -136,10 +172,12 @@ export default function ProfileForm({
               pln_balance: balance,
               money: money,
               background,
+              equipped_frame: equippedFrame,
+              equipped_nick_color: equippedNickColor,
               updated_at: new Date().toISOString(),
             });
 
-            onUpdated?.({ username, avatar_url: urlData.signedUrl, pln_balance: balance, money: money, background });
+            onUpdated?.({ username, avatar_url: urlData.signedUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
             window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: urlData.signedUrl, username } }));
             router.refresh();
           } else {
@@ -236,6 +274,89 @@ export default function ProfileForm({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
+              <Frame size={14} /> Ramka avatara
+            </Label>
+            {ownedFrames.length === 0 ? (
+              <p className="text-xs text-[var(--text)] opacity-60 font-[family-name:var(--font-outfit)]">
+                Nie masz jeszcze żadnej ramki - <Link href="/shop" className="text-[var(--color-general)] underline">odwiedź sklep</Link>.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEquippedFrame(null)}
+                  className={`h-12 w-12 rounded-full border-2 flex items-center justify-center text-[10px] font-bold shrink-0 cursor-pointer ${
+                    equippedFrame === null
+                      ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40"
+                      : "border-[var(--border-color)] opacity-70 hover:opacity-100"
+                  }`}
+                  title="Brak"
+                >
+                  Brak
+                </button>
+                {ownedFrames.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setEquippedFrame(f.id)}
+                    title={f.name}
+                    className={`relative h-12 w-12 rounded-full shrink-0 cursor-pointer flex items-center justify-center transition-all ${
+                      equippedFrame === f.id ? "ring-2 ring-offset-2 ring-offset-[var(--bg)] ring-[var(--color-general)]" : ""
+                    }`}
+                    style={{
+                      background: f.value === "rgb-animated"
+                        ? "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)"
+                        : f.value,
+                    }}
+                  >
+                    <span className="h-8 w-8 rounded-full bg-[var(--bg)]" />
+                    {equippedFrame === f.id && <Check size={14} className="absolute text-white drop-shadow" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[var(--text)] ml-1 font-[family-name:var(--font-outfit)] flex items-center gap-2">
+              <Palette size={14} /> Kolor nicku
+            </Label>
+            {ownedNickColors.length === 0 ? (
+              <p className="text-xs text-[var(--text)] opacity-60 font-[family-name:var(--font-outfit)]">
+                Nie masz jeszcze żadnego koloru - <Link href="/shop" className="text-[var(--color-general)] underline">odwiedź sklep</Link>.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEquippedNickColor(null)}
+                  className={`h-9 w-9 rounded-full border-2 bg-white flex items-center justify-center shrink-0 cursor-pointer ${
+                    equippedNickColor === null
+                      ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40"
+                      : "border-[var(--border-color)] opacity-70 hover:opacity-100"
+                  }`}
+                  title="Domyślny"
+                />
+                {ownedNickColors.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setEquippedNickColor(c.id)}
+                    title={c.name}
+                    className={`relative h-9 w-9 rounded-full border-2 shrink-0 cursor-pointer flex items-center justify-center ${
+                      equippedNickColor === c.id ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40" : "border-[var(--border-color)]"
+                    }`}
+                    style={{ backgroundColor: c.value }}
+                  >
+                    {equippedNickColor === c.id && <Check size={14} className="text-white drop-shadow" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {saveErrorMsg && (
