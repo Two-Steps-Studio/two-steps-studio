@@ -60,11 +60,14 @@ const BOT_PATTERNS = [
 async function detectBot(request: NextRequest): Promise<{ isBot: boolean; botType: string | null }> {
   const ua = request.headers.get("user-agent") || "";
 
-  // Check for bot patterns
+  // Check for bot patterns. botType carries the *full* user-agent (not just
+  // the matched keyword) so the allow-list check below can actually see
+  // "Googlebot"/"Bingbot"/etc. - matching only the keyword (e.g. "bot" out
+  // of "Googlebot") meant every real search-engine crawler fell through to
+  // the default "block unknown bots" branch instead of being allowed.
   for (const pattern of BOT_PATTERNS) {
     if (pattern.test(ua)) {
-      const match = ua.match(pattern);
-      return { isBot: true, botType: match?.[0]?.replace(/\/gi/g, '') || 'unknown-bot' };
+      return { isBot: true, botType: ua || 'unknown-bot' };
     }
   }
 
