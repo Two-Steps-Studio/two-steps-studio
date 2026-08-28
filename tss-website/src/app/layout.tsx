@@ -53,6 +53,19 @@ export const metadata: Metadata = {
   description: "Welcome to Two Steps Studio",
   manifest: "/manifest.json",
   metadataBase: new URL('https://twostepsstudio.gg'),
+  // Files already existed in public/ (favicon.ico, icon-192.png, icon-512.png)
+  // but nothing declared them here, so Next.js never emitted a
+  // <link rel="icon"> tag in <head>. Browsers still fell back to fetching
+  // /favicon.ico implicitly, but Google Search requires an explicit icon
+  // link to reliably show the site favicon next to search results.
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icon-192.png",
+  },
   // Without this, iOS Safari's data detectors auto-linkify anything that
   // looks like an email/phone/address in the page text - underlined,
   // blue, tap-to-compose - which is what made the email badge on /profile
