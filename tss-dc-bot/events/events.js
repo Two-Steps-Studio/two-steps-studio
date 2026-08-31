@@ -3,13 +3,14 @@ const { EmbedBuilder } = require('discord.js');
 
 const ADMIN_ROLE = 'Admin'; // zmień na nazwę swojej roli admina
 
-// Discord embedy odrzucają pole (addFields value) dłuższe niż 1024 znaki -
-// event.description nie miał żadnego limitu (ani przy tworzeniu, ani w
-// bazie), więc wystarczająco długi opis rzucał RangeError przy budowaniu
-// embeda. Najgorszy przypadek: /event_list iteruje po WSZYSTKICH eventach,
-// więc jeden taki rekord psuł tę komendę dla całego serwera. Obcinamy przy
-// renderze, żeby ochronić też rekordy sprzed tej poprawki.
-function truncateDescription(text, maxLen = 900) {
+// Discord embedy odrzucają pole (addFields value) dłuższe niż 1024 znaki i
+// nazwę pola dłuższą niż 256 - event.description i event.name nie miały
+// żadnego limitu (ani przy tworzeniu, ani w bazie), więc wystarczająco
+// długi tekst rzucał RangeError przy budowaniu embeda. Najgorszy przypadek:
+// /event_list iteruje po WSZYSTKICH eventach, więc jeden taki rekord psuł
+// tę komendę dla całego serwera. Obcinamy przy renderze, żeby ochronić też
+// rekordy sprzed tej poprawki.
+function truncateText(text, maxLen = 900) {
     if (!text) return text;
     return text.length > maxLen ? `${text.slice(0, maxLen - 1)}…` : text;
 }
@@ -80,13 +81,13 @@ async function handleEventCreate(interaction, supabase) {
         .setColor(0x1bbdbd)
         .setTitle('✅ Event utworzony!')
         .addFields(
-            { name: '🏷️ Nazwa',     value: data.name,                                                   inline: false },
+            { name: '🏷️ Nazwa',     value: truncateText(data.name),                                     inline: false },
             { name: '📅 Data',      value: eventDate.toLocaleString('pl-PL'),                           inline: true  },
             { name: '👥 Limit',     value: maxParticipants ? `${maxParticipants} osób` : 'Brak limitu', inline: true  },
             { name: '🆔 ID eventu', value: `#${data.id}`,                                               inline: true  },
         );
 
-    if (description) embed.addFields({ name: '📝 Opis', value: truncateDescription(description), inline: false });
+    if (description) embed.addFields({ name: '📝 Opis', value: truncateText(description), inline: false });
     embed.setFooter({ text: 'Użyj /event_list żeby zobaczyć wszystkie eventy' });
 
     await interaction.editReply({ embeds: [embed] });
@@ -135,7 +136,7 @@ async function handleEventList(interaction, supabase) {
         const participants = allParticipants?.filter(p => p.event_id === event.id) || [];
         const count        = participants.length;
         const limit        = event.max_participants ? `${count}/${event.max_participants}` : `${count}`;
-        const desc         = event.description ? `\n📝 ${truncateDescription(event.description, 500)}` : '';
+        const desc         = event.description ? `\n📝 ${truncateText(event.description, 500)}` : '';
 
         // Lista uczestników (max 5 w podglądzie)
         let participantsList = '';
@@ -147,7 +148,10 @@ async function handleEventList(interaction, supabase) {
         }
 
         embed.addFields({
-            name:   `#${event.id} – ${event.name}`,
+            // Pole "name" (nie value!) ma twardy limit 256 znaków w Discordzie
+            // - ciaśniejszy niż standardowe 1024 dla value, stąd osobny,
+            // mniejszy maxLen tutaj.
+            name:   `#${event.id} – ${truncateText(event.name, 200)}`,
             value:  `📅 ${date.toLocaleString('pl-PL')} | 👥 Zapisani: **${limit}**${desc}${participantsList}`,
             inline: false,
         });
@@ -193,12 +197,12 @@ async function handleEventJoin(interaction, supabase) {
         // Sprawdź czy już zapisany
         const alreadyJoined = participants?.some(p => p.user_id === interaction.user.id);
         if (alreadyJoined) {
-            return interaction.editReply(`✅ Już jesteś zapisany na event **${event.name}**!`);
+            return interaction.editReply(`✅ Już jesteś zapisany na event **${truncateText(event.name)}**!`);
         }
 
         // Sprawdź limit
         if (event.max_participants && count >= event.max_participants) {
-            return interaction.editReply(`❌ Event **${event.name}** jest już pełny! (${count}/${event.max_participants} uczestników)`);
+            return interaction.editReply(`❌ Event **${truncateText(event.name)}** jest już pełny! (${count}/${event.max_participants} uczestników)`);
         }
 
         // Zapisz uczestnika
@@ -225,14 +229,14 @@ async function handleEventJoin(interaction, supabase) {
             .setColor(0x2ecc71)
             .setTitle('✅ Zapisano na event!')
             .addFields(
-                { name: '🏷️ Event',            value: event.name,                        inline: true  },
+                { name: '🏷️ Event',            value: truncateText(event.name),          inline: true  },
                 { name: '📅 Data',              value: eventDate.toLocaleString('pl-PL'), inline: true  },
                 { name: '👥 Zapisani',          value: limit,                             inline: true  },
                 { name: '📋 Lista uczestników', value: `${preview}${extra}`,              inline: false },
             )
             .setFooter({ text: 'Do zobaczenia na evencie! 🎮' });
 
-        if (event.description) embed.addFields({ name: '📝 Opis', value: truncateDescription(event.description), inline: false });
+        if (event.description) embed.addFields({ name: '📝 Opis', value: truncateText(event.description), inline: false });
 
         return interaction.editReply({ embeds: [embed] });
     });
@@ -283,7 +287,7 @@ async function handleEventDelete(interaction, supabase) {
         .setColor(0xe74c3c)
         .setTitle('🗑️ Event usunięty')
         .addFields(
-            { name: '🏷️ Nazwa',          value: event.name,                                         inline: true  },
+            { name: '🏷️ Nazwa',          value: truncateText(event.name),                           inline: true  },
             { name: '🆔 ID',              value: `#${event.id}`,                                     inline: true  },
             { name: '👥 Było zapisanych', value: `${count} uczestników`,                             inline: true  },
             { name: '📅 Była data',       value: new Date(event.event_date).toLocaleString('pl-PL'), inline: false },

@@ -216,6 +216,7 @@ const commands = [
             opt.setName('nazwa')
                 .setDescription('Nazwa eventu')
                 .setRequired(true)
+                .setMaxLength(100)
         )
         .addStringOption(opt =>
             opt.setName('data')
