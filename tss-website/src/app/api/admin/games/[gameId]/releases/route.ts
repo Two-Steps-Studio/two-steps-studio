@@ -120,7 +120,10 @@ export async function POST(request: Request, { params }: RouteParams) {
         executable_path: executablePath,
         manifest_path: getManifestPath(gameIdNum, platform, version),
         release_notes: releaseNotes || null,
-        created_by: auth.user.id,
+        // created_by references profiles(id), which stores the Discord
+        // snowflake, not the Supabase Auth UUID - auth.user.id here always
+        // violated the FK and made release creation fail for every admin.
+        created_by: auth.profile?.id ?? null,
       })
       .select()
       .single();
