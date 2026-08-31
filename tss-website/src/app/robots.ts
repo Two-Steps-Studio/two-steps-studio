@@ -6,12 +6,12 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/admin/', '/_next/', '/profile/', '/settings/', '/login/'],
+        disallow: ['/api/', '/admin/', '/_next/', '/profile/', '/settings/', '/login/', '/dev/game/', '/unity-game/'],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/api/', '/admin/', '/_next/', '/profile/', '/settings/', '/login/'],
+        disallow: ['/api/', '/admin/', '/_next/', '/profile/', '/settings/', '/login/', '/dev/game/', '/unity-game/'],
       },
     ],
     sitemap: 'https://twostepsstudio.gg/sitemap.xml',
