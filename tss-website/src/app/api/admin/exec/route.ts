@@ -70,12 +70,12 @@ export async function POST(req: Request) {
     // Validate role names
     const VALID_ROLES = ["OWNER", "ADMIN", "MOD", "VIP", "DEV", "PROD", "MKT", "LD"];
     if (cmd === "set-role" && parts.length >= 3) {
-      if (!VALID_ROLES.includes(parts[1].toUpperCase())) {
+      if (!VALID_ROLES.includes(parts[2].toUpperCase())) {
         return NextResponse.json({ error: "Nieprawidlowa nazwa roli" }, { status: 400 });
       }
-      const { error } = await supabaseAdmin.from("profiles").update({ rank: parts[1] }).eq("id", parts[2]);
+      const { error } = await supabaseAdmin.from("profiles").update({ rank: parts[2] }).eq("id", parts[1]);
       if (error) throw new Error(error.message);
-      result = `Ustawiono role ${parts[1]} dla ${parts[2]}`;
+      result = `Ustawiono role ${parts[2]} dla ${parts[1]}`;
     }
     // Validate level range
     else if (cmd === "set-level" && parts.length >= 3) {
