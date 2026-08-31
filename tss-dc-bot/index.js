@@ -492,7 +492,7 @@ client.on('interactionCreate', async interaction => {
 
             try {
                 const xp = targetProfile.xp ?? 0;
-                const calculatedLevel = getLevelFromXP(xp) || Math.floor(xp ** 0.1);
+                const calculatedLevel = getLevelFromXP(xp);
                 const buffer = await createProfileCard({
                     username:  interaction.guild?.members.cache.get(targetUser.id)?.displayName || targetUser.username,
                     level:     calculatedLevel,
