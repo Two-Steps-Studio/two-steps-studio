@@ -140,6 +140,16 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
         });
     }
 
+    // Reserve the slot synchronously, before any `await` below -- the setup
+    // that follows (fetching gear, editing the reply) can take long enough
+    // for the user to fire /afk start again in the meantime, and both calls
+    // would otherwise pass the has() check above, race to the final
+    // activeSessions.set() at the end of this function, and leave the
+    // loser's interval orphaned (still running, but unreachable by
+    // stopSession() since the Map entry it needs got overwritten).
+    activeSessions.set(userId, { interval: null, endTimeout: null });
+
+    try {
     // Pobierz sprzęt
     await interaction.deferReply();
     const gearRow  = await fetchGearRow(supabase, userId);
@@ -155,6 +165,7 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
 
     // Sprawdź czy stać na minimum 1 połów
     if (baitCost > 0 && (profile.money || 0) < baitCost) {
+        activeSessions.delete(userId); // release the reservation -- no session actually starting
         return interaction.editReply({
             content: `❌ Nie stać Cię nawet na jedną przynętę! Potrzebujesz **${baitCost} ${COIN}**.`,
         });
@@ -223,6 +234,20 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
     }, durationMs);
 
     activeSessions.set(userId, sessionData);
+    } catch (e) {
+        // Setup failed after the slot was reserved above -- release it so
+        // the user isn't permanently locked out of /afk start by a
+        // leftover placeholder no interval will ever come along to clear.
+        activeSessions.delete(userId);
+        console.error('[AFK] Błąd podczas startu sesji:', e.message);
+        try {
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ content: '❌ Wystąpił błąd podczas rozpoczynania sesji AFK.' });
+            } else {
+                await interaction.reply({ content: '❌ Wystąpił błąd podczas rozpoczynania sesji AFK.', flags: 1 << 6 });
+            }
+        } catch {}
+    }
 }
 
 // ── /afk stop – wcześniejsze zakończenie ─────────────────────

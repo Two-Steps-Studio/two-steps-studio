@@ -72,6 +72,13 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
         }
     }
 
+    // Reserve a placeholder cooldown synchronously, before the DB round-trips
+    // below -- otherwise two near-simultaneous /lowienie calls can both pass
+    // the check above before either call actually sets one, letting a user
+    // catch (and get paid for) two fish off a single cooldown/bait check.
+    // Corrected to the real duration once gear stats are known.
+    cooldowns.set(userId, Date.now() + 5000);
+
     // 2. Defer – wszystkie operacje DB mogą teraz trwać ile chcą
     await interaction.deferReply();
 
@@ -85,12 +92,13 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
 
     // 4. Sprawdź gotówkę
     if ((profile.money || 0) < BAIT_COST && BAIT_COST > 0) {
+        cooldowns.delete(userId); // release the reservation -- no catch happened
         return interaction.editReply({
             content: `❌ Nie stać Cię na przynętę! Potrzebujesz **${BAIT_COST} ${COIN}**.`,
         });
     }
 
-    // 5. Ustaw cooldown i pokaż animację
+    // 5. Ustaw właściwy cooldown i pokaż animację
     cooldowns.set(userId, Date.now() + effectiveCooldown * 1000);
     setTimeout(() => cooldowns.delete(userId), effectiveCooldown * 1000);
 
