@@ -218,7 +218,7 @@ export async function authenticateApiKey(request: Request): Promise<ApiAuthConte
   // Look up API key in database
   const { data: apiKeyData, error: apiKeyError } = await supabase
     .from("api_keys")
-    select("*")
+    .select("*")
     .eq("key_hash", apiKeyHash)
     .single();
 
