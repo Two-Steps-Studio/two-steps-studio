@@ -109,6 +109,10 @@ export default function RootLayout({
     <html lang="pl" suppressHydrationWarning className={metropolis.variable}>
       <head>
         <meta name="theme-color" content="#000000" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateJsonLd()) }}
+        />
       </head>
       <body className="antialiased overflow-x-hidden" suppressHydrationWarning>
         <NoiseOverlay />
