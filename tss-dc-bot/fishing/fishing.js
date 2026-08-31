@@ -61,13 +61,15 @@ function getLevelFromXP(xp) {
 async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1486049846132605042>') {
     const userId = interaction.user.id;
 
+    // UWAGA: index.js już wywołuje deferReply() przed tą funkcją,
+    // więc tutaj używamy tylko editReply()
+
     // 1. Cooldown z pamięci – przed defer, żeby nie blokować
     if (cooldowns.has(userId)) {
         const remaining = Math.ceil((cooldowns.get(userId) - Date.now()) / 1000);
         if (remaining > 0) {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `⏳ Poczekaj jeszcze **${remaining}s** zanim znowu zarzucisz wędkę!`,
-                flags: 1 << 6,
             });
         }
     }
@@ -78,9 +80,6 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
     // catch (and get paid for) two fish off a single cooldown/bait check.
     // Corrected to the real duration once gear stats are known.
     cooldowns.set(userId, Date.now() + 5000);
-
-    // 2. Defer – wszystkie operacje DB mogą teraz trwać ile chcą
-    await interaction.deferReply();
 
     // 3. Pobierz sprzęt z Supabase
     const gearRow = await fetchGearRow(supabase, userId);
@@ -192,9 +191,8 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486
         .limit(10);
 
     if (!catches || catches.length === 0) {
-        return interaction.reply({
+        return interaction.editReply({
             content: '🎣 Nie masz jeszcze żadnych ryb! Użyj `/lowienie` żeby zacząć.',
-            flags: 1 << 6,
         });
     }
 
@@ -222,7 +220,7 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486
             { name: '🏆 Rekord',            value: biggest ? `${biggest.fish_name} (${biggest.weight}kg)` : '—',  inline: true },
         );
 
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({ embeds: [embed] });
 }
 
 // ── /fishtop ─────────────────────────────────────────────────
@@ -233,7 +231,7 @@ async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1486049846
         .select('user_id, value');
 
     if (!rows || rows.length === 0) {
-        return interaction.reply({ content: 'Brak danych.', flags: 1 << 6 });
+        return interaction.editReply({ content: 'Brak danych.' });
     }
 
     const grouped = {};
@@ -254,7 +252,7 @@ async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1486049846
         .setTitle('🏆 Top Wędkarze')
         .setDescription(list);
 
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({ embeds: [embed] });
 }
 
 module.exports = { handleFishing, handleFishInventory, handleFishTop };
