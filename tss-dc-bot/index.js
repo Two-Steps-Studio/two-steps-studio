@@ -883,7 +883,10 @@ client.on('messageCreate', async (message) => {
 // ── Voice Leveling ───────────────────────────────────────────
 client.on('voiceStateUpdate', (oldState, newState) => {
     const userId = newState.id;
-    if (!oldState.channelId && newState.channelId && !newState.member.user.bot) {
+    // newState.member może być null dla niescache'owanego membera - bez
+    // opcjonalnego łańcuchowania to rzuca synchronicznie wewnątrz listenera
+    // i (brak process.on('uncaughtException')) ubija cały proces bota.
+    if (!oldState.channelId && newState.channelId && !newState.member?.user.bot) {
         voiceSessions.set(userId, Date.now());
     }
     if (oldState.channelId && !newState.channelId) {
