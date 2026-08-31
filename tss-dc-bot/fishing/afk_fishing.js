@@ -132,11 +132,13 @@ function stopSession(userId) {
 async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1486049846132605042>') {
     const userId = interaction.user.id;
 
+    // index.js już wywołuje deferReply() przed tą funkcją dla każdej komendy,
+    // więc tutaj (i poniżej) używamy tylko editReply() - patrz fishing.js.
+
     // Sprawdź czy już ma aktywną sesję
     if (activeSessions.has(userId)) {
-        return interaction.reply({
+        return interaction.editReply({
             content: '🪑 Już siedzisz przy jeziorze! Użyj `/afk stop` żeby zakończyć sesję wcześniej.',
-            flags: 1 << 6,
         });
     }
 
@@ -151,7 +153,6 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
 
     try {
     // Pobierz sprzęt
-    await interaction.deferReply();
     const gearRow  = await fetchGearRow(supabase, userId);
     const gearObj  = rowToGearObj(gearRow);
     const gearStats = getGearStats(gearObj);
@@ -256,14 +257,12 @@ async function handleAfkStop(interaction, COIN = '<:CoinTSS:1486049846132605042>
     const session = activeSessions.get(userId);
 
     if (!session) {
-        return await interaction.reply({
+        return await interaction.editReply({
             content: '❌ Nie masz aktywnej sesji AFK. Użyj `/afk start` żeby zacząć.',
-            flags: 1 << 6,
         });
     }
 
     stopSession(userId);
-    await interaction.deferReply();
     await sendAfkSummary(userId, session, interaction, COIN, 'manual');
 }
 
