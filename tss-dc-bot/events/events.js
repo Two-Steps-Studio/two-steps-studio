@@ -6,11 +6,12 @@ const ADMIN_ROLE = 'Admin'; // zmień na nazwę swojej roli admina
 // ── /event_create ─────────────────────────────────────────────
 
 async function handleEventCreate(interaction, supabase) {
+    // index.js już wywołuje deferReply() przed tą funkcją dla każdej komendy,
+    // więc tutaj używamy tylko editReply() - patrz fishing.js.
     const isAdmin = interaction.member?.roles.cache.some(r => r.name === ADMIN_ROLE);
     if (!isAdmin) {
-        return interaction.reply({
+        return interaction.editReply({
             content: '❌ Nie masz uprawnień do tworzenia eventów!',
-            flags: 1 << 6,
         });
     }
 
@@ -21,9 +22,8 @@ async function handleEventCreate(interaction, supabase) {
 
     const parts = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
     if (!parts) {
-        return interaction.reply({
+        return interaction.editReply({
             content: '❌ Zły format daty! Użyj: `DD.MM.YYYY HH:MM` np. `25.12.2025 18:00`',
-            flags: 1 << 6,
         });
     }
 
@@ -31,13 +31,10 @@ async function handleEventCreate(interaction, supabase) {
     const eventDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
 
     if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
-        return interaction.reply({
+        return interaction.editReply({
             content: '❌ Podana data jest nieprawidłowa lub jest w przeszłości!',
-            flags: 1 << 6,
         });
     }
-
-    await interaction.deferReply();
 
     const { data, error } = await supabase.from('e_sport_events').insert({
         name,
@@ -70,8 +67,6 @@ async function handleEventCreate(interaction, supabase) {
 // ── /event_list ───────────────────────────────────────────────
 
 async function handleEventList(interaction, supabase) {
-    await interaction.deferReply();
-
     const { data: events, error } = await supabase
         .from('e_sport_events')
         .select('*')
@@ -139,7 +134,6 @@ async function handleEventList(interaction, supabase) {
 
 async function handleEventJoin(interaction, supabase) {
     const eventId = interaction.options.getInteger('id');
-    await interaction.deferReply({ flags: 1 << 6 });
 
     // Pobierz event
     const { data: event, error: eventError } = await supabase
@@ -217,14 +211,12 @@ async function handleEventJoin(interaction, supabase) {
 async function handleEventDelete(interaction, supabase) {
     const isAdmin = interaction.member?.roles.cache.some(r => r.name === ADMIN_ROLE);
     if (!isAdmin) {
-        return interaction.reply({
+        return interaction.editReply({
             content: '❌ Nie masz uprawnień do usuwania eventów!',
-            flags: 1 << 6,
         });
     }
 
     const eventId = interaction.options.getInteger('id');
-    await interaction.deferReply();
 
     const { data: event, error: fetchError } = await supabase
         .from('e_sport_events')
