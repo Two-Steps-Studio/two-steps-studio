@@ -124,19 +124,6 @@ export default function SettingsPage() {
       }
     };
 
-    // Load integrations
-    const loadIntegrations = async () => {
-      try {
-        const response = await fetch("/api/integrations");
-        if (response.ok) {
-          const data = await response.json();
-          setIntegrations(data.integrations || []);
-        }
-      } catch (error) {
-        console.error("Failed to load integrations:", error);
-      }
-    };
-
     (async () => {
       const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
       if (!user) {
@@ -162,13 +149,20 @@ export default function SettingsPage() {
         };
       }
 
+      // Same key-name bug as setPref below: these used to write "animations"/
+      // "notif_news"/etc. straight to localStorage instead of the real keys
+      // ("ui-animations"/"notif-news"/...) loadLocalStorage() above actually
+      // reads, so a settings.* value saved from another device never made it
+      // into this browser's localStorage -- it silently wrote to keys
+      // nothing ever reads instead. Re-seed from currentPrefs (the merged,
+      // correct state already set into React above) using the real keys.
       setPrefs(currentPrefs);
-      setUiStorage("animations", profileData?.settings?.animations);
-      setUiStorage("sounds", profileData?.settings?.sounds);
-      setUiStorage("quality", profileData?.settings?.quality);
-      setNotifStorage("notif_news", profileData?.settings?.notif_news);
-      setNotifStorage("notif_esport", profileData?.settings?.notif_esport);
-      setNotifStorage("notif_dev", profileData?.settings?.notif_dev);
+      setUiStorage("ui-animations", currentPrefs.animations);
+      setUiStorage("ui-sounds", currentPrefs.sounds);
+      setUiStorage("ui-quality", currentPrefs.quality);
+      setNotifStorage("notif-news", currentPrefs.notif_news);
+      setNotifStorage("notif-esport", currentPrefs.notif_esport);
+      setNotifStorage("notif-dev", currentPrefs.notif_dev);
       
       // Load category visibility and project limits
       await loadUserSettings();
@@ -181,14 +175,31 @@ export default function SettingsPage() {
     })();
   }, []);
 
-  const setPref = async (key: keyof Prefs, value: string | boolean) => {
+  // Prefs' field names (animations, notif_news, ...) aren't the actual
+  // localStorage key names (ui-animations, notif-news, ...) -- this used to
+  // ignore which pref was actually toggled and write the new value into
+  // *all six* storage keys unconditionally, so switching e.g. "Sounds" off
+  // silently also turned off animations, quality, and every notification
+  // type in storage (the UI only looked right because setPrefs above still
+  // updated just the one key in React state).
+  const NOTIF_STORAGE_KEYS = {
+    notif_news: "notif-news",
+    notif_esport: "notif-esport",
+    notif_dev: "notif-dev",
+  } as const;
+  const UI_STORAGE_KEYS = {
+    animations: "ui-animations",
+    sounds: "ui-sounds",
+    quality: "ui-quality",
+  } as const;
+
+  const setPref = async (key: keyof Prefs, value: boolean) => {
     setPrefs((prev) => ({ ...prev, [key]: value }));
-    setNotifStorage("notif_news", value);
-    setNotifStorage("notif_esport", value);
-    setNotifStorage("notif_dev", value);
-    setUiStorage("animations", value);
-    setUiStorage("sounds", value);
-    setUiStorage("quality", value);
+    if (key in NOTIF_STORAGE_KEYS) {
+      setNotifStorage(NOTIF_STORAGE_KEYS[key as keyof typeof NOTIF_STORAGE_KEYS], value);
+    } else if (key in UI_STORAGE_KEYS) {
+      setUiStorage(UI_STORAGE_KEYS[key as keyof typeof UI_STORAGE_KEYS], value);
+    }
   };
 
   const setCategoryVisibilityPref = async (category: keyof CategoryVisibility, value: boolean) => {
@@ -236,6 +247,23 @@ export default function SettingsPage() {
       alert(t.settings.connectionError);
     } finally {
       setLoadingUsername(false);
+    }
+  };
+
+  // Component-level (not nested in the mount effect) so syncDiscord below
+  // can actually call it -- it used to be declared only inside that
+  // effect's closure, so calling it from here threw a ReferenceError at
+  // runtime (the sync itself succeeded, but refreshing the list after it
+  // always crashed into the catch block and showed an error instead).
+  const loadIntegrations = async () => {
+    try {
+      const response = await fetch("/api/integrations");
+      if (response.ok) {
+        const data = await response.json();
+        setIntegrations(data.integrations || []);
+      }
+    } catch (error) {
+      console.error("Failed to load integrations:", error);
     }
   };
 
@@ -310,10 +338,15 @@ export default function SettingsPage() {
   };
 
   const AppearanceOption = ({ value, icon: Icon, label }: { value: "light" | "dark" | "system"; icon: any; label: string }) => {
+    // Both classes used to be concatenated on every button regardless of
+    // which theme was actually active (also with the arguments swapped --
+    // getThemeUnselectedClass needs isDark, getThemeSelectedClass takes
+    // none), so the picker never visually showed the current selection.
+    const isSelected = value === appearance;
     return (
       <button
         onClick={() => setTheme(value)}
-        className={`${getThemeUnselectedClass()} ${getThemeSelectedClass(darkMode)} rounded-xl border`}
+        className={`${isSelected ? getThemeSelectedClass() : getThemeUnselectedClass(darkMode)} rounded-xl border`}
       >
         <Icon className="text-[var(--color-general)] shrink-0 size-8" />
         <div className="text-center mt-1">
