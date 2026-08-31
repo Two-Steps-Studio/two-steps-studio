@@ -49,8 +49,14 @@ async function getRpgProfile(userId, supabase) {
         .maybeSingle();
 
     if (!profile) {
-        // Nowy gracz - inicjalizacja
-        return {
+        // Nowy gracz - inicjalizacja. This object used to only be returned,
+        // never saved -- fine as long as some *other* interaction (a
+        // message, the leveling system) created the row first, but if an
+        // RPG command is truly this user's first-ever interaction with the
+        // bot, every reward RPC afterwards (apply_xp_money_reward,
+        // increment_profile_money) targets a row that doesn't exist yet and
+        // silently updates zero rows, losing the reward.
+        const newProfile = {
             id: userId,
             username: 'Nowy Bohater',
             level: 1,
@@ -82,6 +88,13 @@ async function getRpgProfile(userId, supabase) {
                 location: 'Miasto',
             }
         };
+        const { error: insertError } = await supabase
+            .from('profiles')
+            .upsert(newProfile, { onConflict: 'id' });
+        if (insertError) {
+            console.error('[RPG] Nie udało się utworzyć nowego profilu:', insertError.message);
+        }
+        return newProfile;
     }
 
     // Sprawdź czy kolumna rpg istnieje
@@ -436,6 +449,18 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
         const xp = enemy.xp;
         const newLevel = getLevelFromXp((profile.xp || 0) + xp);
 
+        // The embed below always claimed +coins/+xp, but nothing was ever
+        // persisted on a win (only the loss branch above calls a money RPC)
+        // -- players who won a boss fight got a congratulatory message for
+        // a reward they never actually received. Same shape as the already-
+        // working mine/staw rewards elsewhere in this file.
+        await supabase.rpc('apply_xp_money_reward', {
+            p_user_id: profile.id,
+            p_xp_delta: xp,
+            p_money_delta: coins,
+            p_new_level: newLevel,
+        });
+
         return interaction.editReply({
             content: `🎉 **WYGRANA z ${boss.name}!**\n\n👹 Pokonałeś: **${boss.name}** (${boss.emoji})\n💰 Zdobycz: ${coins} ${COIN}\n✨ XP: +${xp}\n📈 Level: ${profile.level} → ${newLevel}`,
             embeds: [
@@ -494,6 +519,14 @@ async function handleDungeonButton(interaction, supabase, profile, difficulty) {
     const coins = Math.floor(Math.random() * enemy.coins * (1 + (stats.luck || 10) / 100));
     const xp = enemy.xp;
     const newLevel = getLevelFromXp((profile.xp || 0) + xp);
+
+    // See the boss-win branch above -- same missing persistence.
+    await supabase.rpc('apply_xp_money_reward', {
+        p_user_id: profile.id,
+        p_xp_delta: xp,
+        p_money_delta: coins,
+        p_new_level: newLevel,
+    });
 
     return interaction.editReply({
         content: `🎉 **WYGRANA!**\n\n👹 Pokonałeś: **${enemy.name}** (${enemy.emoji})\n💰 Zdobycz: ${coins} ${COIN}\n✨ XP: +${xp}\n📈 Level: ${profile.level} → ${newLevel}`,
@@ -665,7 +698,24 @@ async function handleCityFarm(interaction, supabase, profile) {
 
 // ── OBSŁUGA MIĘSTO BUTTONS ────────────────────────────────────────────
 async function handleCityButton(interaction, supabase, profile) {
-    if (interaction.customId.startsWith('shop_')) {
+    // Opening the shop/forge menus (city_shop, city_forge) is handled below
+    // via their exact ids. Clicking a specific item/upgrade inside those
+    // menus (shop_0, forge_0, ...) has never had a purchase handler at all --
+    // shop_* used to just redisplay the same menu (no money deducted, no
+    // item granted), and forge_* wasn't routed anywhere, so Discord would
+    // show "This interaction failed" for a button that was never disabled
+    // and clearly implies it should do something. Neither had real purchase
+    // logic to fall back to, so this is an honest placeholder rather than a
+    // guess at mechanics that haven't been designed yet -- same convention
+    // handleCityFarm below already uses for an unfinished feature.
+    if (/^shop_\d+$/.test(interaction.customId) || /^forge_\d+$/.test(interaction.customId)) {
+        return interaction.reply({
+            content: '🚧 Zakupy będą dostępne wkrótce!',
+            ephemeral: true,
+        });
+    }
+
+    if (interaction.customId === 'city_shop' || interaction.customId.startsWith('shop_')) {
         await handleCityShop(interaction, supabase, profile);
         return;
     }
