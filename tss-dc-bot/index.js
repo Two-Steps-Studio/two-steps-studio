@@ -226,6 +226,7 @@ const commands = [
             opt.setName('opis')
                 .setDescription('Opis eventu (opcjonalnie)')
                 .setRequired(false)
+                .setMaxLength(1000)
         )
         .addIntegerOption(opt =>
             opt.setName('max_uczestnikow')

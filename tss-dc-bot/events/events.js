@@ -3,6 +3,17 @@ const { EmbedBuilder } = require('discord.js');
 
 const ADMIN_ROLE = 'Admin'; // zmień na nazwę swojej roli admina
 
+// Discord embedy odrzucają pole (addFields value) dłuższe niż 1024 znaki -
+// event.description nie miał żadnego limitu (ani przy tworzeniu, ani w
+// bazie), więc wystarczająco długi opis rzucał RangeError przy budowaniu
+// embeda. Najgorszy przypadek: /event_list iteruje po WSZYSTKICH eventach,
+// więc jeden taki rekord psuł tę komendę dla całego serwera. Obcinamy przy
+// renderze, żeby ochronić też rekordy sprzed tej poprawki.
+function truncateDescription(text, maxLen = 900) {
+    if (!text) return text;
+    return text.length > maxLen ? `${text.slice(0, maxLen - 1)}…` : text;
+}
+
 // ── Kolejka per-event dla /event_join ───────────────────────────
 // Bez tego dwóch graczy mogło jednocześnie przejść sprawdzenie limitu
 // miejsc (odczyt aktualnej liczby uczestników) i oba trafić do insertu,
@@ -75,7 +86,7 @@ async function handleEventCreate(interaction, supabase) {
             { name: '🆔 ID eventu', value: `#${data.id}`,                                               inline: true  },
         );
 
-    if (description) embed.addFields({ name: '📝 Opis', value: description, inline: false });
+    if (description) embed.addFields({ name: '📝 Opis', value: truncateDescription(description), inline: false });
     embed.setFooter({ text: 'Użyj /event_list żeby zobaczyć wszystkie eventy' });
 
     await interaction.editReply({ embeds: [embed] });
@@ -124,7 +135,7 @@ async function handleEventList(interaction, supabase) {
         const participants = allParticipants?.filter(p => p.event_id === event.id) || [];
         const count        = participants.length;
         const limit        = event.max_participants ? `${count}/${event.max_participants}` : `${count}`;
-        const desc         = event.description ? `\n📝 ${event.description}` : '';
+        const desc         = event.description ? `\n📝 ${truncateDescription(event.description, 500)}` : '';
 
         // Lista uczestników (max 5 w podglądzie)
         let participantsList = '';
@@ -221,7 +232,7 @@ async function handleEventJoin(interaction, supabase) {
             )
             .setFooter({ text: 'Do zobaczenia na evencie! 🎮' });
 
-        if (event.description) embed.addFields({ name: '📝 Opis', value: event.description, inline: false });
+        if (event.description) embed.addFields({ name: '📝 Opis', value: truncateDescription(event.description), inline: false });
 
         return interaction.editReply({ embeds: [embed] });
     });
