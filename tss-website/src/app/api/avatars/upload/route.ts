@@ -68,8 +68,14 @@ export async function POST(req: Request) {
   const { data: buckets } = await supabaseAdmin.storage.listBuckets();
   const exists = (buckets || []).some((b: any) => b.name === "avatars");
   if (!exists) {
+    // Must match avatars/ensure/route.ts's public: true - both routes race
+    // to lazily create this same bucket, and getPublicUrl() below is used
+    // unconditionally regardless of which one wins, with the result stored
+    // in profiles.avatar_url and rendered as a plain <img src> everywhere
+    // (TopBar, MobileHeader, profile pages). A private bucket would make
+    // every one of those requests fail.
     const { error: createError } = await supabaseAdmin.storage.createBucket("avatars", {
-      public: false,  // Private bucket - files are only accessible via authenticated requests
+      public: true,
       fileSizeLimit: 10 * 1024 * 1024,
       allowedMimeTypes: ALLOWED_MIME_TYPES,
     });
