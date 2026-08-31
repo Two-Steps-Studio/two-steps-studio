@@ -118,7 +118,9 @@ async function handleWedka(interaction, supabase, profile) {
     const gearObj = rowToGearObj(gearRow);
     const money   = profile?.money ?? 0;
 
-    await interaction.reply({
+    // index.js już wywołuje deferReply() przed tą funkcją, więc tutaj
+    // używamy tylko editReply() (patrz fishing.js dla tego samego wzorca).
+    await interaction.editReply({
         embeds:     [buildGearEmbed(gearObj, money)],
         components: buildGearComponents(gearObj, money),
     });
