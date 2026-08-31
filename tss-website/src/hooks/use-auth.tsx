@@ -31,13 +31,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const cleanupSubscription = async () => {
       try {
         if (!supabase) {
-          console.warn("[useAuth] Supabase not configured - using fallback mode");
-          // Try to get session from localStorage as fallback
-          const { data: { initialSession } } = await supabase?.auth.getSession?.();
-          if (initialSession) {
-            setSession(initialSession);
-            setUser(initialSession.user ?? null);
-          }
+          // There's no client to call getSession() on -- the previous
+          // "fallback" here did `supabase?.auth.getSession?.()` on the very
+          // client this branch had just confirmed was missing, which always
+          // evaluated to undefined and threw on the destructure right after,
+          // landing in the catch block below instead of exiting cleanly.
+          console.warn("[useAuth] Supabase not configured - staying unauthenticated");
           setLoading(false);
           return;
         }
