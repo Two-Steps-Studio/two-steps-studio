@@ -16,7 +16,13 @@ export default function RekrutacjaPage() {
   useEffect(() => {
     const saved = localStorage.getItem('darkMode');
     if (saved !== null) {
-      setDarkMode(JSON.parse(saved));
+      try {
+        setDarkMode(JSON.parse(saved));
+      } catch {
+        // Corrupted/non-JSON value left over from a previous format --
+        // ignore it and keep the useState(false) default instead of
+        // crashing the page.
+      }
     } else if (typeof window !== 'undefined' && window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       setDarkMode(mediaQuery.matches);
