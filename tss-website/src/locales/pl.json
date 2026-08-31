@@ -91,6 +91,7 @@
     "newProject": "Wiadomości",
     "management": "Management",
     "homeAriaLabel": "Strona główna",
+    "closeMenuAriaLabel": "Zamknij menu",
     "Shop": "Sklep",
     "darkMode": "Tryb Ciemny",
     "lightMode": "Tryb Jasny",

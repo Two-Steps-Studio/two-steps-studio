@@ -91,6 +91,7 @@
     "newProject": "Messages",
     "management": "Management",
     "homeAriaLabel": "Home",
+    "closeMenuAriaLabel": "Close menu",
     "Shop": "Shop",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",

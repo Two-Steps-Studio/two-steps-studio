@@ -164,6 +164,22 @@ async function handleShop(interaction, supabase, profile) {
 }
 
 // ── Handler interakcji sklepu (przyciski + dropdown) ─────────
+
+// Discord snowflakes are always numeric, but userId still ends up
+// interpolated straight into a raw PostgREST filter string below (the JS
+// client's .or() has no parameterized form) -- validating the format first
+// means a malformed id can never break out of the filter, rather than
+// relying solely on Discord's guarantee.
+async function findProfileByDiscordId(supabase, userId) {
+    if (!/^\d+$/.test(userId)) return null;
+    const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .or(`id.eq."${userId}",discord_id.eq."${userId}"`)
+        .maybeSingle();
+    return data;
+}
+
 async function handleShopInteraction(interaction, supabase) {
     const id = interaction.customId;
 
@@ -172,11 +188,7 @@ async function handleShopInteraction(interaction, supabase) {
         const page = parseInt(id.split('_')[2]);
         const userId = interaction.user.id;
 
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .or(`id.eq."${userId}",discord_id.eq."${userId}"`)
-            .maybeSingle();
+        const profile = await findProfileByDiscordId(supabase, userId);
 
         const money = profile?.money || 0;
         const allItems = await getAllShopItems(supabase);
@@ -196,11 +208,7 @@ async function handleShopInteraction(interaction, supabase) {
         if (!item) return interaction.reply({ content: '❌ Nie znaleziono przedmiotu.', flags: 1 << 6 });
 
         const userId = interaction.user.id;
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .or(`id.eq."${userId}",discord_id.eq."${userId}"`)
-            .maybeSingle();
+        const profile = await findProfileByDiscordId(supabase, userId);
 
         if (!profile) return interaction.reply({ content: '❌ Nie masz profilu.', flags: 1 << 6 });
 

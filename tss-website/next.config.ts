@@ -15,14 +15,16 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: __dirname,
   images: {
     unoptimized: isElectron,
+    // SECURITY: `/_next/image` is a public endpoint that fetches whatever
+    // URL it's given -- wildcarding remotePatterns to '**' (any host, http
+    // included) turned the image optimizer into an open fetcher/proxy
+    // reachable by anyone, not just through images the app itself renders.
+    // The only external <Image> sources in the app are Supabase Storage
+    // URLs (avatars, game/music/podcast covers); scope to that.
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
+        hostname: '*.supabase.co',
       },
     ],
   },

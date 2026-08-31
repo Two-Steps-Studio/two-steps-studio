@@ -91,6 +91,7 @@
     "newProject": "Nachrichten",
     "management": "Management",
     "homeAriaLabel": "Startseite",
+    "closeMenuAriaLabel": "Menü schließen",
     "Shop": "Shop",
     "darkMode": "Dunkelmodus",
     "lightMode": "Hellmodus",

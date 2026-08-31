@@ -132,6 +132,7 @@ export function MobileHeader() {
             <Button
               variant="ghost"
               size="icon"
+              aria-label={t.nav.darkMode}
               className="rounded-xl w-10 h-10 bg-black/5 dark:bg-white/5"
               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             >
@@ -152,6 +153,7 @@ export function MobileHeader() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={t.nav.notifications}
                 className="rounded-xl w-10 h-10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative"
               >
                 <Bell size={20} className="text-[var(--text)]" />

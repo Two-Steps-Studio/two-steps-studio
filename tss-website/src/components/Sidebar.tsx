@@ -215,6 +215,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
           </Link>
           <button
               onClick={close}
+              aria-label={t.nav.closeMenuAriaLabel}
               className="lg:hidden absolute right-4 p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
             <X size={20} className="text-[var(--text)]" />
