@@ -3,6 +3,23 @@ const { EmbedBuilder } = require('discord.js');
 
 const ADMIN_ROLE = 'Admin'; // zmień na nazwę swojej roli admina
 
+// ── Kolejka per-event dla /event_join ───────────────────────────
+// Bez tego dwóch graczy mogło jednocześnie przejść sprawdzenie limitu
+// miejsc (odczyt aktualnej liczby uczestników) i oba trafić do insertu,
+// przekraczając max_participants - klasyczny check-then-act race. To ten
+// sam typ zabezpieczenia co synchroniczna rezerwacja w fishing.js
+// (cooldowns) i afk_fishing.js (activeSessions), tylko że tu kolejkujemy
+// zamiast rezerwować z góry, bo limit zależy od aktualnego COUNT w bazie,
+// a nie jednego sprawdzenia per-user.
+const eventJoinQueues = new Map();
+
+function queueEventJoin(eventId, task) {
+    const prev = eventJoinQueues.get(eventId) || Promise.resolve();
+    const next = prev.then(task, task);
+    eventJoinQueues.set(eventId, next.catch(() => {}));
+    return next;
+}
+
 // ── /event_create ─────────────────────────────────────────────
 
 async function handleEventCreate(interaction, supabase) {
@@ -151,59 +168,63 @@ async function handleEventJoin(interaction, supabase) {
         return interaction.editReply('❌ Ten event już się odbył!');
     }
 
-    // Pobierz aktualnych uczestników
-    const { data: participants } = await supabase
-        .from('event_participants')
-        .select('user_id, username')
-        .eq('event_id', eventId);
+    // Sprawdzenie limitu i zapis uczestnika muszą przejść jako jedna
+    // sekwencja per event - patrz komentarz przy queueEventJoin.
+    return queueEventJoin(eventId, async () => {
+        // Pobierz aktualnych uczestników
+        const { data: participants } = await supabase
+            .from('event_participants')
+            .select('user_id, username')
+            .eq('event_id', eventId);
 
-    const count = participants?.length || 0;
+        const count = participants?.length || 0;
 
-    // Sprawdź czy już zapisany
-    const alreadyJoined = participants?.some(p => p.user_id === interaction.user.id);
-    if (alreadyJoined) {
-        return interaction.editReply(`✅ Już jesteś zapisany na event **${event.name}**!`);
-    }
+        // Sprawdź czy już zapisany
+        const alreadyJoined = participants?.some(p => p.user_id === interaction.user.id);
+        if (alreadyJoined) {
+            return interaction.editReply(`✅ Już jesteś zapisany na event **${event.name}**!`);
+        }
 
-    // Sprawdź limit
-    if (event.max_participants && count >= event.max_participants) {
-        return interaction.editReply(`❌ Event **${event.name}** jest już pełny! (${count}/${event.max_participants} uczestników)`);
-    }
+        // Sprawdź limit
+        if (event.max_participants && count >= event.max_participants) {
+            return interaction.editReply(`❌ Event **${event.name}** jest już pełny! (${count}/${event.max_participants} uczestników)`);
+        }
 
-    // Zapisz uczestnika
-    const { error: joinError } = await supabase
-        .from('event_participants')
-        .insert({
-            event_id: eventId,
-            user_id:  interaction.user.id,
-            username: interaction.user.username,
-        });
+        // Zapisz uczestnika
+        const { error: joinError } = await supabase
+            .from('event_participants')
+            .insert({
+                event_id: eventId,
+                user_id:  interaction.user.id,
+                username: interaction.user.username,
+            });
 
-    if (joinError) {
-        console.error('[EVENT] Join error:', joinError.message);
-        return interaction.editReply('❌ Błąd podczas zapisywania. Spróbuj ponownie.');
-    }
+        if (joinError) {
+            console.error('[EVENT] Join error:', joinError.message);
+            return interaction.editReply('❌ Błąd podczas zapisywania. Spróbuj ponownie.');
+        }
 
-    const newCount     = count + 1;
-    const limit        = event.max_participants ? `${newCount}/${event.max_participants}` : `${newCount}`;
-    const allAfterJoin = [...(participants || []), { user_id: interaction.user.id }];
-    const preview      = allAfterJoin.slice(0, 10).map(p => `<@${p.user_id}>`).join(', ');
-    const extra        = allAfterJoin.length > 10 ? ` i ${allAfterJoin.length - 10} innych` : '';
+        const newCount     = count + 1;
+        const limit        = event.max_participants ? `${newCount}/${event.max_participants}` : `${newCount}`;
+        const allAfterJoin = [...(participants || []), { user_id: interaction.user.id }];
+        const preview      = allAfterJoin.slice(0, 10).map(p => `<@${p.user_id}>`).join(', ');
+        const extra        = allAfterJoin.length > 10 ? ` i ${allAfterJoin.length - 10} innych` : '';
 
-    const embed = new EmbedBuilder()
-        .setColor(0x2ecc71)
-        .setTitle('✅ Zapisano na event!')
-        .addFields(
-            { name: '🏷️ Event',            value: event.name,                        inline: true  },
-            { name: '📅 Data',              value: eventDate.toLocaleString('pl-PL'), inline: true  },
-            { name: '👥 Zapisani',          value: limit,                             inline: true  },
-            { name: '📋 Lista uczestników', value: `${preview}${extra}`,              inline: false },
-        )
-        .setFooter({ text: 'Do zobaczenia na evencie! 🎮' });
+        const embed = new EmbedBuilder()
+            .setColor(0x2ecc71)
+            .setTitle('✅ Zapisano na event!')
+            .addFields(
+                { name: '🏷️ Event',            value: event.name,                        inline: true  },
+                { name: '📅 Data',              value: eventDate.toLocaleString('pl-PL'), inline: true  },
+                { name: '👥 Zapisani',          value: limit,                             inline: true  },
+                { name: '📋 Lista uczestników', value: `${preview}${extra}`,              inline: false },
+            )
+            .setFooter({ text: 'Do zobaczenia na evencie! 🎮' });
 
-    if (event.description) embed.addFields({ name: '📝 Opis', value: event.description, inline: false });
+        if (event.description) embed.addFields({ name: '📝 Opis', value: event.description, inline: false });
 
-    await interaction.editReply({ embeds: [embed] });
+        return interaction.editReply({ embeds: [embed] });
+    });
 }
 
 // ── /event_delete ─────────────────────────────────────────────
