@@ -373,15 +373,20 @@ async function updateDiscordStats() {
             console.log('[STATS] Nowa data, reset zlicznika wiadomości.');
         }
 
-        // Używaj upsert aby utrzymać najnowsze dane
-        await supabase.from('discord_stats').upsert({
+        // discord_stats to log historii - website (api/stats/route.ts) czyta
+        // najnowszy wiersz przez ORDER BY recorded_at DESC LIMIT 1, więc każde
+        // wywołanie po prostu dopisuje nowy wpis (upsert z onConflict na
+        // recorded_at nie miał sensu: recorded_at jest zawsze unikalny co
+        // wywołanie, więc konflikt nigdy nie mógł wystąpić, a bez unikalnego
+        // ograniczenia na tej kolumnie w bazie Postgres odrzucał cały zapis).
+        await supabase.from('discord_stats').insert({
             online_users:    online    || 0,
             active_channels: channels  || 0,
             member_count:    humans    || 0,
             site_accounts:   siteAccounts || 0,
             messages_today:  messagesTodayCount || 0,
             recorded_at:     new Date().toISOString(),
-        }, { onConflict: 'recorded_at' });
+        });
     } catch (e) {
         console.error('[STATS] Błąd:', e.message);
     }
