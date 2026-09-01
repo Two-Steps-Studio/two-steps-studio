@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Mail, User, Shield, Users, TrendingUp } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function RekrutacjaPage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -55,9 +56,22 @@ export default function RekrutacjaPage() {
   }, []);
 
   const handleDiscordLogin = async () => {
+    // window.supabase was never assigned anywhere -- this was always
+    // undefined, so the optional chain short-circuited and awaiting it
+    // threw trying to destructure `error` off `undefined`, landing in the
+    // catch block below every single time. Use the actual client module
+    // (same one every other OAuth button in the app uses), matching
+    // login/login.tsx's Discord sign-in.
+    if (!supabase) {
+      toast.error("Błąd logowania", {
+        description: "Usługa logowania jest obecnie niedostępna.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await window.supabase?.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
         options: {
           redirectTo: `${window.location.origin}/registration`,

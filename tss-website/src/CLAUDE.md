@@ -152,7 +152,7 @@ Both projects use the same Supabase instance:
 ## Key Files
 
 ### Website
-- `src/lib/supabase.ts` - Browser client with hardlink fallback
+- `src/lib/supabase.ts` - Browser client
 - `src/lib/supabase-server.ts` - Server component client
 - `src/proxy.ts` - Auth route protection (Next.js 16's `middleware.ts` convention was renamed to `proxy.ts`)
 - `electron/main.js` - Electron entry point
@@ -239,7 +239,7 @@ CREATE TABLE IF NOT EXISTS voice_sessions (
 
 - The website can run in two modes: web (`npm run dev`) or desktop (`npm run electron:dev`)
 - Electron mode sets `ELECTRON=true` which affects asset paths and image optimization
-- The Supabase client has hardlink config as fallback for Turbopack issues
+- (Removed 2026-08-25: the Supabase browser client used to spread a `hardlinks` option as a claimed "Turbopack fix" — `createBrowserClient()` has no such option, so it was always silently ignored and never did anything. Cleaned up rather than left as a misleading no-op.)
 - Bot commands are registered guild-specific (not global)
 - Profile cards use @napi-rs/canvas for image generation
 - Polish language is used throughout the UI
