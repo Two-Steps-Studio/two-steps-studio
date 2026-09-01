@@ -39,15 +39,13 @@ export default function ProfileForm({
   user: any;
   discordId: string;
   profile: any;
-  onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number; background?: string; equipped_frame?: string | null; equipped_nick_color?: string | null }) => void;
+  onUpdated?: (p: { username?: string; avatar_url?: string; background?: string; equipped_frame?: string | null; equipped_nick_color?: string | null }) => void;
 }) {
   const router = useRouter();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState(profile?.username || "");
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
-  const [balance, setBalance] = useState(profile?.pln_balance || 0);
-  const [money, setMoney] = useState(profile?.money || 0);
   const [background, setBackground] = useState(profile?.background && profile.background !== "default" ? profile.background : "Two Steps Studio");
   const [equippedFrame, setEquippedFrame] = useState<string | null>(profile?.equipped_frame ?? null);
   const [equippedNickColor, setEquippedNickColor] = useState<string | null>(profile?.equipped_nick_color ?? null);
@@ -90,43 +88,37 @@ export default function ProfileForm({
     setLoading(true);
     setSaveErrorMsg("");
 
-    // ── KLUCZ: używamy discordId zamiast user.id ──
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({
-        id: discordId,
-        username,
-        avatar_url: avatarUrl,
-        pln_balance: balance,
-        money: money,
-        background,
-        equipped_frame: equippedFrame,
-        equipped_nick_color: equippedNickColor,
-        updated_at: new Date().toISOString(),
+    // Goes through the server (api/user/profile) instead of upserting
+    // straight through the browser Supabase client: this is a strict
+    // allowlist of profile-customization fields only - it never accepts
+    // money/pln_balance, so a save can no longer silently revert a user's
+    // real balance to whatever was in React state when the page loaded.
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          avatar_url: avatarUrl,
+          background,
+          equipped_frame: equippedFrame,
+          equipped_nick_color: equippedNickColor,
+        }),
       });
+      const json = await res.json();
 
-    setLoading(false);
-    if (!error) {
-      onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
-      router.refresh();
-    } else {
-      // Was silently swallowed before - a blocked write (e.g. an RLS policy
-      // rejecting the upsert) looked identical to a successful save with no
-      // feedback at all. Surface it like uploadAvatarFile already does.
-      //
-      // Logged as separate primitives, not the raw error object: a native
-      // Error/AbortError (e.g. from the supabase-js auth lock being stolen
-      // by a concurrent request) has non-enumerable message/name/stack, so
-      // `console.error(label, error)` prints it as "{}" in the browser
-      // console - useless for diagnosing which failure actually happened.
-      console.error("[ProfileForm] upsert failed:", {
-        name: (error as any)?.name,
-        message: error.message,
-        code: (error as any)?.code,
-        details: (error as any)?.details,
-        hint: (error as any)?.hint,
-      });
-      setSaveErrorMsg(error.message || t.profileForm.genericSaveError);
+      setLoading(false);
+      if (res.ok) {
+        onUpdated?.({ username, avatar_url: avatarUrl, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
+        router.refresh();
+      } else {
+        console.error("[ProfileForm] profile update failed:", json.error);
+        setSaveErrorMsg(json.error || t.profileForm.genericSaveError);
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error("[ProfileForm] profile update request failed:", err);
+      setSaveErrorMsg(t.profileForm.genericSaveError);
     }
   };
 
@@ -186,19 +178,22 @@ export default function ProfileForm({
           if (urlData && urlData.signedUrl) {
             setAvatarUrl(urlData.signedUrl);
 
-            await supabase.from("profiles").upsert({
-              id: discordId,
-              username,
-              avatar_url: urlData.signedUrl,
-              pln_balance: balance,
-              money: money,
-              background,
-              equipped_frame: equippedFrame,
-              equipped_nick_color: equippedNickColor,
-              updated_at: new Date().toISOString(),
+            // Same allowlisted route as handleUpdate - see the comment
+            // there for why this no longer upserts money/pln_balance
+            // straight through the browser client.
+            await fetch("/api/user/profile", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                username,
+                avatar_url: urlData.signedUrl,
+                background,
+                equipped_frame: equippedFrame,
+                equipped_nick_color: equippedNickColor,
+              }),
             });
 
-            onUpdated?.({ username, avatar_url: urlData.signedUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
+            onUpdated?.({ username, avatar_url: urlData.signedUrl, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
             window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: urlData.signedUrl, username } }));
             router.refresh();
           } else {
@@ -208,7 +203,7 @@ export default function ProfileForm({
       } else {
         const url = json.url as string;
         setAvatarUrl(url);
-        onUpdated?.({ username, avatar_url: url, pln_balance: balance, money: money });
+        onUpdated?.({ username, avatar_url: url });
         window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: url, username } }));
         router.refresh();
       }
