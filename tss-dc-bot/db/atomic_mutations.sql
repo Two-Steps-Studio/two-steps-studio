@@ -79,6 +79,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ── Shape 1b: /praca — money increment + last_work stamp in one write ──────
+-- Guard makes the 1h cooldown atomic against concurrent /praca calls: without
+-- it, two interactions could both read the same pre-cooldown last_work from
+-- getProfile() (a plain SELECT, done before this RPC runs), both pass
+-- index.js's client-side "diff < 3600000" check, and both call this RPC -
+-- which had no server-side condition of its own to reject the second one,
+-- letting a user duplicate the reward indefinitely. Same shape as
+-- increment_profile_money's balance guard above.
 CREATE OR REPLACE FUNCTION apply_work_reward(
     p_user_id TEXT,
     p_earnings INTEGER
@@ -92,6 +99,7 @@ BEGIN
         last_work = NOW(),
         updated_at = NOW()
     WHERE id = p_user_id
+      AND (last_work IS NULL OR last_work < NOW() - INTERVAL '1 hour')
     RETURNING profiles.money, profiles.last_work;
 END;
 $$ LANGUAGE plpgsql;

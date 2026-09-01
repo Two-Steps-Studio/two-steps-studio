@@ -753,11 +753,19 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply(`⏳ Jesteś zmęczony! Odpocznij jeszcze **${minsLeft} min**.`);
             }
             const earnings = Math.floor(Math.random() * 80) + 20;
-            const { error: workError } = await supabase.rpc('apply_work_reward', {
+            const { data: workData, error: workError } = await supabase.rpc('apply_work_reward', {
                 p_user_id: profile.id,
                 p_earnings: earnings,
             });
             if (workError) console.error('[DB ERROR] apply_work_reward failed:', workError.message);
+            // apply_work_reward's own WHERE guard rejects the update (0 rows
+            // back) if last_work is still inside the cooldown - the only way
+            // that happens after the check above already passed is a second
+            // /praca racing this same one, so treat it the same as losing
+            // the cooldown check up front rather than showing success.
+            if (workError || !workData?.length) {
+                return await interaction.editReply('⏳ Jesteś zmęczony! Odpocznij chwilę i spróbuj ponownie.');
+            }
             await interaction.editReply(`⛏️ Zapracowałeś ciężko w Studiu i otrzymałeś **${earnings} ${COIN}!**`);
             break;
         }
