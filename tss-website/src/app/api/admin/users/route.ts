@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
 
 export async function GET(request: Request) {
   const auth = await requireAuth();
@@ -56,9 +56,16 @@ export async function PATCH(request: Request) {
   const adminCheck = requireAdmin(auth);
   if (adminCheck) return adminCheck;
 
-  let supabase;
+  // Writing to another user's row here, not the caller's own -- the
+  // profiles table's UPDATE RLS policy only allows a row's owner to update
+  // it, so the session-bound anon client this used to use would have this
+  // silently rejected by RLS for any target other than the admin
+  // themselves, despite requireAdmin() above already having authorized the
+  // action at the application layer. Same fix as the games/music/podcasts
+  // admin routes: use the service-role client for the actual write.
+  let serviceClient;
   try {
-    supabase = await createClient();
+    serviceClient = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: "Admin panel disabled" },
@@ -77,7 +84,7 @@ export async function PATCH(request: Request) {
   if (project_limit !== undefined) updateData.project_limit = project_limit;
   if (subscription_plan !== undefined) updateData.subscription_plan = subscription_plan;
 
-  const { data, error } = await supabase
+  const { data, error } = await serviceClient
     .from("profiles")
     .update(updateData)
     .eq("id", userId)
