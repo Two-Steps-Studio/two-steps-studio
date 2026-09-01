@@ -170,8 +170,14 @@ async function handleGearInteraction(interaction, supabase) {
             p_new_level: newLevel,
         });
         if (upgradeError) {
+            // GEAR_LEVEL_MISMATCH: the RPC's own guard rejected the write
+            // because this gear is no longer at the level `next` was
+            // computed from - most likely a second, faster upgrade click
+            // already applied it. Refreshing shows the real current state.
             const msg = upgradeError.message?.includes('INSUFFICIENT_FUNDS')
                 ? `❌ Brakuje Ci **${(next.price - money).toLocaleString('pl-PL')} ${COIN}**!`
+                : upgradeError.message?.includes('GEAR_LEVEL_MISMATCH')
+                ? '⚠️ Ten sprzęt już się zmienił - odśwież i spróbuj ponownie.'
                 : '❌ Wystąpił błąd podczas ulepszania sprzętu.';
             return await interaction.reply({ content: msg, ephemeral: true });
         }
