@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   // SECURITY: Verify state parameter to prevent CSRF attacks
   if (!state || !storedState || state !== storedState) {
     return NextResponse.redirect(
-      new URL("/ustawettings?error=invalid_state", request.url)
+      new URL("/settings?error=invalid_state", request.url)
     );
   }
 

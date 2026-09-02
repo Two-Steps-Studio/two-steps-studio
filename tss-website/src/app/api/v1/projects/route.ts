@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createServiceClient } from "@/lib/supabase-server";
 import { authenticateApiKey, requireScope, getApiUserId, logApiRequest, getClientIp } from "@/lib/api-auth";
 import { rateLimitByApiKey } from "@/lib/api-rate-limit";
 import { apiSuccess, apiPaginated, apiBadRequest, apiUnauthorized, apiForbidden, apiNotFound, apiInternalError, getPaginationParams } from "@/lib/api-response";
@@ -68,7 +68,13 @@ export async function GET(request: NextRequest) {
   const pagination = getPaginationParams(searchParams);
 
   try {
-    const supabase = await createClient();
+    // Requests here carry an Authorization: Bearer <api key> header, not a
+    // browser session - there are no cookies for the session-bound client
+    // to read, so it always ran as the fully unauthenticated anon role and
+    // any RLS on dev_projects would silently block every read and write.
+    // The owner/member filtering below is the real authorization gate for
+    // this key's resolved userId, same as the admin/webhook routes.
+    const supabase = createServiceClient();
 
     // Get projects where user is owner or member
     const [ownerProjectsResult, memberProjectsResult] = await Promise.all([
@@ -257,7 +263,8 @@ export async function POST(request: NextRequest) {
       return apiBadRequest("Project name is required");
     }
 
-    const supabase = await createClient();
+    // See the GET handler above for why this needs the service-role client.
+    const supabase = createServiceClient();
 
     // Check user's project limits
     const { data: profile, error: profileError } = await supabase

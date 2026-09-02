@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createServiceClient } from "@/lib/supabase-server";
 import { authenticateApiKey, requireScope, getApiUserId, logApiRequest, getClientIp } from "@/lib/api-auth";
 import { rateLimitByApiKey } from "@/lib/api-rate-limit";
 import { apiSuccess, apiPaginated, apiBadRequest, apiUnauthorized, apiForbidden, apiNotFound, apiInternalError, getPaginationParams } from "@/lib/api-response";
@@ -73,7 +73,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    // Requests here carry an Authorization: Bearer <api key> header, not a
+    // browser session - there are no cookies for the session-bound client
+    // to read, so it always ran as the fully unauthenticated anon role and
+    // any RLS on dev_projects/dev_tasks would silently block every read and
+    // write. The isOwner/member checks below are the real authorization
+    // gate for this key's resolved userId, same as the admin/webhook routes.
+    const supabase = createServiceClient();
 
     // Check if user has access to the project
     const { data: project, error: projectError } = await supabase
@@ -258,7 +264,8 @@ export async function POST(request: NextRequest) {
       return apiBadRequest("Project ID and title are required");
     }
 
-    const supabase = await createClient();
+    // See the GET handler above for why this needs the service-role client.
+    const supabase = createServiceClient();
 
     // Check if user has access to the project
     const { data: project, error: projectError } = await supabase
