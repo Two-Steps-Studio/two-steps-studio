@@ -26,12 +26,14 @@ export async function checkProjectPermission(
   if (userError || !user) {
     return { hasAccess: false, error: "Unauthorized" };
   }
-  // dev_projects.owner_id (and dev_project_members.user_id below) store the
-  // Discord snowflake (profiles.id), never the Supabase Auth UUID - the same
-  // mismatch fixed repeatedly elsewhere this session. Comparing against bare
-  // user.id meant the actual project owner never matched their own project
-  // and fell through to "Not a member" / "Insufficient permissions".
-  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+  // Unlike profiles.id (Discord snowflake), dev_projects.owner_id and
+  // dev_project_members.user_id are keyed by the Supabase Auth UUID
+  // (user.id) - confirmed against live data, and consistent with
+  // dev-projects/route.ts, dev/invites, dev/members and the v1 API, which
+  // all compare against bare user.id. A prior edit here compared against
+  // the Discord snowflake instead, which never matches dev_projects.owner_id
+  // and made every owner/member permission check fail - the actual owner
+  // fell through to "Not a member of this project" every time.
 
   // Check if user is owner
   const { data: project } = await supabase
@@ -44,7 +46,7 @@ export async function checkProjectPermission(
     return { hasAccess: false, error: "Project not found" };
   }
 
-  if (project.owner_id === discordId) {
+  if (project.owner_id === user.id) {
     return { hasAccess: true, userRole: 'owner' };
   }
 
@@ -53,7 +55,7 @@ export async function checkProjectPermission(
     .from("dev_project_members")
     .select("role, permissions")
     .eq("project_id", projectId)
-    .eq("user_id", discordId)
+    .eq("user_id", user.id)
     .single();
 
   if (!member) {
@@ -129,12 +131,9 @@ export async function checkProjectMembership(projectId: number): Promise<Permiss
   if (userError || !user) {
     return { hasAccess: false, error: "Unauthorized" };
   }
-  // dev_projects.owner_id (and dev_project_members.user_id below) store the
-  // Discord snowflake (profiles.id), never the Supabase Auth UUID - the same
-  // mismatch fixed repeatedly elsewhere this session. Comparing against bare
-  // user.id meant the actual project owner never matched their own project
-  // and fell through to "Not a member" / "Insufficient permissions".
-  const discordId = (user.user_metadata as any)?.provider_id || user.id;
+  // See checkProjectPermission() above - dev_projects.owner_id and
+  // dev_project_members.user_id are keyed by the Supabase Auth UUID
+  // (user.id), not the Discord snowflake.
 
   // Check if user is owner
   const { data: project } = await supabase
@@ -147,7 +146,7 @@ export async function checkProjectMembership(projectId: number): Promise<Permiss
     return { hasAccess: false, error: "Project not found" };
   }
 
-  if (project.owner_id === discordId) {
+  if (project.owner_id === user.id) {
     return { hasAccess: true, userRole: 'owner' };
   }
 
@@ -156,7 +155,7 @@ export async function checkProjectMembership(projectId: number): Promise<Permiss
     .from("dev_project_members")
     .select("role")
     .eq("project_id", projectId)
-    .eq("user_id", discordId)
+    .eq("user_id", user.id)
     .single();
 
   if (!member) {
