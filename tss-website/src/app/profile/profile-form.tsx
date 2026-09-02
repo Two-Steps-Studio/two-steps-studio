@@ -178,18 +178,22 @@ export default function ProfileForm({
         if (uploadError) {
           setErrorMsg(json.error || uploadError.message || t.profileForm.genericUploadError);
         } else {
-          // For private bucket, we need signed URL for public access
-          const { data: urlData } = await supabase.storage
+          // The "avatars" bucket is public (see api/avatars/ensure/route.ts,
+          // always called right before this upload) - a signed URL here
+          // used to be stored straight into profiles.avatar_url, which
+          // expired after 1 hour and left the avatar permanently broken.
+          // getPublicUrl() never expires, matching the bucket's actual mode.
+          const { data: urlData } = supabase.storage
             .from("avatars")
-            .createSignedUrl(filePath, 3600); // 1 hour signed URL
+            .getPublicUrl(filePath);
 
-          if (urlData && urlData.signedUrl) {
-            setAvatarUrl(urlData.signedUrl);
+          if (urlData && urlData.publicUrl) {
+            setAvatarUrl(urlData.publicUrl);
 
             await supabase.from("profiles").upsert({
               id: discordId,
               username,
-              avatar_url: urlData.signedUrl,
+              avatar_url: urlData.publicUrl,
               pln_balance: balance,
               money: money,
               background,
@@ -198,11 +202,11 @@ export default function ProfileForm({
               updated_at: new Date().toISOString(),
             });
 
-            onUpdated?.({ username, avatar_url: urlData.signedUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
-            window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: urlData.signedUrl, username } }));
+            onUpdated?.({ username, avatar_url: urlData.publicUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
+            window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: urlData.publicUrl, username } }));
             router.refresh();
           } else {
-            throw new Error("Failed to create signed URL");
+            throw new Error("Failed to get public URL");
           }
         }
       } else {

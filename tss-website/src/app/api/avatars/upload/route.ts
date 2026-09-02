@@ -68,8 +68,12 @@ export async function POST(req: Request) {
   const { data: buckets } = await supabaseAdmin.storage.listBuckets();
   const exists = (buckets || []).some((b: any) => b.name === "avatars");
   if (!exists) {
+    // Must match api/avatars/ensure/route.ts's public:true - both routes can
+    // be the one to first create this bucket, and this file already reads
+    // it back with getPublicUrl() a few lines down, which only serves
+    // working URLs from a public bucket.
     const { error: createError } = await supabaseAdmin.storage.createBucket("avatars", {
-      public: false,  // Private bucket - files are only accessible via authenticated requests
+      public: true,
       fileSizeLimit: 10 * 1024 * 1024,
       allowedMimeTypes: ALLOWED_MIME_TYPES,
     });
