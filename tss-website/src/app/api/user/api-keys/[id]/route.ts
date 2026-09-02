@@ -27,11 +27,15 @@ export async function DELETE(
   const { searchParams } = new URL(request.url);
   const permanent = searchParams.get("permanent") === "true";
 
+  // api_keys.owner_id is FK'd to profiles(id), the Discord snowflake - never
+  // the Auth UUID (see createApiKey's doc comment in lib/api-auth.ts).
+  const discordId = (auth.user.user_metadata as any)?.provider_id || auth.user.id;
+
   try {
     if (permanent) {
       // Permanently delete the API key
-      const result = await deleteApiKey(auth.user.id, keyId);
-      
+      const result = await deleteApiKey(discordId, keyId);
+
       if (result instanceof NextResponse) {
         return result;
       }
@@ -39,7 +43,7 @@ export async function DELETE(
       return apiSuccess({ message: "API key deleted permanently" });
     } else {
       // Revoke the API key (soft delete)
-      const result = await revokeApiKey(auth.user.id, keyId);
+      const result = await revokeApiKey(discordId, keyId);
       
       if (result instanceof NextResponse) {
         return result;

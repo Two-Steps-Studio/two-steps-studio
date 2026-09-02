@@ -168,10 +168,21 @@ export async function proxy(request: NextRequest) {
     "X-Permitted-Cross-Domain-Policies"
   ] = "none";
 
+  // The External API (/api/v1/*) exists specifically for non-browser
+  // clients authenticated by an API key, not a session - but BOT_PATTERNS
+  // matches on User-Agent substrings like "curl", "python", "node.js",
+  // exactly what real API clients send. Bot detection here was blocking
+  // every legitimate integration with a 403 before its request ever reached
+  // authenticateApiKey() (verified live). The Authorization/X-API-Key check
+  // in the route itself is the real gate for this namespace.
+  const isExternalApiRoute = request.nextUrl.pathname.startsWith("/api/v1/");
+
   // Detect bots before rate limiting
-  const botDetection = await detectBot(request);
-  if (botDetection.isBot) {
-    return handleBotRequest(request, botDetection.botType || '');
+  if (!isExternalApiRoute) {
+    const botDetection = await detectBot(request);
+    if (botDetection.isBot) {
+      return handleBotRequest(request, botDetection.botType || '');
+    }
   }
 
   // Check request rate limit

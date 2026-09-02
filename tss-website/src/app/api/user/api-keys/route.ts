@@ -10,12 +10,15 @@ import type { ApiScope, ApiKeyType } from "@/lib/api-auth";
  */
 export async function GET(request: NextRequest) {
   const auth = await requireAuth();
-  
+
   if (auth instanceof NextResponse) {
     return auth;
   }
 
-  const result = await listApiKeys(auth.user.id);
+  // api_keys.owner_id is FK'd to profiles(id), the Discord snowflake - never
+  // the Auth UUID (see createApiKey's doc comment in lib/api-auth.ts).
+  const discordId = (auth.user.user_metadata as any)?.provider_id || auth.user.id;
+  const result = await listApiKeys(discordId);
   
   if (result instanceof NextResponse) {
     return result;
@@ -86,9 +89,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create API key
+    // Create API key. api_keys.owner_id is FK'd to profiles(id) (Discord
+    // snowflake) - passing the Auth UUID here fails with a foreign key
+    // violation on every call (verified live).
+    const discordId = (auth.user.user_metadata as any)?.provider_id || auth.user.id;
     const result = await createApiKey(
-      auth.user.id,
+      discordId,
       name.trim(),
       key_type as ApiKeyType,
       scopes as ApiScope[],

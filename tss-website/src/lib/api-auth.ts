@@ -191,9 +191,16 @@ export function extractApiKeyFromRequest(request: Request): string | null {
  * This is the main authentication function for API v1 endpoints
  */
 export async function authenticateApiKey(request: Request): Promise<ApiAuthContext | NextResponse> {
+  // This runs with no browser session (the caller authenticates via the
+  // Authorization: Bearer <key> header, not cookies), so auth.uid() is null
+  // here. api_keys' RLS SELECT policy is `owner_id = auth.uid()::text` -
+  // with the anon session-bound client this lookup could never see any row,
+  // meaning every request with a real, valid API key still hit UNAUTHORIZED
+  // below. Needs the service-role client; the key_hash equality check right
+  // after is what actually authenticates the caller.
   let supabase;
   try {
-    supabase = await createClient();
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: { code: "SERVICE_DISABLED", message: "API service unavailable" } },
@@ -299,6 +306,12 @@ export function requireAnyScope(auth: ApiAuthContext | NextResponse, requiredSco
 
 /**
  * Create a new API key for a user
+ * @param userId - profiles.id (the Discord snowflake), NOT the Supabase Auth
+ * UUID. api_keys.owner_id has a hard FK to profiles(id), which only ever
+ * contains snowflakes - passing the auth UUID here fails every insert with
+ * a foreign key violation (verified live). Callers must resolve
+ * (user.user_metadata as any)?.provider_id || user.id first, same as every
+ * other profiles-touching route.
  */
 export async function createApiKey(
   userId: string,
@@ -349,9 +362,15 @@ export async function createApiKey(
  * List API keys for a user
  */
 export async function listApiKeys(userId: string): Promise<ApiKey[] | NextResponse> {
+  // userId is profiles.id (Discord snowflake, see createApiKey's doc
+  // comment). api_keys' RLS SELECT policy is `owner_id = auth.uid()::text`,
+  // which compares against the Auth UUID and would never match a
+  // snowflake-valued owner_id - the .eq("owner_id", userId) filter below is
+  // the real scoping, same as every other service-role-authorized query
+  // fixed this session.
   let supabase;
   try {
-    supabase = await createClient();
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: { code: "SERVICE_DISABLED", message: "API service unavailable" } },
@@ -379,9 +398,10 @@ export async function listApiKeys(userId: string): Promise<ApiKey[] | NextRespon
  * Revoke an API key
  */
 export async function revokeApiKey(userId: string, keyId: string): Promise<ApiKey | NextResponse> {
+  // See listApiKeys() above for why this needs the service-role client.
   let supabase;
   try {
-    supabase = await createClient();
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: { code: "SERVICE_DISABLED", message: "API service unavailable" } },
@@ -411,9 +431,10 @@ export async function revokeApiKey(userId: string, keyId: string): Promise<ApiKe
  * Delete an API key permanently
  */
 export async function deleteApiKey(userId: string, keyId: string): Promise<void | NextResponse> {
+  // See listApiKeys() above for why this needs the service-role client.
   let supabase;
   try {
-    supabase = await createClient();
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: { code: "SERVICE_DISABLED", message: "API service unavailable" } },
