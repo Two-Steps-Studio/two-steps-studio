@@ -151,7 +151,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
         { href: "/dev/recruitment", label: "Recruitment", icon: Briefcase },
       ]}
     ] : []),
-    { id: "notifications", type: "single", href: "/notifications", label: t.nav.notifications || "Powiadomienia", icon: Bell, ariaCurrent: getAriaCurrent("/ankiety/rating") },
+    { id: "notifications", type: "single", href: "/notifications", label: t.nav.notifications || "Powiadomienia", icon: Bell, ariaCurrent: getAriaCurrent("/notifications") },
   ];
 
   const sections = useMemo(() => defaultSections, [t, categoryVisibility, pathname]);
