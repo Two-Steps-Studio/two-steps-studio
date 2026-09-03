@@ -75,10 +75,15 @@ contextBridge.exposeInMainWorld('electron', {
   
   // Session management
   saveSession: (sessionData) => {
-    // Validate session data
+    // Validate session data. The missing `return` here meant every caller
+    // that does `await window.electron.saveSession(...)` (use-auth.tsx on
+    // sign-in) resolved instantly with undefined instead of actually
+    // waiting for the encrypted file write to finish, and any save failure
+    // was silently swallowed instead of surfacing to the caller.
     if (typeof sessionData === 'object' && sessionData !== null) {
-      ipcRenderer.invoke('save-session', sessionData);
+      return ipcRenderer.invoke('save-session', sessionData);
     }
+    return Promise.resolve({ success: false, error: 'Invalid session payload' });
   },
   loadSession: () => ipcRenderer.invoke('load-session'),
   clearSession: () => ipcRenderer.invoke('clear-session'),
