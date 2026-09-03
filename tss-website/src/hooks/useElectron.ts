@@ -594,6 +594,30 @@ export function useGameDownload(gameId: number, platform: string = 'windows') {
     fetchCurrentRelease();
   }, [fetchCurrentRelease]);
 
+  // The main process already tracks running/syncing state independently of
+  // any particular component instance (electron/game-manager.js's
+  // runningProcesses/activeSyncControllers, exposed over game-get-status),
+  // but this hook only ever set pid/activePhase from launch()'s own return
+  // value and live progress/exit events - both reset to null on mount. A
+  // game already running (or mid-sync) before this page was opened, or
+  // still running after navigating away and back, showed as
+  // "not-installed"/"installed" here until an event happened to fire.
+  useEffect(() => {
+    if (!isElectron) return;
+    let cancelled = false;
+    window.electron.games.getStatus(gameIdStr).then((result) => {
+      if (cancelled) return;
+      if (result.status === 'running') {
+        setPid(result.pid ?? null);
+      } else if (result.status === 'syncing') {
+        setActivePhase('checking');
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isElectron, gameIdStr]);
+
   const matchesThisGame = useCallback((data: { gameId: string }) => data.gameId === gameIdStr, [gameIdStr]);
 
   useGameEvent<GameSyncProgress>('progress', (data) => {
