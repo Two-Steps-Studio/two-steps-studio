@@ -48,6 +48,19 @@ export default function NotificationsPage() {
           read: readIds.includes(`news:${n.id}`),
         });
       });
+      // esports was fetched above but never turned into notification items -
+      // the "esport" type/icon/filter below (and the whole e_sport_events
+      // query) existed with nothing ever actually feeding it.
+      (esports.data || []).forEach((e: any) => {
+        data.push({
+          id: `esport:${e.id}`,
+          type: "esport",
+          title: e.name,
+          description: e.description,
+          date: e.event_date,
+          read: readIds.includes(`esport:${e.id}`),
+        });
+      });
       (dev.data || []).forEach((d: any) => {
         data.push({
           id: `dev:${d.id}`,
@@ -132,6 +145,12 @@ export default function NotificationsPage() {
                 <Newspaper size={16} className="text-[var(--color-records)]" /> News
               </div>
               <Switch checked={prefs.news} onCheckedChange={() => togglePref("news")} />
+            </div>
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]5 border border-[var(--border-color)]">
+              <div className="flex items-center gap-2">
+                <Trophy size={16} className="text-[var(--color-e-sport)]" /> E-Sport
+              </div>
+              <Switch checked={prefs.esport} onCheckedChange={() => togglePref("esport")} />
             </div>
             <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]5 border border-[var(--border-color)]">
               <div className="flex items-center gap-2">
