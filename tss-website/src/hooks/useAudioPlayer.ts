@@ -11,13 +11,24 @@ export function useAudioPlayer() {
   const [volume, setVolume] = useState(75);
 
   const handlePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      // play() returns a promise that rejects if playback doesn't actually
+      // start (autoplay policy, a source that failed to load, etc) - it was
+      // ignored here, so setIsPlaying(true) ran unconditionally right after
+      // and the UI showed a pause icon/progress bar for audio that was
+      // never playing.
+      const playResult = audioRef.current.play();
+      if (playResult && typeof playResult.then === "function") {
+        playResult
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false));
       } else {
-        audioRef.current.play();
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
