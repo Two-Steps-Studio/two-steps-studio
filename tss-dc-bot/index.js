@@ -484,7 +484,13 @@ client.on('interactionCreate', async interaction => {
 
             try {
                 const xp = targetProfile.xp ?? 0;
-                const calculatedLevel = getLevelFromXP(xp) || Math.floor(xp ** 0.1);
+                // The `|| Math.floor(xp ** 0.1)` fallback used a completely
+                // different formula than getLevelFromXP (0.1*sqrt(xp)) for
+                // any xp 1-99, where the real formula correctly returns 0.
+                // Every new member with a few messages saw the profile card
+                // claim "LEVEL 1" while the DB, role sync, and /toplevel all
+                // correctly had them at 0.
+                const calculatedLevel = getLevelFromXP(xp);
                 const buffer = await createProfileCard({
                     username:  interaction.guild?.members.cache.get(targetUser.id)?.displayName || targetUser.username,
                     level:     calculatedLevel,
