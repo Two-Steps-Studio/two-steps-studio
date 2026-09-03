@@ -424,14 +424,6 @@ client.on('interactionCreate', async interaction => {
             await handleGearInteraction(interaction, supabase);
             return;
         }
-        if (interaction.customId === 'shop_click_') {
-            await handleShopInteraction(interaction, supabase);
-            return;
-        }
-        if (interaction.customId === 'gear_upgrade_select' || interaction.customId === 'gear_refresh') {
-            await handleGearInteraction(interaction, supabase);
-            return;
-        }
     }
 
     // Autocomplete
@@ -893,7 +885,14 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 
 async function syncVoiceRewards(userId, minutes, member, username) {
     try {
-        const profile      = await getProfile(userId, username);
+        // getProfile()'s "profile already exists" branch unconditionally
+        // overwrites discord_roles with whatever was passed in (defaulting
+        // to [] when omitted) - every voice session ending here was wiping
+        // the user's tracked roles until their next text message/command
+        // re-synced them, breaking the website's DiscordRolesPanel and the
+        // profile card's role badges in the meantime.
+        const roles = member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
+        const profile      = await getProfile(userId, username, roles);
         const currentLevel = profile.level ?? 0;
         const newLevel     = getLevelFromXP((profile.xp || 0) + minutes * 3);
 
