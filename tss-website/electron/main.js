@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Notification, nativeImage, session, protocol, Tray, Menu, globalShortcut } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, Notification, nativeImage, session, protocol, Tray, Menu, globalShortcut, safeStorage } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -94,36 +94,51 @@ function log(level, message, data = null) {
 
 // Session management with encryption
 const SESSION_FILE = path.join(app.getPath('userData'), 'session.enc');
-const ENCRYPTION_KEY = crypto.scryptSync('tss-session-key', 'salt', 32);
-const ALGORITHM = 'aes-256-cbc';
 
-function encrypt(text) {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return iv.toString('hex') + ':' + encrypted;
-}
+// SECURITY: this used to derive its AES key from a hardcoded literal
+// ('tss-session-key' + a hardcoded 'salt'), baked into source that's on a
+// public GitHub repo — anyone could derive the exact same key, so the
+// Supabase access/refresh tokens in session.enc were only encoded, not
+// meaningfully encrypted, against anyone who could read the file (malware,
+// a compromised backup/sync tool, etc). Electron's safeStorage encrypts
+// through the OS's own credential store (DPAPI/Keychain/libsecret), keyed
+// to this machine and user, which a copied file can't be decrypted without.
+// The old scheme is kept as `legacyDecrypt` purely to migrate an
+// already-saved session.enc from before this fix without forcing a
+// re-login; nothing writes with it anymore.
+const LEGACY_ENCRYPTION_KEY = crypto.scryptSync('tss-session-key', 'salt', 32);
+const LEGACY_ALGORITHM = 'aes-256-cbc';
 
-function decrypt(text) {
+function legacyDecrypt(text) {
   try {
     const parts = text.split(':');
     const iv = Buffer.from(parts.shift(), 'hex');
     const encrypted = parts.join(':');
-    const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    const decipher = crypto.createDecipheriv(LEGACY_ALGORITHM, LEGACY_ENCRYPTION_KEY, iv);
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
   } catch (error) {
-    log('ERROR', 'Failed to decrypt session', error.message);
     return null;
   }
 }
 
 function saveSession(sessionData) {
   try {
-    const encrypted = encrypt(JSON.stringify(sessionData));
-    fs.writeFileSync(SESSION_FILE, encrypted);
+    const plaintext = JSON.stringify(sessionData);
+    if (safeStorage.isEncryptionAvailable()) {
+      fs.writeFileSync(SESSION_FILE, safeStorage.encryptString(plaintext));
+    } else {
+      // No OS credential store available (some headless/minimal Linux
+      // setups) - fall back to the legacy scheme rather than failing
+      // outright. Still logged in, just with the weaker guarantee.
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv(LEGACY_ALGORITHM, LEGACY_ENCRYPTION_KEY, iv);
+      let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      fs.writeFileSync(SESSION_FILE, iv.toString('hex') + ':' + encrypted);
+      log('WARN', 'safeStorage unavailable, session saved with legacy encryption');
+    }
     log('INFO', 'Session saved successfully');
   } catch (error) {
     log('ERROR', 'Error saving session', error.message);
@@ -133,8 +148,24 @@ function saveSession(sessionData) {
 function loadSession() {
   try {
     if (fs.existsSync(SESSION_FILE)) {
-      const encrypted = fs.readFileSync(SESSION_FILE, 'utf-8');
-      const decrypted = decrypt(encrypted);
+      const raw = fs.readFileSync(SESSION_FILE);
+      let decrypted = null;
+      if (safeStorage.isEncryptionAvailable()) {
+        try {
+          decrypted = safeStorage.decryptString(raw);
+        } catch {
+          // Not safeStorage's format - most likely a session.enc from
+          // before this fix. Fall through to the legacy path below.
+        }
+      }
+      if (!decrypted) {
+        decrypted = legacyDecrypt(raw.toString('utf-8'));
+        if (decrypted) {
+          // Migrate it to safeStorage now that we know it's readable, so
+          // this fallback only ever runs once per install.
+          saveSession(JSON.parse(decrypted));
+        }
+      }
       if (decrypted) {
         return JSON.parse(decrypted);
       }
