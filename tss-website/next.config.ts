@@ -187,8 +187,10 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        // The real route is /settings (English) - src/app/ustawienia/
+        // doesn't exist, so this legacy URL 404'd instead of redirecting.
         source: '/pages/ustawienia.html',
-        destination: '/ustawienia',
+        destination: '/settings',
         permanent: true,
       },
     ];
