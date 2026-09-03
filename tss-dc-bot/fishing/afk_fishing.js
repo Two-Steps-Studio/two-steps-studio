@@ -83,6 +83,11 @@ async function afkCatch(userId, supabase, gearStats) {
     if (baitCost > 0 && (profile.money || 0) < baitCost) {
         session.stoppedReason = 'brak_kasy';
         stopSession(userId);
+        // Nothing called sendAfkSummary() for this path before - the
+        // 'brak_kasy' branch existed in the reason text below but was
+        // unreachable, so a user who ran out of bait mid-session never
+        // got any notification their AFK session had ended.
+        await sendAfkSummary(userId, session, session.interaction, session.COIN, 'brak_kasy');
         return;
     }
 
@@ -187,7 +192,7 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
             `⚠️ **AFK łowienie jest mniej opłacalne** niż ręczne:\n` +
             `• Wartość ryb: **-${Math.round((1 - AFK_VALUE_PENALTY) * 100)}%**\n` +
             `• Zdobywane XP: **-${Math.round((1 - AFK_XP_PENALTY) * 100)}%**\n\n` +
-            `Użyj \`/afk_stop\` żeby zakończyć wcześniej i zobaczyć podsumowanie.`
+            `Użyj \`/afk stop\` żeby zakończyć wcześniej i zobaczyć podsumowanie.`
         )
         .addFields(
             { name: '⏱️ Czas sesji',        value: option.label,                      inline: true },
@@ -316,11 +321,17 @@ async function sendAfkSummary(userId, session, interaction, COIN, reason) {
     }
 
     try {
-        // Jeśli to automatyczne zakończenie, wyślij jako followUp do oryginalnej interakcji
-        if (reason === 'czas') {
-            await session.interaction.followUp({ embeds: [embed] });
-        } else {
+        if (reason === 'manual') {
+            // /afk stop's own interaction is still fresh - reply directly.
             await interaction.editReply({ embeds: [embed] });
+        } else {
+            // 'czas' and 'brak_kasy' fire from a setInterval/setTimeout, up
+            // to 4 hours after /afk start - Discord interaction tokens are
+            // only valid for 15 minutes, so followUp()/editReply() here
+            // failed silently for every session longer than that (i.e.
+            // nearly all of them) and the summary was just never delivered.
+            // A plain channel message has no such expiry.
+            await session.interaction.channel?.send({ content: `<@${userId}>`, embeds: [embed] });
         }
     } catch (e) {
         console.error('[AFK] Błąd wysyłania podsumowania:', e.message);
