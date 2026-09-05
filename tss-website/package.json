@@ -35,7 +35,8 @@
     "electron:release:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs --win --publish always",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "build:electron": "cross-env ELECTRON=true next build"
+    "build:electron": "cross-env ELECTRON=true next build",
+    "i18n:check": "node scripts/i18n-check.mjs"
   },
   "dependencies": {
     "@babel/parser": "^7.28.5",
