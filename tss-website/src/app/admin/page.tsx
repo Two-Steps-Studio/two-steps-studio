@@ -25,6 +25,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [planCounts, setPlanCounts] = useState({ free: 0, paid: 0 });
 
   useEffect(() => {
     checkAdminStatus();
@@ -58,6 +59,7 @@ export default function AdminPage() {
       const data = await response.json();
       setUsers(data.users || []);
       setTotal(data.total || 0);
+      setPlanCounts({ free: data.freeCount || 0, paid: data.paidCount || 0 });
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {
@@ -265,15 +267,11 @@ export default function AdminPage() {
                 <div className="text-white/50 text-sm">Total Users</div>
               </div>
               <div className="text-center p-4 bg-white/5 rounded-lg">
-                <div className="text-3xl font-bold text-white">
-                  {users.filter((u) => u.subscription_plan === "free").length}
-                </div>
+                <div className="text-3xl font-bold text-white">{planCounts.free}</div>
                 <div className="text-white/50 text-sm">Free Plans</div>
               </div>
               <div className="text-center p-4 bg-white/5 rounded-lg">
-                <div className="text-3xl font-bold text-white">
-                  {users.filter((u) => u.subscription_plan !== "free").length}
-                </div>
+                <div className="text-3xl font-bold text-white">{planCounts.paid}</div>
                 <div className="text-white/50 text-sm">Paid Plans</div>
               </div>
             </div>

@@ -40,12 +40,29 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Plan breakdown across ALL matching users, not just this page - the
+  // admin page's "Quick Stats" card used to derive this by filtering the
+  // current page's 20-row `users` array, so on any page beyond the first
+  // (or with a search active) it silently summed a small subset instead of
+  // the real totals. Mirrors the same search filter as the query above so
+  // it stays consistent with `total` when a search is active.
+  let paidCountQuery = supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .neq("subscription_plan", "free");
+  if (search) {
+    paidCountQuery = paidCountQuery.ilike("username", `%${search}%`);
+  }
+  const { count: paidCount } = await paidCountQuery;
+
   return NextResponse.json({
     users: data,
     total: count,
     page,
     limit,
-    totalPages: Math.ceil((count || 0) / limit)
+    totalPages: Math.ceil((count || 0) / limit),
+    paidCount: paidCount || 0,
+    freeCount: (count || 0) - (paidCount || 0),
   });
 }
 
