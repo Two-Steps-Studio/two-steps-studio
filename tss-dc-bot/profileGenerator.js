@@ -347,9 +347,88 @@ async function createProfileCard(userData) {
     return canvas.toBuffer('image/png');
 }
 
+/**
+ * Creates a welcome card image buffer for a new member.
+ * @param {Object} userData
+ * @param {string} userData.username
+ * @param {string} [userData.avatarURL]
+ * @param {number} userData.memberCount
+ */
+async function createWelcomeCard(userData) {
+    const canvas = createCanvas(1000, 400);
+    const ctx = canvas.getContext('2d');
+
+    try {
+        const backgroundImage = await loadImage(path.join(BACKGROUND_DIR, 'Two Steps Studio.png'));
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    } catch (e) {
+        console.warn('[WELCOME] Nie znaleziono tła, użyto domyślnego koloru');
+        ctx.fillStyle = '#1bbdbd';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Dark overlay so white text stays readable over any background.
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const avatarX = canvas.width / 2;
+    const avatarY = 130;
+    const avatarSize = 180;
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(avatarX, avatarY, avatarSize / 2 + 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (userData.avatarURL) {
+        try {
+            const avatar = await loadImage(userData.avatarURL);
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
+            ctx.restore();
+        } catch (e) {
+            ctx.fillStyle = '#9FEFFF';
+            ctx.beginPath();
+            ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Username - same shrink-then-ellipsis approach as the profile card
+    // (profileGenerator's createProfileCard) so a long Discord name can't
+    // run off the canvas edge.
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    const maxNameWidth = 900;
+    let fontSize = 48;
+    ctx.font = `bold ${fontSize}px "Space Grotesk"`;
+    let displayName = `WITAJ, ${userData.username}!`;
+    let nameWidth = ctx.measureText(displayName).width;
+    while (nameWidth > maxNameWidth && fontSize > 28) {
+        fontSize -= 2;
+        ctx.font = `bold ${fontSize}px "Space Grotesk"`;
+        nameWidth = ctx.measureText(displayName).width;
+    }
+    while (nameWidth > maxNameWidth && displayName.length > 1) {
+        displayName = displayName.slice(0, -1);
+        nameWidth = ctx.measureText(displayName + '…').width;
+    }
+    if (!displayName.endsWith('!')) displayName += '…';
+    ctx.fillText(displayName, avatarX, 280);
+
+    ctx.font = '28px "Space Grotesk"';
+    ctx.fillStyle = '#cccccc';
+    ctx.fillText(`Jesteś członkiem #${userData.memberCount}`, avatarX, 330);
+
+    return canvas.toBuffer('image/png');
+}
+
 // Eksportuj funkcję do odświeżania listy tła
 function refreshBackgrounds() {
     return loadAvailableBackgrounds();
 }
 
-module.exports = { createProfileCard, availableBackgrounds, refreshBackgrounds };
+module.exports = { createProfileCard, createWelcomeCard, availableBackgrounds, refreshBackgrounds };

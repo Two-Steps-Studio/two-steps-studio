@@ -16,7 +16,7 @@ const {
     Partials,
 } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
-const { createProfileCard, availableBackgrounds, refreshBackgrounds } = require('./profileGenerator');
+const { createProfileCard, createWelcomeCard, availableBackgrounds, refreshBackgrounds } = require('./profileGenerator');
 const { handleFishing, handleFishInventory, handleFishTop } = require('./fishing/fishing');
 const { handleShop, handleShopInteraction } = require('./shop');
 const { handleWedka, handleGearInteraction } = require('./fishing/wedka');
@@ -25,6 +25,8 @@ const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete }
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
 const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, handleReactionRemove } = require('./reactionRoles');
 const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = require('./giveaways');
+const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
+const { handleVoiceStateUpdate } = require('./voiceChannels');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -384,6 +386,12 @@ const commands = [
             .setDescription('Zakończ rozdanie wcześniej')
             .addStringOption(opt => opt.setName('message_id').setDescription('ID wiadomości rozdania').setRequired(true))
         ),
+
+    // ── Zgłoszenia ─────────────────────────────────────────────
+    new SlashCommandBuilder()
+        .setName('ticket_panel')
+        .setDescription('Wyślij panel z przyciskiem do otwierania zgłoszeń na tym kanale')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -556,9 +564,20 @@ async function safeReply(interaction, options) {
 }
 
 // ── Interactions ─────────────────────────────────────────────
+// Moderation/tickets/reaction-roles/giveaways are meant to work on any
+// channel (a ticket, by design, opens in a brand-new channel that can
+// never be ALLOWED_CHANNEL_ID - the "Zamknij zgłoszenie" button inside it
+// would otherwise always hit the single-channel block below).
+const CHANNEL_UNRESTRICTED_COMMANDS = new Set(['kick', 'ban', 'timeout', 'warn', 'warnings', 'reactionrole', 'giveaway', 'ticket_panel']);
+const CHANNEL_UNRESTRICTED_CUSTOM_IDS = new Set(['ticket_open', 'ticket_close']);
+
 client.on('interactionCreate', async interaction => {
+    const isChannelUnrestricted =
+        (interaction.isChatInputCommand() && CHANNEL_UNRESTRICTED_COMMANDS.has(interaction.commandName)) ||
+        ((interaction.isButton() || interaction.isStringSelectMenu()) && CHANNEL_UNRESTRICTED_CUSTOM_IDS.has(interaction.customId));
+
     // Blokada kanału
-    if (interaction.channelId !== ALLOWED_CHANNEL_ID) {
+    if (!isChannelUnrestricted && interaction.channelId !== ALLOWED_CHANNEL_ID) {
         if (interaction.isChatInputCommand() || interaction.isButton() || interaction.isStringSelectMenu()) {
             if (interaction.replied || interaction.deferred) return;
             return interaction.reply({
@@ -577,6 +596,14 @@ client.on('interactionCreate', async interaction => {
         }
         if (interaction.customId === 'gear_upgrade_select' || interaction.customId === 'gear_refresh') {
             await handleGearInteraction(interaction, supabase);
+            return;
+        }
+        if (interaction.customId === 'ticket_open') {
+            await handleTicketOpen(interaction, supabase);
+            return;
+        }
+        if (interaction.customId === 'ticket_close') {
+            await handleTicketClose(interaction, supabase);
             return;
         }
     }
@@ -1048,6 +1075,10 @@ client.on('interactionCreate', async interaction => {
             else if (sub === 'end') await handleGiveawayEnd(interaction, supabase, client);
             break;
         }
+
+        case 'ticket_panel':
+            await handleTicketPanel(interaction);
+            break;
     }
     });
 });
@@ -1122,6 +1153,11 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+// ── Join-to-create voice channels (no-op unless JOIN_TO_CREATE_CHANNEL_ID
+//    is set) - a second, independent listener on the same event is fine,
+//    discord.js fires every registered listener. ──────────────────────
+client.on('voiceStateUpdate', (oldState, newState) => handleVoiceStateUpdate(oldState, newState));
+
 // ── Voice Leveling ───────────────────────────────────────────
 client.on('voiceStateUpdate', (oldState, newState) => {
     const userId = newState.id;
@@ -1184,14 +1220,13 @@ client.on('guildMemberAdd', async member => {
     );
     if (!ch) return;
     try {
-        await ch.send({ embeds: [
-                new EmbedBuilder()
-                    .setTitle('👋 Witaj w Two Steps Studio!')
-                    .setDescription(`Witaj <@${member.id}>! Cieszymy się, że do nas dołączyłeś.`)
-                    .setColor('#1bbdbd')
-                    .setThumbnail(member.user.displayAvatarURL())
-                    .addFields({ name: 'Twoje ID', value: member.id }),
-            ]});
+        const buffer = await createWelcomeCard({
+            username: member.displayName,
+            avatarURL: member.user.displayAvatarURL({ extension: 'png', size: 256 }),
+            memberCount: member.guild.memberCount,
+        });
+        const attachment = new AttachmentBuilder(buffer, { name: 'welcome.png' });
+        await ch.send({ content: `Witaj <@${member.id}>! Cieszymy się, że do nas dołączyłeś.`, files: [attachment] });
     } catch (e) {
         console.error('[WELCOME] Błąd wysyłania powitania:', e.message);
     }
