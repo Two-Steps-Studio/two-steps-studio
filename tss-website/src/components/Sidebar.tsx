@@ -226,7 +226,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 overflow-y-auto no-scrollbar pb-6" suppressHydrationWarning>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 px-4 opacity-30 text-[var(--text)]">{t.nav.mainMenu}</h2>
+          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 px-4 opacity-60 text-[var(--text)]">{t.nav.mainMenu}</h2>
           <ul className="space-y-1">
             {sections.map((section) => {
               if (section.type === "single") {
@@ -240,7 +240,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                               "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all relative group overflow-hidden",
                               isActive
                                   ? "text-white"
-                                  : "text-[var(--text)]/50 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+                                  : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                           )}
                       >
                         {mounted && isActive && (
@@ -256,7 +256,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                           <section.icon className="w-4 h-4 transition-all duration-300 group-hover:scale-110" strokeWidth={2.5} />
                           <span className={cn(
                               "text-sm tracking-tight transition-all duration-300",
-                              isActive ? "font-black" : "font-bold opacity-60 group-hover:opacity-100"
+                              isActive ? "font-black" : "font-bold"
                           )}>{section.label}</span>
                           {isActive && mounted && (
                               <motion.div
@@ -289,7 +289,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                             "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all relative group overflow-hidden w-full text-left",
                             isSectionActive
                                 ? "text-white"
-                                : "text-[var(--text)]/50 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+                                : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                         )}
                     >
                       {mounted && isSectionActive && (
@@ -305,7 +305,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                         <section.icon className="w-4 h-4 transition-all duration-300 group-hover:scale-110" strokeWidth={2.5} />
                         <span className={cn(
                             "text-sm tracking-tight transition-all duration-300",
-                            isSectionActive ? "font-black" : "font-bold opacity-60 group-hover:opacity-100"
+                            isSectionActive ? "font-black" : "font-bold"
                         )}>{section.label}</span>
 
                         <div className={cn("ml-auto relative z-10 transition-transform duration-200", isExpanded && "rotate-90")}>
@@ -332,7 +332,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                                           href={item.href}
                                           className={cn(
                                               "flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all relative group overflow-hidden",
-                                              isActive ? "text-white" : "text-[var(--text)]/50 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+                                              isActive ? "text-white" : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                                           )}
                                       >
                                         {mounted && isActive && (
@@ -372,7 +372,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                   }}
                   className={cn(
                       "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all group relative overflow-hidden border border-(--border-color)",
-                      "text-[var(--text)]/50 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+                      "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                   )}
               >
                 <div className="w-[18px] h-[18px] flex items-center justify-center relative z-10 opacity-70 group-hover:opacity-100 transition-opacity">
@@ -400,7 +400,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                   "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all group relative overflow-hidden border border-(--border-color)",
                   pathname === "/settings"
                       ? "text-white bg-(--color-general) shadow-lg shadow-(--color-general)/20 font-black"
-                      : "text-[var(--text)]/50 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+                      : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
               )}
           >
             <div
