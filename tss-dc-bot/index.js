@@ -28,6 +28,8 @@ const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = requi
 const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
 const { checkAutoMod } = require('./automod');
+const { handleServerInfo, handleUserInfo, handleLock, handleUnlock, handleSlowmode } = require('./utility');
+const { loadTags, handleTagAdd, handleTagRemove, handleTagList, checkTag } = require('./tags');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -393,6 +395,52 @@ const commands = [
         .setName('ticket_panel')
         .setDescription('Wyślij panel z przyciskiem do otwierania zgłoszeń na tym kanale')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+    // ── Narzędzia ────────────────────────────────────────────────
+    new SlashCommandBuilder()
+        .setName('serverinfo')
+        .setDescription('Pokaż informacje o serwerze'),
+    new SlashCommandBuilder()
+        .setName('userinfo')
+        .setDescription('Pokaż informacje o użytkowniku')
+        .addUserOption(opt => opt.setName('uzytkownik').setDescription('Kogo sprawdzić (domyślnie Ciebie)').setRequired(false)),
+    new SlashCommandBuilder()
+        .setName('lock')
+        .setDescription('Zablokuj ten kanał dla @everyone')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+    new SlashCommandBuilder()
+        .setName('unlock')
+        .setDescription('Odblokuj ten kanał')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+    new SlashCommandBuilder()
+        .setName('slowmode')
+        .setDescription('Ustaw spowolnienie na tym kanale')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
+        .addIntegerOption(opt =>
+            opt.setName('sekundy')
+                .setDescription('Sekundy między wiadomościami (0 = wyłącz)')
+                .setRequired(true)
+                .setMinValue(0)
+                .setMaxValue(21600)
+        ),
+
+    // ── Custom tagi ──────────────────────────────────────────────
+    new SlashCommandBuilder()
+        .setName('tag')
+        .setDescription('Zarządzaj tagami (auto-odpowiedziami)')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .addSubcommand(sub => sub
+            .setName('add')
+            .setDescription('Dodaj tag')
+            .addStringOption(opt => opt.setName('trigger').setDescription('Słowo-klucz (dokładne dopasowanie)').setRequired(true))
+            .addStringOption(opt => opt.setName('odpowiedz').setDescription('Co ma odpowiedzieć bot').setRequired(true))
+        )
+        .addSubcommand(sub => sub
+            .setName('remove')
+            .setDescription('Usuń tag')
+            .addStringOption(opt => opt.setName('trigger').setDescription('Słowo-klucz do usunięcia').setRequired(true))
+        )
+        .addSubcommand(sub => sub.setName('list').setDescription('Lista wszystkich tagów')),
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -506,6 +554,7 @@ client.once('clientReady', async () => {
     updateDiscordStats();
     setInterval(updateDiscordStats, 60 * 1000);
     startGiveawayScheduler(client, supabase);
+    await loadTags(supabase);
 });
 
 async function updateDiscordStats() {
@@ -546,8 +595,34 @@ async function updateDiscordStats() {
             recorded_at:     new Date().toISOString(),
         }, { onConflict: 'guild_id' });
         if (statsError) console.error('[STATS] Upsert error:', statsError.message);
+
+        await updateStatsChannelName(guild, humans);
     } catch (e) {
         console.error('[STATS] Błąd:', e.message);
+    }
+}
+
+// Renames STATS_CHANNEL_ID to show the live member count (feature is a
+// no-op if unset). Throttled to once per ~10 min, independent of the 60s
+// interval this is called from - Discord rate-limits channel renames to 2
+// per 10 minutes per channel, and updateDiscordStats runs every 60s.
+let lastStatsChannelUpdate = 0;
+async function updateStatsChannelName(guild, memberCount) {
+    const channelId = process.env.STATS_CHANNEL_ID;
+    if (!channelId) return;
+    if (Date.now() - lastStatsChannelUpdate < 10 * 60 * 1000) return;
+
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) return;
+
+    const name = `📊 Członkowie: ${memberCount}`;
+    if (channel.name === name) return; // avoid a pointless rename call
+
+    try {
+        await channel.setName(name);
+        lastStatsChannelUpdate = Date.now();
+    } catch (e) {
+        console.error('[STATS CHANNEL] Błąd zmiany nazwy:', e.message);
     }
 }
 
@@ -569,7 +644,7 @@ async function safeReply(interaction, options) {
 // channel (a ticket, by design, opens in a brand-new channel that can
 // never be ALLOWED_CHANNEL_ID - the "Zamknij zgłoszenie" button inside it
 // would otherwise always hit the single-channel block below).
-const CHANNEL_UNRESTRICTED_COMMANDS = new Set(['kick', 'ban', 'timeout', 'warn', 'warnings', 'reactionrole', 'giveaway', 'ticket_panel']);
+const CHANNEL_UNRESTRICTED_COMMANDS = new Set(['kick', 'ban', 'timeout', 'warn', 'warnings', 'reactionrole', 'giveaway', 'ticket_panel', 'lock', 'unlock', 'slowmode', 'serverinfo', 'userinfo']);
 const CHANNEL_UNRESTRICTED_CUSTOM_IDS = new Set(['ticket_open', 'ticket_close']);
 
 client.on('interactionCreate', async interaction => {
@@ -1080,6 +1155,34 @@ client.on('interactionCreate', async interaction => {
         case 'ticket_panel':
             await handleTicketPanel(interaction);
             break;
+
+        case 'serverinfo':
+            await handleServerInfo(interaction);
+            break;
+
+        case 'userinfo':
+            await handleUserInfo(interaction);
+            break;
+
+        case 'lock':
+            await handleLock(interaction);
+            break;
+
+        case 'unlock':
+            await handleUnlock(interaction);
+            break;
+
+        case 'slowmode':
+            await handleSlowmode(interaction);
+            break;
+
+        case 'tag': {
+            const sub = interaction.options.getSubcommand();
+            if (sub === 'add') await handleTagAdd(interaction, supabase);
+            else if (sub === 'remove') await handleTagRemove(interaction, supabase);
+            else if (sub === 'list') await handleTagList(interaction);
+            break;
+        }
     }
     });
 });
@@ -1110,6 +1213,8 @@ client.on('messageCreate', async (message) => {
         return false;
     });
     if (wasBlocked) return; // deleted for spam/links/mass-mentions - no XP, doesn't count toward messagesToday
+
+    checkTag(message); // fire-and-forget: exact-match trigger -> auto-reply, doesn't affect XP
 
     messagesTodayCount++;
 
@@ -1218,6 +1323,11 @@ async function syncVoiceRewards(userId, minutes, member, username) {
 
 // ── Welcome ──────────────────────────────────────────────────
 client.on('guildMemberAdd', async member => {
+    const autoRoleId = process.env.AUTO_ROLE_ID;
+    if (autoRoleId) {
+        await member.roles.add(autoRoleId).catch(e => console.error('[AUTOROLE] Błąd nadawania roli:', e.message));
+    }
+
     // The name-substring match can hit a category or other non-text
     // channel (e.g. a category literally named "👋 Welcome") which has no
     // .send() -- that used to throw synchronously inside this listener, a
