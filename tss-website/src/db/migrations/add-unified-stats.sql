@@ -50,6 +50,14 @@ BEGIN
   END IF;
 END $$;
 
+-- REVISION 3 -- live verification (direct RPC call against the real
+-- Supabase project) confirmed this failed every single call with "column
+-- reference total_voice_minutes is ambiguous" (Postgres error 42702) -- the
+-- exact same RETURNS TABLE-column-vs-real-column collision already
+-- documented and fixed for every function in atomic_mutations.sql, just
+-- missing here. The RPC error meant /api/stats always fell back to
+-- Discord-only numbers with 0 for voice time (no fallback source exists for
+-- that field), which is why every stat looked broken/zero on the site.
 CREATE OR REPLACE FUNCTION get_unified_stats()
 RETURNS TABLE (
   total_members BIGINT,
@@ -58,6 +66,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 AS $$
+#variable_conflict use_column
 DECLARE
   threshold TIMESTAMP WITH TIME ZONE := NOW() - INTERVAL '5 minutes';
   d RECORD;

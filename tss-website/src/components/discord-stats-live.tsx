@@ -13,9 +13,8 @@ interface Stats {
 
 // Discord + website combined, see db/migrations/add-unified-stats.sql.
 function formatVoiceTime(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} h`;
+  const hours = minutes / 60;
+  if (hours < 24) return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)} h`;
   return `${Math.floor(hours / 24)} d`;
 }
 
