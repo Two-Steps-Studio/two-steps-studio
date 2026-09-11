@@ -238,7 +238,13 @@ $$ LANGUAGE plpgsql;
 -- (verified against fishing/gear.config.js and directly against real rows
 -- in the fishing_gear table), each one a plain, inspectable UPDATE — for a
 -- function that moves money, that's worth the verbosity.
--- REVISION 5: the money deduction was guarded (money >= p_price) but the
+-- REVISION 5: adds a required p_expected_level param, which changes this
+-- function's signature - CREATE OR REPLACE does not replace a function
+-- under a different signature, it adds an overload, so the stale 4-arg
+-- version needs dropping explicitly or it lingers unused in the DB.
+DROP FUNCTION IF EXISTS purchase_gear_upgrade(TEXT, TEXT, INTEGER, INTEGER);
+
+-- The money deduction was guarded (money >= p_price) but the
 -- gear-level write was not conditioned on the row's current level at all --
 -- two near-simultaneous purchases of the same item (double-click, or two
 -- devices) both reading the same pre-upgrade level could both pass the
