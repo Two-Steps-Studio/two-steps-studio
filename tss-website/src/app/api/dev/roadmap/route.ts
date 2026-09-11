@@ -115,7 +115,7 @@ export async function PATCH(request: Request) {
   }
 
   const body: UpdatePhaseData & { id?: number } = await request.json();
-  const { id, ...updateData } = body;
+  const { id } = body;
 
   if (!id) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -136,6 +136,18 @@ export async function PATCH(request: Request) {
   const permissionCheck = await checkProjectPermission(phase.project_id, 'manage_roadmap');
   if (!permissionCheck.hasAccess) {
     return NextResponse.json({ error: permissionCheck.error || "Insufficient permissions" }, { status: 403 });
+  }
+
+  // SECURITY: build the update from a whitelist instead of spreading the
+  // rest of the request body -- the permission check above only verified
+  // access to this phase's *current* project_id, but the body's own
+  // project_id (a real column on this table) would otherwise pass straight
+  // through and let a member move the phase into a project they have no
+  // access to.
+  const ALLOWED_FIELDS = ['name', 'description', 'start_date', 'planned_end_date', 'status', 'completion_percentage', 'sort_order'] as const;
+  const updateData: UpdatePhaseData = {};
+  for (const field of ALLOWED_FIELDS) {
+    if (field in body) (updateData as any)[field] = (body as any)[field];
   }
 
   const { data, error } = await supabase

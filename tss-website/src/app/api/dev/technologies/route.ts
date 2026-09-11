@@ -114,7 +114,7 @@ export async function PATCH(request: Request) {
   }
 
   const body: UpdateTechnologyData & { id?: number } = await request.json();
-  const { id, ...updateData } = body;
+  const { id } = body;
 
   if (!id) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -135,6 +135,17 @@ export async function PATCH(request: Request) {
   const permissionCheck = await checkProjectPermission(tech.project_id, 'manage_technologies');
   if (!permissionCheck.hasAccess) {
     return NextResponse.json({ error: permissionCheck.error || "Insufficient permissions" }, { status: 403 });
+  }
+
+  // SECURITY: whitelist instead of spreading the rest of the request body --
+  // the permission check above only verified access to this tech's *current*
+  // project_id, but the body's own project_id (a real column on this table)
+  // would otherwise pass straight through and let a member move it into a
+  // project they have no access to.
+  const ALLOWED_FIELDS = ['name', 'icon_slug', 'version', 'category', 'description', 'sort_order'] as const;
+  const updateData: UpdateTechnologyData = {};
+  for (const field of ALLOWED_FIELDS) {
+    if (field in body) (updateData as any)[field] = (body as any)[field];
   }
 
   const { data, error } = await supabase
