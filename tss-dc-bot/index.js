@@ -12,6 +12,7 @@ const {
     ButtonStyle,
     ActionRowBuilder,
     StringSelectMenuBuilder,
+    PermissionFlagsBits,
 } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
 const { createProfileCard, availableBackgrounds, refreshBackgrounds } = require('./profileGenerator');
@@ -20,6 +21,7 @@ const { handleShop, handleShopInteraction } = require('./shop');
 const { handleWedka, handleGearInteraction } = require('./fishing/wedka');
 const { handleAfkFishing, handleAfkStop } = require('./fishing/afk_fishing');
 const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete } = require('./events/events');
+const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -287,6 +289,55 @@ const commands = [
                 .setRequired(true)
                 .setMinValue(1)
         ),
+
+    // ── Moderacja ──────────────────────────────────────────────
+    // setDefaultMemberPermissions gates visibility/use at the Discord level
+    // itself (server admins can further customize per-role in Integrations
+    // settings) - sturdier than the hardcoded ADMIN_ROLE name string
+    // events.js relies on, which can't be verified without live access.
+    new SlashCommandBuilder()
+        .setName('kick')
+        .setDescription('Wyrzuć użytkownika z serwera')
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+        .addUserOption(opt => opt.setName('uzytkownik').setDescription('Kogo wyrzucić').setRequired(true))
+        .addStringOption(opt => opt.setName('powod').setDescription('Powód').setRequired(false)),
+    new SlashCommandBuilder()
+        .setName('ban')
+        .setDescription('Zbanuj użytkownika')
+        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+        .addUserOption(opt => opt.setName('uzytkownik').setDescription('Kogo zbanować').setRequired(true))
+        .addStringOption(opt => opt.setName('powod').setDescription('Powód').setRequired(false))
+        .addIntegerOption(opt =>
+            opt.setName('usun_wiadomosci_dni')
+                .setDescription('Usuń wiadomości z ostatnich X dni (0-7)')
+                .setRequired(false)
+                .setMinValue(0)
+                .setMaxValue(7)
+        ),
+    new SlashCommandBuilder()
+        .setName('timeout')
+        .setDescription('Wycisz użytkownika na czas')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .addUserOption(opt => opt.setName('uzytkownik').setDescription('Kogo wyciszyć').setRequired(true))
+        .addIntegerOption(opt =>
+            opt.setName('minuty')
+                .setDescription('Na ile minut (max 28 dni = 40320 min)')
+                .setRequired(true)
+                .setMinValue(1)
+                .setMaxValue(40320)
+        )
+        .addStringOption(opt => opt.setName('powod').setDescription('Powód').setRequired(false)),
+    new SlashCommandBuilder()
+        .setName('warn')
+        .setDescription('Daj ostrzeżenie użytkownikowi')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .addUserOption(opt => opt.setName('uzytkownik').setDescription('Kogo ostrzec').setRequired(true))
+        .addStringOption(opt => opt.setName('powod').setDescription('Powód ostrzeżenia').setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('warnings')
+        .setDescription('Pokaż historię ostrzeżeń użytkownika')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .addUserOption(opt => opt.setName('uzytkownik').setDescription('Czyje ostrzeżenia (domyślnie Twoje)').setRequired(false)),
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -915,6 +966,27 @@ client.on('interactionCreate', async interaction => {
         case 'event_delete':
             await handleEventDelete(interaction, supabase);
             break;
+
+        // ── Moderacja ──────────────────────────────────────────
+        case 'kick':
+            await handleKick(interaction);
+            break;
+
+        case 'ban':
+            await handleBan(interaction);
+            break;
+
+        case 'timeout':
+            await handleTimeout(interaction);
+            break;
+
+        case 'warn':
+            await handleWarn(interaction, supabase);
+            break;
+
+        case 'warnings':
+            await handleWarnings(interaction, supabase);
+            break;
     }
     });
 });
@@ -1062,6 +1134,37 @@ client.on('guildMemberAdd', async member => {
     } catch (e) {
         console.error('[WELCOME] Błąd wysyłania powitania:', e.message);
     }
+});
+
+// ── Mod-log: message delete/edit ──────────────────────────────
+client.on('messageDelete', async message => {
+    if (message.partial || message.author?.bot || !message.guild) return;
+    const embed = new EmbedBuilder()
+        .setColor('#e67e22')
+        .setTitle('🗑️ Wiadomość usunięta')
+        .addFields(
+            { name: 'Autor', value: `${message.author?.tag ?? 'Nieznany'}`, inline: true },
+            { name: 'Kanał', value: `${message.channel}`, inline: true },
+            { name: 'Treść', value: (message.content || '*brak treści (np. załącznik)*').slice(0, 1024), inline: false },
+        )
+        .setTimestamp();
+    await sendModLog(message.guild, embed);
+});
+
+client.on('messageUpdate', async (oldMessage, newMessage) => {
+    if (newMessage.partial || newMessage.author?.bot || !newMessage.guild) return;
+    if (oldMessage.content === newMessage.content) return; // pin/embed/reaction updates, not real edits
+    const embed = new EmbedBuilder()
+        .setColor('#3498db')
+        .setTitle('✏️ Wiadomość edytowana')
+        .addFields(
+            { name: 'Autor', value: `${newMessage.author?.tag ?? 'Nieznany'}`, inline: true },
+            { name: 'Kanał', value: `${newMessage.channel}`, inline: true },
+            { name: 'Przed', value: (oldMessage.content || '*brak (nie w cache)*').slice(0, 512), inline: false },
+            { name: 'Po', value: (newMessage.content || '*brak*').slice(0, 512), inline: false },
+        )
+        .setTimestamp();
+    await sendModLog(newMessage.guild, embed);
 });
 
 client.login(process.env.DISCORD_TOKEN);
