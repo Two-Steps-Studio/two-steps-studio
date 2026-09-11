@@ -13,6 +13,7 @@ const {
     ActionRowBuilder,
     StringSelectMenuBuilder,
     PermissionFlagsBits,
+    Partials,
 } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
 const { createProfileCard, availableBackgrounds, refreshBackgrounds } = require('./profileGenerator');
@@ -22,6 +23,8 @@ const { handleWedka, handleGearInteraction } = require('./fishing/wedka');
 const { handleAfkFishing, handleAfkStop } = require('./fishing/afk_fishing');
 const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete } = require('./events/events');
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
+const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, handleReactionRemove } = require('./reactionRoles');
+const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = require('./giveaways');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -98,7 +101,13 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildPresences,
         GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessageReactions,
     ],
+    // Reaction role events on a message the bot doesn't have cached (e.g.
+    // after a restart) arrive as partials - without declaring these,
+    // reaction.fetch()/reaction.message.fetch() in reactionRoles.js would
+    // themselves fail on exactly the messages most likely to need it.
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 const voiceSessions = new Collection();
@@ -338,6 +347,43 @@ const commands = [
         .setDescription('Pokaż historię ostrzeżeń użytkownika')
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .addUserOption(opt => opt.setName('uzytkownik').setDescription('Czyje ostrzeżenia (domyślnie Twoje)').setRequired(false)),
+
+    // ── Reaction roles ─────────────────────────────────────────
+    new SlashCommandBuilder()
+        .setName('reactionrole')
+        .setDescription('Zarządzaj rolami przez reakcje')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+        .addSubcommand(sub => sub
+            .setName('add')
+            .setDescription('Dodaj powiązanie reakcja -> rola na istniejącej wiadomości')
+            .addStringOption(opt => opt.setName('message_id').setDescription('ID wiadomości (na tym kanale)').setRequired(true))
+            .addStringOption(opt => opt.setName('emoji').setDescription('Emoji (unicode lub <:nazwa:id> dla emoji z serwera)').setRequired(true))
+            .addRoleOption(opt => opt.setName('rola').setDescription('Rola do nadania').setRequired(true))
+        )
+        .addSubcommand(sub => sub
+            .setName('remove')
+            .setDescription('Usuń powiązanie reakcja -> rola')
+            .addStringOption(opt => opt.setName('message_id').setDescription('ID wiadomości').setRequired(true))
+            .addStringOption(opt => opt.setName('emoji').setDescription('Emoji do usunięcia').setRequired(true))
+        ),
+
+    // ── Giveaways ────────────────────────────────────────────────
+    new SlashCommandBuilder()
+        .setName('giveaway')
+        .setDescription('Zarządzaj rozdaniami')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .addSubcommand(sub => sub
+            .setName('start')
+            .setDescription('Rozpocznij rozdanie')
+            .addStringOption(opt => opt.setName('nagroda').setDescription('Co rozdajesz').setRequired(true))
+            .addIntegerOption(opt => opt.setName('minuty').setDescription('Czas trwania w minutach').setRequired(true).setMinValue(1))
+            .addIntegerOption(opt => opt.setName('zwyciezcy').setDescription('Liczba zwycięzców (domyślnie 1)').setRequired(false).setMinValue(1).setMaxValue(20))
+        )
+        .addSubcommand(sub => sub
+            .setName('end')
+            .setDescription('Zakończ rozdanie wcześniej')
+            .addStringOption(opt => opt.setName('message_id').setDescription('ID wiadomości rozdania').setRequired(true))
+        ),
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -450,6 +496,7 @@ client.once('clientReady', async () => {
     await registerCommands();
     updateDiscordStats();
     setInterval(updateDiscordStats, 60 * 1000);
+    startGiveawayScheduler(client, supabase);
 });
 
 async function updateDiscordStats() {
@@ -987,6 +1034,20 @@ client.on('interactionCreate', async interaction => {
         case 'warnings':
             await handleWarnings(interaction, supabase);
             break;
+
+        case 'reactionrole': {
+            const sub = interaction.options.getSubcommand();
+            if (sub === 'add') await handleReactionRoleAdd(interaction, supabase);
+            else if (sub === 'remove') await handleReactionRoleRemove(interaction, supabase);
+            break;
+        }
+
+        case 'giveaway': {
+            const sub = interaction.options.getSubcommand();
+            if (sub === 'start') await handleGiveawayStart(interaction, supabase);
+            else if (sub === 'end') await handleGiveawayEnd(interaction, supabase, client);
+            break;
+        }
     }
     });
 });
@@ -1166,5 +1227,9 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
         .setTimestamp();
     await sendModLog(newMessage.guild, embed);
 });
+
+// ── Reaction roles ─────────────────────────────────────────────
+client.on('messageReactionAdd', (reaction, user) => handleReactionAdd(reaction, user, supabase));
+client.on('messageReactionRemove', (reaction, user) => handleReactionRemove(reaction, user, supabase));
 
 client.login(process.env.DISCORD_TOKEN);
