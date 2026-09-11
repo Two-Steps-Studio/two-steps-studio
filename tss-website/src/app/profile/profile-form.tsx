@@ -39,15 +39,13 @@ export default function ProfileForm({
   user: any;
   discordId: string;
   profile: any;
-  onUpdated?: (p: { username?: string; avatar_url?: string; pln_balance?: number; money?: number; background?: string; equipped_frame?: string | null; equipped_nick_color?: string | null }) => void;
+  onUpdated?: (p: { username?: string; avatar_url?: string; background?: string; equipped_frame?: string | null; equipped_nick_color?: string | null }) => void;
 }) {
   const router = useRouter();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState(profile?.username || "");
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
-  const [balance, setBalance] = useState(profile?.pln_balance || 0);
-  const [money, setMoney] = useState(profile?.money || 0);
   const [background, setBackground] = useState(profile?.background && profile.background !== "default" ? profile.background : "Two Steps Studio");
   const [equippedFrame, setEquippedFrame] = useState<string | null>(profile?.equipped_frame ?? null);
   const [equippedNickColor, setEquippedNickColor] = useState<string | null>(profile?.equipped_nick_color ?? null);
@@ -112,7 +110,7 @@ export default function ProfileForm({
 
     setLoading(false);
     if (!error) {
-      onUpdated?.({ username, avatar_url: avatarUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
+      onUpdated?.({ username, avatar_url: avatarUrl, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
       router.refresh();
     } else {
       // Was silently swallowed before - a blocked write (e.g. an RLS policy
@@ -207,7 +205,7 @@ export default function ProfileForm({
               updated_at: new Date().toISOString(),
             });
 
-            onUpdated?.({ username, avatar_url: urlData.publicUrl, pln_balance: balance, money: money, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
+            onUpdated?.({ username, avatar_url: urlData.publicUrl, background, equipped_frame: equippedFrame, equipped_nick_color: equippedNickColor });
             window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: urlData.publicUrl, username } }));
             router.refresh();
           } else {
@@ -217,7 +215,7 @@ export default function ProfileForm({
       } else {
         const url = json.url as string;
         setAvatarUrl(url);
-        onUpdated?.({ username, avatar_url: url, pln_balance: balance, money: money });
+        onUpdated?.({ username, avatar_url: url });
         window.dispatchEvent(new CustomEvent("profile:updated", { detail: { avatar_url: url, username } }));
         router.refresh();
       }

@@ -258,10 +258,17 @@ export default function ProfilePage() {
 
     const discordId = user?.user_metadata?.provider_id || user?.id;
     const isDiscordLinked = user?.app_metadata?.provider === 'discord' || user?.identities?.some((id: any) => id.provider === 'discord');
-    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: "var(--color-general)", label: `LEVEL ${profile?.level || 1}` };
     const discordName = user?.user_metadata?.global_name || user?.user_metadata?.full_name || user?.email?.split("@")[0];
     const xp = profile?.xp || 0;
-    const level = profile?.level || 1;
+    // profiles.level is a stored column that can drift from the real
+    // xp-derived value (defaults to 1 in the DB even at 0 xp). The bot's
+    // own /profilowe card was fixed to compute this from xp instead of
+    // trusting the column (tss-dc-bot/index.js getLevelFromXP) - the
+    // website badge below still read the raw column, so a new/low-activity
+    // member saw "LEVEL 1" here while the bot correctly showed "LEVEL 0"
+    // for the same account.
+    const level = xp < 100 ? 0 : Math.floor(0.1 * Math.sqrt(xp));
+    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: "var(--color-general)", label: `LEVEL ${level}` };
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;

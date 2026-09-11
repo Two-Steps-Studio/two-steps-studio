@@ -99,10 +99,12 @@ export default function PublicProfilePage() {
         );
     }
 
-    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: "var(--color-general)", label: `LEVEL ${profile?.level || 1}` };
     const displayName = profile?.username || t.profile.unknown;
     const xp = profile?.xp || 0;
-    const level = profile?.level || 1;
+    // See profile/page.tsx for why this is derived from xp instead of
+    // trusting the stored profiles.level column (can drift stale/ahead).
+    const level = xp < 100 ? 0 : Math.floor(0.1 * Math.sqrt(xp));
+    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: "var(--color-general)", label: `LEVEL ${level}` };
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;

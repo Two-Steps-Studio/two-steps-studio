@@ -73,13 +73,19 @@ export default function LoginPage() {
         });
       } else {
         setLoading(true);
-        const { data, error } = await supabase.auth.signInWithOAuth({
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
             redirectTo: `${window.location.origin}/profile`,
           },
         });
-        console.log("Google login result:", { data, error });
+        // signInWithOAuth returns {data, error} and doesn't throw - a
+        // provider-side failure (misconfigured/disabled) used to be
+        // completely silent: no toast, no log, the button just re-enabled.
+        if (error) {
+          console.error("Google login error:", error);
+          toast.error(t.loginExtra.googleErrorTitle, { description: error.message });
+        }
       }
     } catch (err) {
       toast.error(t.loginExtra.googleErrorTitle);
@@ -191,10 +197,17 @@ export default function LoginPage() {
                   });
                 } else {
                   setLoading(true);
-                  await supabase.auth.signInWithOAuth({
+                  const { error } = await supabase.auth.signInWithOAuth({
                     provider: "discord",
                     options: { redirectTo: `${window.location.origin}/profile` }
                   });
+                  // This didn't even read the returned error before - a
+                  // provider-side failure looked identical to nothing
+                  // happening at all when the button was clicked.
+                  if (error) {
+                    console.error("Discord login error:", error);
+                    toast.error(t.loginExtra.discordErrorTitle, { description: error.message });
+                  }
                   setLoading(false);
                 }
               }}
