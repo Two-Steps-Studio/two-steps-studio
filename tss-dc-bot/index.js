@@ -170,6 +170,12 @@ const commands = [
         .setName('praca')
         .setDescription('Zarób trochę monet pracując dla studia'),
     new SlashCommandBuilder()
+        .setName('codzienne')
+        .setDescription('Odbierz codzienną nagrodę (raz na 24h)'),
+    new SlashCommandBuilder()
+        .setName('tygodniowe')
+        .setDescription('Odbierz tygodniową nagrodę (raz na 7 dni)'),
+    new SlashCommandBuilder()
         .setName('sklep')
         .setDescription('Kup ozdoby, rangi i dodatki'),
     new SlashCommandBuilder()
@@ -770,6 +776,52 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply('⏳ Jesteś zmęczony! Odpocznij chwilę i spróbuj ponownie.');
             }
             await interaction.editReply(`⛏️ Zapracowałeś ciężko w Studiu i otrzymałeś **${earnings} ${COIN}!**`);
+            break;
+        }
+
+        case 'codzienne': {
+            const lastDaily = profile.last_daily ? new Date(profile.last_daily) : 0;
+            const diff      = Date.now() - lastDaily;
+            if (diff < 86400000) {
+                const hoursLeft = Math.ceil((86400000 - diff) / 3600000);
+                return await interaction.editReply(`⏳ Codzienną nagrodę odbierzesz za **${hoursLeft} h**.`);
+            }
+            const earnings = Math.floor(Math.random() * 101) + 50; // 50-150
+            const { data, error } = await supabase.rpc('apply_daily_reward', {
+                p_user_id: profile.id,
+                p_earnings: earnings,
+            });
+            if (error) {
+                console.error('[DB ERROR] apply_daily_reward failed:', error.message);
+                return await interaction.editReply('❌ Wystąpił błąd. Spróbuj ponownie.');
+            }
+            if (!data || data.length === 0) {
+                return await interaction.editReply('⏳ Codzienną nagrodę już dziś odebrałeś.');
+            }
+            await interaction.editReply(`🎁 Odebrano codzienną nagrodę: **${earnings} ${COIN}!**`);
+            break;
+        }
+
+        case 'tygodniowe': {
+            const lastWeekly = profile.last_weekly ? new Date(profile.last_weekly) : 0;
+            const diff       = Date.now() - lastWeekly;
+            if (diff < 604800000) {
+                const daysLeft = Math.ceil((604800000 - diff) / 86400000);
+                return await interaction.editReply(`⏳ Tygodniową nagrodę odbierzesz za **${daysLeft} dni**.`);
+            }
+            const earnings = Math.floor(Math.random() * 301) + 300; // 300-600
+            const { data, error } = await supabase.rpc('apply_weekly_reward', {
+                p_user_id: profile.id,
+                p_earnings: earnings,
+            });
+            if (error) {
+                console.error('[DB ERROR] apply_weekly_reward failed:', error.message);
+                return await interaction.editReply('❌ Wystąpił błąd. Spróbuj ponownie.');
+            }
+            if (!data || data.length === 0) {
+                return await interaction.editReply('⏳ Tygodniową nagrodę już w tym tygodniu odebrałeś.');
+            }
+            await interaction.editReply(`🎁 Odebrano tygodniową nagrodę: **${earnings} ${COIN}!**`);
             break;
         }
 

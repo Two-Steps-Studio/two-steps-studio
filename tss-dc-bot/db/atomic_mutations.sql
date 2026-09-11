@@ -57,6 +57,12 @@
 DROP FUNCTION IF EXISTS apply_mine_reward(TEXT, INTEGER, INTEGER, INTEGER, JSONB);
 DROP FUNCTION IF EXISTS apply_staw_reward(TEXT, INTEGER, INTEGER, INTEGER, JSONB);
 
+-- REVISION 4 — /codzienne and /tygodniowe login-reward commands, same
+-- guarded-cooldown pattern as apply_work_reward.
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS last_daily TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS last_weekly TIMESTAMPTZ;
+
 -- ── Shape 1: guarded single-field money increment/decrement ────────────────
 -- delta may be positive or negative. Guard makes decrements atomic against
 -- concurrent spends: if the balance would go negative, 0 rows are returned
@@ -276,5 +282,46 @@ BEGIN
     END IF;
 
     RETURN QUERY SELECT v_money, p_new_level;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ── Shape 1c: /codzienne and /tygodniowe — same guarded-cooldown shape as
+--    apply_work_reward, separate last_* columns so the three cooldowns
+--    never interfere with each other ─────────────────────────────────────
+CREATE OR REPLACE FUNCTION apply_daily_reward(
+    p_user_id TEXT,
+    p_earnings INTEGER,
+    p_cooldown_seconds INTEGER DEFAULT 86400
+)
+RETURNS TABLE (money INTEGER, last_daily TIMESTAMPTZ) AS $$
+#variable_conflict use_column
+BEGIN
+    RETURN QUERY
+    UPDATE profiles
+    SET money = COALESCE(money, 0) + p_earnings,
+        last_daily = NOW(),
+        updated_at = NOW()
+    WHERE id = p_user_id
+      AND (last_daily IS NULL OR last_daily <= NOW() - (p_cooldown_seconds || ' seconds')::INTERVAL)
+    RETURNING profiles.money, profiles.last_daily;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION apply_weekly_reward(
+    p_user_id TEXT,
+    p_earnings INTEGER,
+    p_cooldown_seconds INTEGER DEFAULT 604800
+)
+RETURNS TABLE (money INTEGER, last_weekly TIMESTAMPTZ) AS $$
+#variable_conflict use_column
+BEGIN
+    RETURN QUERY
+    UPDATE profiles
+    SET money = COALESCE(money, 0) + p_earnings,
+        last_weekly = NOW(),
+        updated_at = NOW()
+    WHERE id = p_user_id
+      AND (last_weekly IS NULL OR last_weekly <= NOW() - (p_cooldown_seconds || ' seconds')::INTERVAL)
+    RETURNING profiles.money, profiles.last_weekly;
 END;
 $$ LANGUAGE plpgsql;
