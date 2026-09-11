@@ -12,7 +12,7 @@ interface Stats {
   bot_online?: boolean;
 }
 interface ActivityEvent {
-  type: "join" | "level_up" | "purchase";
+  type: "join" | "level_up" | "purchase" | "message";
   username: string;
   detail?: string | null;
   created_at: string;
@@ -197,7 +197,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {page === 2 && <ActivityFeed events={activity} />}
+          {page === 2 && <ActivityFeed events={activity} messagesToday={stats?.messages_today} />}
         </div>
 
         <div className="flex justify-center gap-2">
@@ -250,6 +250,7 @@ const ACTIVITY_META: Record<ActivityEvent["type"], { icon: React.ElementType; co
   join: { icon: UserPlus, color: "#06e402", text: () => "dołączył(a) do serwera" },
   level_up: { icon: TrendingUp, color: "#ffcb2f", text: (e) => `awansował(a) na ${e.detail || "nowy poziom"}` },
   purchase: { icon: ShoppingBag, color: "#1bbdbd", text: (e) => `kupił(a) ${e.detail || "przedmiot"}` },
+  message: { icon: MessageSquare, color: "#9aa5b1", text: () => "napisał(a) na czacie" },
 };
 
 function formatRelativeTime(iso: string): string {
@@ -262,10 +263,19 @@ function formatRelativeTime(iso: string): string {
   return `${Math.floor(hours / 24)} d temu`;
 }
 
-function ActivityFeed({ events }: { events: ActivityEvent[] }) {
+function ActivityFeed({ events, messagesToday }: { events: ActivityEvent[]; messagesToday?: number }) {
   return (
     <div className="rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8">
-      <h2 className="text-2xl font-black uppercase tracking-wide mb-6 text-white/70">Aktywność na żywo</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-black uppercase tracking-wide text-white/70">Aktywność na żywo</h2>
+        {typeof messagesToday === "number" && (
+          <span className="flex items-center gap-2 text-lg font-black tabular-nums text-white/50">
+            <MessageSquare size={18} className="text-[#ffcb2f]" />
+            {messagesToday}
+            <span className="text-sm font-bold uppercase tracking-widest text-white/30">dzisiaj</span>
+          </span>
+        )}
+      </div>
       <div className="space-y-3">
         {events.length === 0 && <p className="text-white/30 text-lg">Brak ostatniej aktywności</p>}
         {events.map((e, i) => {

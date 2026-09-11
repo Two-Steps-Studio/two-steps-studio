@@ -118,6 +118,11 @@ const client = new Client({
 
 const voiceSessions = new Collection();
 const cooldowns = new Map();
+// Separate, longer-window throttle for the "message" activity feed entry -
+// the XP cooldown above is only 3s, which would let one chatty user
+// dominate the dashboard's live activity feed.
+const messageActivityCooldowns = new Map();
+const MESSAGE_ACTIVITY_COOLDOWN_MS = 120000;
 let messagesTodayCount = 0;
 let lastDay = new Date().getDate();
 
@@ -1296,6 +1301,16 @@ client.on('messageCreate', async (message) => {
         if (remaining > 0) return;
     }
     cooldowns.set(userCooldownKey, Date.now() + 3000);
+
+    // Activity feed entry - never includes message content (privacy: this
+    // feeds a public-facing TV dashboard), just that a message happened.
+    // join/level_up/purchase are all rare on a quiet server, so without
+    // this the feed looked permanently empty even while working correctly.
+    const lastActivityLog = messageActivityCooldowns.get(message.author.id) || 0;
+    if (Date.now() - lastActivityLog > MESSAGE_ACTIVITY_COOLDOWN_MS) {
+        messageActivityCooldowns.set(message.author.id, Date.now());
+        logActivity(supabase, 'message', message.author.username);
+    }
 
     try {
         const roles   = message.member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
