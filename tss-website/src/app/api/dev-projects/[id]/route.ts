@@ -19,13 +19,31 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 
   const { id } = await params;
-  const body: UpdateProjectData = await request.json();
+  const rawBody: UpdateProjectData = await request.json();
   const projectId = Number(id);
 
   // Check if user has permission to edit project
   const permissionCheck = await checkProjectPermission(projectId, 'edit_project');
   if (!permissionCheck.hasAccess) {
     return NextResponse.json({ error: permissionCheck.error || "Insufficient permissions" }, { status: 403 });
+  }
+
+  // SECURITY: `rawBody` is only *typed* as UpdateProjectData -- that's
+  // erased at runtime, so nothing stopped a client from adding extra JSON
+  // fields (e.g. owner_id) that then flowed straight through to
+  // `.update(body)` below. Whitelist to the columns this endpoint is
+  // actually meant to let an editor touch.
+  const ALLOWED_FIELDS = ['name', 'description', 'description_markdown', 'color', 'status', 'planned_end_date', 'is_archived'] as const;
+  const body: UpdateProjectData = {};
+  for (const field of ALLOWED_FIELDS) {
+    if (field in rawBody) (body as any)[field] = rawBody[field];
+  }
+
+  // Soft-deleting must go through DELETE, which requires the stricter
+  // delete_project permission -- otherwise any editor could delete a
+  // project just by PATCHing status: 'deleted'.
+  if (body.status === 'deleted') {
+    return NextResponse.json({ error: "Use DELETE to remove a project" }, { status: 400 });
   }
 
   // Handle archiving/restoring
