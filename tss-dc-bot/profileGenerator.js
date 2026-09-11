@@ -2,8 +2,15 @@ const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const path = require('path');
 const fs = require('fs');
 
-// Register Space Grotesk font
+// Register Space Grotesk font. registerFromPath() doesn't throw on
+// failure (e.g. missing system fontconfig -- see Dockerfile), it just
+// silently leaves the family unregistered, so every fillText() call on the
+// card draws nothing with no error anywhere. Verify and log loudly instead
+// of failing silent.
 GlobalFonts.registerFromPath(path.join(__dirname, 'SpaceGrotesk-Bold.ttf'), 'Space Grotesk');
+if (!GlobalFonts.has('Space Grotesk')) {
+    console.error('[PROFILE] "Space Grotesk" failed to register - profile card text will not render. Likely missing fontconfig in the runtime image.');
+}
 
 const BACKGROUND_DIR = path.join(__dirname, 'assets', 'discord', 'backgrounds');
 const ASSETS_DIR = path.join(__dirname, 'assets', 'discord');
