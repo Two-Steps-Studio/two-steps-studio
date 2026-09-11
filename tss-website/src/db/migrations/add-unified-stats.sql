@@ -58,6 +58,16 @@ END $$;
 -- missing here. The RPC error meant /api/stats always fell back to
 -- Discord-only numbers with 0 for voice time (no fallback source exists for
 -- that field), which is why every stat looked broken/zero on the site.
+-- REVISION 4 -- live verification (called with the anon key, exactly like
+-- the website does) showed this returning total_members: 7 / total_online: 0
+-- instead of the real 58/11 -- discord_stats has RLS with no anon-readable
+-- policy (confirmed: a direct anon-key SELECT on it returns []), and this
+-- function has no SECURITY DEFINER, so it ran with the *caller's* (anon)
+-- privileges and silently saw zero rows in discord_stats, leaving only the
+-- profiles/site_sessions counts it could still see. SECURITY DEFINER makes
+-- it run as the function owner instead, bypassing RLS for this specific,
+-- read-only, no-PII aggregate -- same justification get_site_stats() already
+-- relies on for being callable with no auth.
 CREATE OR REPLACE FUNCTION get_unified_stats()
 RETURNS TABLE (
   total_members BIGINT,
@@ -65,6 +75,8 @@ RETURNS TABLE (
   total_voice_minutes BIGINT
 )
 LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
 AS $$
 #variable_conflict use_column
 DECLARE
