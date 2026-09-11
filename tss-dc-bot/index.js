@@ -318,6 +318,16 @@ async function getProfile(userId, username, roles = []) {
             return newProfile;
         }
 
+        // getProfile runs on every message and every slash command, and used
+        // to unconditionally rewrite username/discord_roles every single
+        // time even when nothing changed - doubling DB writes on the bot's
+        // busiest paths for no reason. Only write when something did.
+        const rolesChanged    = JSON.stringify(profile.discord_roles || []) !== JSON.stringify(roles);
+        const usernameChanged = profile.username !== username;
+        if (!rolesChanged && !usernameChanged) {
+            return profile;
+        }
+
         const { data: updatedProfile } = await supabase
             .from('profiles')
             .update({ username, discord_roles: roles })
