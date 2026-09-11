@@ -1,0 +1,6 @@
+services:
+  tss-dc-bot:
+    build: .
+    container_name: tss-dc-bot
+    restart: unless-stopped
+    env_file: .env
