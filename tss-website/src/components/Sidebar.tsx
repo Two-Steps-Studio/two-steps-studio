@@ -207,7 +207,6 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                       width={240}
                       height={140}
                       className="transition-opacity duration-500 object-contain w-auto h-full max-h-[90px]"
-                      unoptimized
                   />
               )}
             </motion.div>

@@ -219,7 +219,7 @@ export function TopBar({ className }: { className?: string }) {
                           </span>
                         </div>
 
-                  <Link href="/profile">
+                  <Link href="/profile" aria-label={t.nav.profile}>
                     <motion.div
                         whileHover={{ scale: 1.05, borderColor: "var(--color-general)" }}
                         whileTap={{ scale: 0.95 }}
