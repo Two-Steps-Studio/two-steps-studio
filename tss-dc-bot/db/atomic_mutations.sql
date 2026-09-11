@@ -84,9 +84,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ── Shape 1b: /praca — money increment + last_work stamp in one write ──────
+-- ── Shape 1b: /work — money increment + last_work stamp in one write ───────
 -- REVISION 3: the cooldown was only checked client-side in index.js against
--- a `profile` object read at the start of the interaction. Two /praca calls
+-- a `profile` object read at the start of the interaction. Two /work calls
 -- racing on the same stale last_work (e.g. double-click, or two devices)
 -- could both pass that check and both get paid on a single hour's cooldown.
 -- Re-checking last_work in the WHERE clause here makes the guard atomic:

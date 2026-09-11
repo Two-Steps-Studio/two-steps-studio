@@ -100,7 +100,7 @@ function buildShopEmbed(allItems, page, money) {
         .setTitle('🛒 Sklep serwera')
         .setColor('#1bbdbd')
         .setDescription(
-            `Masz **${money} ${COIN}** w swoim portfelu.\nKup przedmiot za pomocą komendy \`/sklep\`.\n\u200b`
+            `Masz **${money} ${COIN}** w swoim portfelu.\nKup przedmiot za pomocą komendy \`/shop\`.\n\u200b`
         )
         .setFooter({ text: `Strona ${page + 1}/${totalPages}` });
 
@@ -150,7 +150,7 @@ function buildShopComponents(allItems, page, money) {
     ];
 }
 
-// ── Handler komendy /sklep ───────────────────────────────────
+// ── Handler komendy /shop ─────────────────────────────────────
 // UWAGA: index.js już wywołuje deferReply() przed tą funkcją,
 // więc tutaj używamy tylko editReply()
 async function handleShop(interaction, supabase, profile) {

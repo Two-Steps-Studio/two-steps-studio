@@ -119,7 +119,7 @@ const VOICE_MONEY_REWARD = 2;
 // ── Slash Commands Definition ────────────────────────────────
 const commands = [
     new SlashCommandBuilder()
-        .setName('profilowe')
+        .setName('profile')
         .setDescription('Wyświetl kartę profilową Two Steps Studio')
         .addUserOption(option =>
             option
@@ -128,7 +128,7 @@ const commands = [
                 .setRequired(false)
         ),
     new SlashCommandBuilder()
-        .setName('ustawienia')
+        .setName('settings')
         .setDescription('Zarządzaj ustawieniami twojego profilu')
         .addStringOption(option =>
             option.setName('tlo')
@@ -137,13 +137,13 @@ const commands = [
                 .setAutocomplete(true)
         ),
     new SlashCommandBuilder()
-        .setName('tla')
+        .setName('backgrounds')
         .setDescription('Pokaż wszystkie dostępne tła'),
     new SlashCommandBuilder()
-        .setName('bal')
+        .setName('balance')
         .setDescription('Sprawdź stan swojego konta i banku'),
     new SlashCommandBuilder()
-        .setName('wplac')
+        .setName('deposit')
         .setDescription('Wpłać monety do banku')
         .addIntegerOption(option =>
             option.setName('ilosc')
@@ -152,7 +152,7 @@ const commands = [
                 .setMinValue(0)
         ),
     new SlashCommandBuilder()
-        .setName('wyplac')
+        .setName('withdraw')
         .setDescription('Wypłać monety z banku')
         .addIntegerOption(option =>
             option.setName('ilosc')
@@ -161,34 +161,34 @@ const commands = [
                 .setMinValue(0)
         ),
     new SlashCommandBuilder()
-        .setName('topmoney')
+        .setName('top_money')
         .setDescription('Ranking najbogatszych graczy'),
     new SlashCommandBuilder()
-        .setName('toplevel')
+        .setName('top_level')
         .setDescription('Ranking najwyższych poziomów'),
     new SlashCommandBuilder()
-        .setName('praca')
+        .setName('work')
         .setDescription('Zarób trochę monet pracując dla studia'),
     new SlashCommandBuilder()
-        .setName('codzienne')
+        .setName('daily')
         .setDescription('Odbierz codzienną nagrodę (raz na 24h)'),
     new SlashCommandBuilder()
-        .setName('tygodniowe')
+        .setName('weekly')
         .setDescription('Odbierz tygodniową nagrodę (raz na 7 dni)'),
     new SlashCommandBuilder()
-        .setName('sklep')
+        .setName('shop')
         .setDescription('Kup ozdoby, rangi i dodatki'),
     new SlashCommandBuilder()
-        .setName('lowienie')
+        .setName('fish')
         .setDescription('Zarzuć wędkę i złap coś cennego!'),
     new SlashCommandBuilder()
-        .setName('ryby')
+        .setName('catches')
         .setDescription('Zobacz swoje ostatnie połowy i statystyki'),
     new SlashCommandBuilder()
-        .setName('topfish')
+        .setName('top_fish')
         .setDescription('Ranking najlepszych wędkarzy'),
     new SlashCommandBuilder()
-        .setName('wedka')
+        .setName('gear')
         .setDescription('Ulepsz swój sprzęt wędkarski (żyłka, kołowrotek, haczyk, przynęta)'),
     new SlashCommandBuilder()
         .setName('afk')
@@ -485,7 +485,7 @@ client.on('interactionCreate', async interaction => {
 
     // Autocomplete
     if (interaction.isAutocomplete()) {
-        if (interaction.commandName === 'ustawienia') {
+        if (interaction.commandName === 'settings') {
             const focused = interaction.options.getFocused();
             const choices = availableBackgrounds
                 .filter(bg => bg.toLowerCase().includes(focused.toLowerCase()))
@@ -512,7 +512,7 @@ client.on('interactionCreate', async interaction => {
     await handleCommandWithErrors(interaction, async () => {
     switch (interaction.commandName) {
 
-        case 'profilowe': {
+        case 'profile': {
             // Pobierz opcjonalnego użytkownika (domyślnie autor komendy)
             const targetUser = interaction.options.getUser('uzytkownik') || interaction.user;
             const isOtherUser = targetUser.id !== interaction.user.id;
@@ -567,13 +567,13 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'ustawienia': {
+        case 'settings': {
             const backgroundName = interaction.options.getString('tlo');
 
             if (!backgroundName) {
                 // Jeśli nie podano żadnych ustawień, pokaż obecne
                 return await interaction.editReply({
-                    content: `📋 Twoje ustawienia:\n• Tło profilu: \`${profile.background || 'default'}\`\n\nUżyj \`/ustawienia tlo:bg_nazwa\` aby zmienić tło.`,
+                    content: `📋 Twoje ustawienia:\n• Tło profilu: \`${profile.background || 'default'}\`\n\nUżyj \`/settings tlo:bg_nazwa\` aby zmienić tło.`,
                     ephemeral: true
                 });
             }
@@ -606,7 +606,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'tla': {
+        case 'backgrounds': {
             // Odśwież listę tła przed wyświetleniem
             const backgrounds = refreshBackgrounds();
 
@@ -621,10 +621,10 @@ client.on('interactionCreate', async interaction => {
 
             const embed = new EmbedBuilder()
                 .setTitle('🖼️ Dostępne tła')
-                .setDescription(`Możesz zmienić tło komendą \`/ustawienia tlo:<nazwa>\`\n\n${rows.join('\n')}`)
+                .setDescription(`Możesz zmienić tło komendą \`/settings tlo:<nazwa>\`\n\n${rows.join('\n')}`)
                 .setColor('#22FF00')
                 .addFields(
-                    { name: '📌 Instrukcja', value: 'Aby dodać nowe tło:\n1. Skopiuj plik do folderu `C:\\tss\\tss-dc-bot\\assets\\discord\\backgrounds`\n2. Zaczekaj 30 sekund lub użyj komendy `/tla` ponownie' }
+                    { name: '📌 Instrukcja', value: 'Aby dodać nowe tło:\n1. Skopiuj plik do folderu `C:\\tss\\tss-dc-bot\\assets\\discord\\backgrounds`\n2. Zaczekaj 30 sekund lub użyj komendy `/backgrounds` ponownie' }
                 )
                 .setFooter({ text: `Dostępnych tła: ${backgrounds.length}` });
 
@@ -632,7 +632,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'bal': {
+        case 'balance': {
             const embed = new EmbedBuilder()
                 .setTitle(`💰 Portfel: ${interaction.user.username}`)
                 .setColor('#1bbdbd')
@@ -645,7 +645,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'wplac': {
+        case 'deposit': {
             let amountInput = interaction.options.getInteger('ilosc');
             const currentMoney = profile.money ?? 0;
             const amount = amountInput === 0 ? currentMoney : amountInput;
@@ -673,7 +673,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'wyplac': {
+        case 'withdraw': {
             let amountInput = interaction.options.getInteger('ilosc');
             const currentBank = profile.bank ?? 0;
             const amount = amountInput === 0 ? currentBank : amountInput;
@@ -768,7 +768,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'topmoney': {
+        case 'top_money': {
             const { data: top } = await supabase
                 .from('profiles').select('*')
                 .order('money', { ascending: false }).limit(10);
@@ -781,7 +781,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'toplevel': {
+        case 'top_level': {
             const { data: top } = await supabase
                 .from('profiles').select('*')
                 .order('xp', { ascending: false }).limit(10);
@@ -794,7 +794,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'praca': {
+        case 'work': {
             const lastWork = profile.last_work ? new Date(profile.last_work) : 0;
             const diff     = Date.now() - lastWork;
             if (diff < 3600000) {
@@ -811,7 +811,7 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply('❌ Wystąpił błąd podczas pracy. Spróbuj ponownie.');
             }
             // apply_work_reward re-checks the cooldown atomically in the DB
-            // (see db/atomic_mutations.sql REVISION 3) -- two /praca calls
+            // (see db/atomic_mutations.sql REVISION 3) -- two /work calls
             // racing past the client-side check above with the same stale
             // cached profile.last_work would otherwise both earn money on
             // one cooldown. If the guard rejected the write, 0 rows come
@@ -823,7 +823,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'codzienne': {
+        case 'daily': {
             const lastDaily = profile.last_daily ? new Date(profile.last_daily) : 0;
             const diff      = Date.now() - lastDaily;
             if (diff < 86400000) {
@@ -846,7 +846,7 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'tygodniowe': {
+        case 'weekly': {
             const lastWeekly = profile.last_weekly ? new Date(profile.last_weekly) : 0;
             const diff       = Date.now() - lastWeekly;
             if (diff < 604800000) {
@@ -869,23 +869,23 @@ client.on('interactionCreate', async interaction => {
             break;
         }
 
-        case 'lowienie':
+        case 'fish':
             await handleFishing(interaction, supabase, profile, COIN);
             break;
 
-        case 'ryby':
+        case 'catches':
             await handleFishInventory(interaction, supabase, COIN);
             break;
 
-        case 'topfish':
+        case 'top_fish':
             await handleFishTop(interaction, supabase, COIN);
             break;
 
-        case 'sklep':
+        case 'shop':
             await handleShop(interaction, supabase, profile, COIN);
             break;
 
-        case 'wedka':
+        case 'gear':
             await handleWedka(interaction, supabase, profile);
             break;
 

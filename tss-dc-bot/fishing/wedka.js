@@ -111,7 +111,7 @@ function buildGearComponents(gearObj, money) {
     ];
 }
 
-// ── /wedka – pokazuje panel sprzętu ──────────────────────────
+// ── /gear – pokazuje panel sprzętu ───────────────────────────
 
 async function handleWedka(interaction, supabase, profile) {
     const gearRow = await fetchGearRow(supabase, interaction.user.id);

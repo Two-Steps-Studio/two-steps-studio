@@ -1,14 +1,24 @@
 "use client";
 
-import { BarChart3, Users, MessageSquare } from "lucide-react";
+import { BarChart3, Users, Clock } from "lucide-react";
 
 interface SidebarStatsProps {
   translations: any;
   stats: {
     online_users: number;
     total_members: number;
-    messages_today: number;
+    total_voice_minutes: number;
   };
+}
+
+// Same combined Discord+website stat the homepage widget shows (see
+// discord-stats-live.tsx) - duplicated rather than imported since it's a
+// trivial pure formatter.
+function formatVoiceTime(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h`;
+  return `${Math.floor(hours / 24)} d`;
 }
 
 export function SidebarStats({ translations, stats }: SidebarStatsProps) {
@@ -47,11 +57,11 @@ export function SidebarStats({ translations, stats }: SidebarStatsProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg glass flex items-center justify-center border border-[var(--border-color)]">
-                <MessageSquare size={14} className="opacity-70 text-[var(--text)]" />
+                <Clock size={14} className="opacity-70 text-[var(--text)]" />
               </div>
-              <span className="text-xs font-bold opacity-60 text-[var(--text)]">{translations.nav.newProject || "Wiadomości"}</span>
+              <span className="text-xs font-bold opacity-60 text-[var(--text)]">{translations.home.voiceTime}</span>
             </div>
-            <span className="text-xs font-black text-[var(--text)]">{(stats.messages_today || 0).toLocaleString()}</span>
+            <span className="text-xs font-black text-[var(--text)]">{formatVoiceTime(stats.total_voice_minutes || 0)}</span>
           </div>
         </div>
       </div>

@@ -93,7 +93,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
   const [stats, setStats] = useState({
     online_users: 0,
     total_members: 0,
-    messages_today: 0
+    total_voice_minutes: 0
   });
 
   // Pobierz dane od razu, potem co 60 sekund
@@ -105,7 +105,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
         setStats({
           online_users: data.online_users || 0,
           total_members: data.member_count || data.online_users || 0,
-          messages_today: data.messages_today || 0,
+          total_voice_minutes: data.total_voice_minutes || 0,
         });
       } catch (error) {
         // Transient network hiccup on a background 60s poll - not worth

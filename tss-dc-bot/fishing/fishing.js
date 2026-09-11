@@ -56,7 +56,7 @@ function getLevelFromXP(xp) {
     return Math.floor(0.1 * Math.sqrt(xp));
 }
 
-// ── /lowienie ────────────────────────────────────────────────
+// ── /fish ────────────────────────────────────────────────────
 
 async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1486049846132605042>') {
     const userId = interaction.user.id;
@@ -73,7 +73,7 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
     }
 
     // Reserve a placeholder cooldown synchronously, before the DB round-trips
-    // below -- otherwise two near-simultaneous /lowienie calls can both pass
+    // below -- otherwise two near-simultaneous /fish calls can both pass
     // the check above before either call actually sets one, letting a user
     // catch (and get paid for) two fish off a single cooldown/bait check.
     // Corrected to the real duration once gear stats are known.
@@ -179,7 +179,7 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
     await interaction.editReply({ content: null, embeds: [embed] });
 }
 
-// ── /ryby ────────────────────────────────────────────────────
+// ── /catches ─────────────────────────────────────────────────
 
 async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486049846132605042>') {
     const userId = interaction.user.id;
@@ -193,7 +193,7 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486
 
     if (!catches || catches.length === 0) {
         return interaction.reply({
-            content: '🎣 Nie masz jeszcze żadnych ryb! Użyj `/lowienie` żeby zacząć.',
+            content: '🎣 Nie masz jeszcze żadnych ryb! Użyj `/fish` żeby zacząć.',
             flags: 1 << 6,
         });
     }
@@ -225,7 +225,7 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486
     return interaction.reply({ embeds: [embed] });
 }
 
-// ── /fishtop ─────────────────────────────────────────────────
+// ── /top_fish ────────────────────────────────────────────────
 
 async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1486049846132605042>') {
     const { data: rows } = await supabase
