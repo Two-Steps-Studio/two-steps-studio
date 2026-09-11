@@ -373,15 +373,22 @@ async function updateDiscordStats() {
             console.log('[STATS] Nowa data, reset zlicznika wiadomości.');
         }
 
-        // Używaj upsert aby utrzymać najnowsze dane
-        await supabase.from('discord_stats').upsert({
+        // `recorded_at` is a fresh timestamp on every call, so upserting
+        // onConflict: 'recorded_at' never actually collides with itself --
+        // this either silently failed (no unique constraint on that column,
+        // and the error was never checked) or inserted a new row every 60s
+        // forever. `guild_id` is the real stable key for "this guild's
+        // current stats" (see migrations/add-unified-stats.sql).
+        const { error: statsError } = await supabase.from('discord_stats').upsert({
+            guild_id:        guild.id,
             online_users:    online    || 0,
             active_channels: channels  || 0,
             member_count:    humans    || 0,
             site_accounts:   siteAccounts || 0,
             messages_today:  messagesTodayCount || 0,
             recorded_at:     new Date().toISOString(),
-        }, { onConflict: 'recorded_at' });
+        }, { onConflict: 'guild_id' });
+        if (statsError) console.error('[STATS] Upsert error:', statsError.message);
     } catch (e) {
         console.error('[STATS] Błąd:', e.message);
     }

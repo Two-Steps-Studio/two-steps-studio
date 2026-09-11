@@ -10,60 +10,53 @@ export async function GET() {
     supabase = await createClient();
   } catch {
     return NextResponse.json(
-      { online_users: 0, member_count: 0, site_accounts: 0 },
+      { online_users: 0, member_count: 0, total_members: 0, messages_today: 0, total_voice_minutes: 0 },
       { status: 503 }
     );
   }
 
   try {
-    // Pobierz najnowsze statystyki Discorda z bazy danych
-    let discordStats = null;
+    // messages_today stays Discord-only (bot-tracked counter, no website
+    // equivalent) regardless of which stats source below ends up used.
+    let discordStats: { member_count?: number; online_users?: number; messages_today?: number } | null = null;
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('discord_stats')
-        .select('*')
+        .select('member_count, online_users, messages_today')
         .order('recorded_at', { ascending: false })
         .limit(1)
         .single();
-      if (!error) {
-        discordStats = data;
-      }
-    } catch (e) {
-      // Table doesn't exist or other error, continue with defaults
-      console.log('discord_stats table not available, using defaults');
+      discordStats = data;
+    } catch {
+      // Table/row not available yet - defaults below cover it.
     }
 
-    // Pobierz całkowitą liczbę użytkowników z bazy profiles (nie z Discorda)
-    let siteAccounts = 0;
-    try {
-      // 'estimated' reads Postgres's own row-count statistics instead of doing
-      // a full COUNT(*) scan on every request - this widget only needs a
-      // rough number, not an exact one.
-      const { count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'estimated', head: true });
-      siteAccounts = count || 0;
-    } catch (e) {
-      console.log('profiles table not available');
-    }
+    // Unified members/online, combining Discord (written by the bot into
+    // discord_stats) with the website's own accounts/sessions - see
+    // db/migrations/add-unified-stats.sql. Falls back to Discord-only
+    // numbers (the old behavior) if that migration isn't deployed yet.
+    const { data: unified, error: unifiedError } = await supabase.rpc('get_unified_stats').single();
 
-    // Zwróć dane w nowym formacie
-    const response: any = {
-      online_users: discordStats?.online_users || 0,
-      total_members: discordStats?.member_count || siteAccounts || 0,
+    const totalMembers = unifiedError ? (discordStats?.member_count || 0) : (unified?.total_members ?? 0);
+    const totalOnline = unifiedError ? (discordStats?.online_users || 0) : (unified?.total_online ?? 0);
+    const totalVoiceMinutes = unifiedError ? 0 : (unified?.total_voice_minutes ?? 0);
+    if (unifiedError) console.error('get_unified_stats RPC error:', unifiedError.message);
+
+    return NextResponse.json({
+      online_users: totalOnline,
+      total_members: totalMembers,
+      member_count: totalMembers,
       messages_today: discordStats?.messages_today || 0,
-      member_count: discordStats?.member_count || siteAccounts || 0,
-    };
-
-    return NextResponse.json(response);
+      total_voice_minutes: totalVoiceMinutes,
+    });
   } catch (err: any) {
     console.error('Unexpected stats error:', err);
     return NextResponse.json({
       online_users: 0,
       total_members: 0,
-      messages_today: 0,
       member_count: 0,
+      messages_today: 0,
+      total_voice_minutes: 0,
     });
   }
 }
-

@@ -39,10 +39,6 @@ export const metadata = {
     },
   },
 };
-const HomeSiteStats = dynamic(() => import("./home-site-stats").then(mod => mod.HomeSiteStats), {
-  ssr: false,
-  loading: () => <div className="h-40 rounded-[2.5rem] bg-white/5 animate-pulse" />
-});
 const OnlineChart = dynamic(() => import("./online-chart").then(mod => mod.OnlineChart), {
   ssr: false,
   loading: () => <div className="h-60 rounded-[2.5rem] bg-white/5 animate-pulse" />
@@ -256,7 +252,6 @@ export function HomeClient() {
             {translations.home.communityTitle}
           </h2>
           <div className="grid grid-cols-1 gap-8">
-            <HomeSiteStats />
             <DiscordStatsLive />
             <OnlineChart />
           </div>

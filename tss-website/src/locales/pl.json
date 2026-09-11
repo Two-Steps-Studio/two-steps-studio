@@ -155,7 +155,9 @@
     "onlineOnSite": "Online na stronie",
     "accountsCreated": "Kont utworzonych",
     "onlineLoggedIn": "Online zalogowani",
-    "onlineAnonymous": "Online anonimowi"
+    "onlineAnonymous": "Online anonimowi",
+    "totalMembers": "Członkowie",
+    "voiceTime": "Czas na głosowym"
   },
   "auth": {
     "registerTitle": "Dołącz do nas",

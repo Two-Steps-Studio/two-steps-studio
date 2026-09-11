@@ -2,13 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, MessageSquare, Hash } from "lucide-react";
+import { Users, Clock, IdCard } from "lucide-react";
 import { useLanguage } from "@/hooks/use-translation";
 
 interface Stats {
   online_users: number;
-  active_channels: number;
-  messages_today: number;
+  total_members: number;
+  total_voice_minutes: number;
+}
+
+// Discord + website combined, see db/migrations/add-unified-stats.sql.
+function formatVoiceTime(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h`;
+  return `${Math.floor(hours / 24)} d`;
 }
 
 export function DiscordStatsLive() {
@@ -31,9 +39,9 @@ export function DiscordStatsLive() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
         {[
-          { label: t.home.onlineNow, value: (stats.online_users || 0).toLocaleString(), icon: Users, color: "var(--color-general)" },
-          { label: t.home.channels, value: stats.active_channels || 0, icon: Hash, color: "var(--color-dev)" },
-          { label: t.home.messagesToday, value: (stats.messages_today || 0).toLocaleString(), icon: MessageSquare, color: "var(--color-records)" },
+          { label: t.home.totalMembers, value: (stats.total_members || 0).toLocaleString(), icon: IdCard, color: "var(--color-general)" },
+          { label: t.home.onlineNow, value: (stats.online_users || 0).toLocaleString(), icon: Users, color: "var(--color-dev)" },
+          { label: t.home.voiceTime, value: formatVoiceTime(stats.total_voice_minutes || 0), icon: Clock, color: "var(--color-records)" },
         ].map((item, i) => (
         <motion.div
           key={i}
