@@ -60,7 +60,17 @@ export async function PATCH(
       .eq("id", discordId)
       .single();
 
-    if (invite.email !== userEmail && invite.username !== profile?.username) {
+    // An invite is only sent to one identifier at a time (email or
+    // username), leaving the other column NULL. `!==` treats two NULLs as
+    // "matching", so a plain `invite.username !== profile?.username` check
+    // let any other user whose own profile.username also happens to be
+    // NULL (e.g. anyone who never set one -- see the POST handler in
+    // ../../user/settings/route.ts, which creates new profiles without a
+    // username) accept/reject an email-only invite that was never addressed
+    // to them. A match must be against a real, non-empty value.
+    const emailMatches = !!userEmail && invite.email === userEmail;
+    const usernameMatches = !!invite.username && invite.username === profile?.username;
+    if (!emailMatches && !usernameMatches) {
       return NextResponse.json({ error: "You are not the recipient of this invite" }, { status: 403 });
     }
 
