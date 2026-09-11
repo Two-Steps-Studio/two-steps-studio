@@ -14,9 +14,21 @@
 -- (see tss-dc-bot/index.js updateDiscordStats()).
 --
 -- Idempotent: safe to run multiple times.
+--
+-- REVISION 2 — live introspection (select * limit 1 against the real
+-- Supabase project) showed discord_stats never actually had member_count
+-- or site_accounts columns, despite ARCHITECTURE.md and every piece of
+-- code (bot's updateDiscordStats(), stats/route.ts, get_unified_stats()
+-- below) assuming they existed. Every discord_stats upsert has therefore
+-- been rejected outright by PostgREST ("column not found in schema
+-- cache") since the very first write, not just made ineffective by the
+-- old onConflict bug — this is the real reason the sidebar/homepage
+-- member+online numbers never populated. Adding the missing columns.
 
 ALTER TABLE discord_stats
-ADD COLUMN IF NOT EXISTS guild_id TEXT;
+ADD COLUMN IF NOT EXISTS guild_id TEXT,
+ADD COLUMN IF NOT EXISTS member_count INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS site_accounts INTEGER DEFAULT 0;
 
 -- Collapse any pre-existing rows down to the single most recent one
 -- before adding the uniqueness constraint, so the ADD CONSTRAINT below
@@ -26,8 +38,17 @@ WHERE a.recorded_at < b.recorded_at;
 
 UPDATE discord_stats SET guild_id = COALESCE(guild_id, 'default') WHERE guild_id IS NULL;
 
-ALTER TABLE discord_stats
-ADD CONSTRAINT discord_stats_guild_id_key UNIQUE (guild_id);
+-- ADD CONSTRAINT has no IF NOT EXISTS, and this file is re-run as-is on
+-- every revision (REVISION 2 needs the new columns applied even where
+-- REVISION 1 already ran and created this constraint).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'discord_stats_guild_id_key'
+  ) THEN
+    ALTER TABLE discord_stats ADD CONSTRAINT discord_stats_guild_id_key UNIQUE (guild_id);
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION get_unified_stats()
 RETURNS TABLE (
