@@ -39,14 +39,24 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  const hasAccess = project.owner_id === user.id || await supabase
-    .from("dev_project_members")
-    .select("user_id")
-    .eq("project_id", projectId)
-    .eq("user_id", user.id)
-    .single();
+  const isOwner = project.owner_id === user.id;
+  let isMember = false;
+  if (!isOwner) {
+    // A Supabase query result is an object ({data, error}) even when no row
+    // matched, so the old `hasAccess = isOwner || await supabase...single()`
+    // was always truthy here -- the Forbidden check below never fired for
+    // non-owners, letting any authenticated user read any project's
+    // activity log. Check the actual returned row instead of the query object.
+    const { data: membership } = await supabase
+      .from("dev_project_members")
+      .select("user_id")
+      .eq("project_id", projectId)
+      .eq("user_id", user.id)
+      .single();
+    isMember = !!membership;
+  }
 
-  if (!hasAccess && project.owner_id !== user.id) {
+  if (!isOwner && !isMember) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
