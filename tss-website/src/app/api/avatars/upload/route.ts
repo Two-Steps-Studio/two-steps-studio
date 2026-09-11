@@ -39,7 +39,9 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File | null;
   const userId = (form.get("userId") as string) || "";
-  const username = (form.get("username") as string) || "";
+  // Unbounded client-supplied username had no length cap before being
+  // upserted straight into profiles.username.
+  const username = ((form.get("username") as string) || "").trim().slice(0, 32);
 
   if (!file) {
     return NextResponse.json({ error: "Brak pliku" }, { status: 400 });

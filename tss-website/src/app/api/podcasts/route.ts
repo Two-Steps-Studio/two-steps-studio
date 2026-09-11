@@ -56,10 +56,26 @@ export async function GET(request: Request) {
         );
       }
 
+      // Podcasts default to visibility: 'private' on insert and had no
+      // auth check at all here - any private/unlisted podcast's id was
+      // directly fetchable by anyone.
+      if (data.visibility !== 'public') {
+        const auth = await requireAuth();
+        if (isAuthError(auth)) return auth;
+      }
+
       return NextResponse.json({
         success: true,
         data: data as PodcastWithSeries,
       });
+    }
+
+    // Same gap in the list branch: visibility was only ever an optional
+    // filter, never enforced, so an unauthenticated request with no
+    // visibility param (or visibility=private) returned every podcast.
+    if (visibility !== 'public') {
+      const auth = await requireAuth();
+      if (isAuthError(auth)) return auth;
     }
 
     // Otherwise fetch all podcasts with filters

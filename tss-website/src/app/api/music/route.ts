@@ -53,10 +53,27 @@ export async function GET(request: Request) {
         );
       }
 
+      // Tracks default to visibility: 'private' on insert - unlike
+      // games/route.ts this had no auth check at all, so any private or
+      // unlisted track's id was directly fetchable by anyone.
+      if (data.visibility !== 'public') {
+        const auth = await requireAuth();
+        if (isAuthError(auth)) return auth;
+      }
+
       return NextResponse.json({
         success: true,
         data: data as MusicTrack,
       });
+    }
+
+    // Same gap in the list branch: `visibility` was only ever an optional
+    // filter, never enforced, so an unauthenticated request with no
+    // visibility param (or visibility=private) returned every track
+    // regardless of its real visibility.
+    if (visibility !== 'public') {
+      const auth = await requireAuth();
+      if (isAuthError(auth)) return auth;
     }
 
     // Otherwise fetch all tracks with filters

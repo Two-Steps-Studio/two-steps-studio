@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { z } from 'zod';
 
-const emailSchema = z.object({
+const requestSchema = z.object({
   email: z.string().email('Podaj poprawny adres email'),
+  // `action` used to be inferred from `email === 'unsubscribe'`, which the
+  // email() validation above always rejected first ('unsubscribe' isn't a
+  // valid email) - the whole unsubscribe branch was unreachable dead code,
+  // so no request could ever actually remove a subscription.
+  action: z.enum(['subscribe', 'unsubscribe']).optional().default('subscribe'),
 });
 
 export async function POST(req: NextRequest) {
@@ -16,9 +21,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email } = emailSchema.parse(body);
+    const { email, action } = requestSchema.parse(body);
 
-    if (email === 'unsubscribe') {
+    if (action === 'unsubscribe') {
       const { error: unsubsError } = await supabase
         .from('newsletter_subs')
         .delete()

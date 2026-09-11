@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase-server";
 import { exchangeCodeForToken, getDiscordUser, getDiscordAvatarUrl } from "@/lib/discord-oauth";
 
@@ -16,17 +17,23 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
-  const storedState = searchParams.get("stored_state");
 
   if (!code) {
     return NextResponse.json({ error: "Missing authorization code" }, { status: 400 });
   }
 
-  // SECURITY: Verify state parameter to prevent CSRF attacks
+  // SECURITY: verify state against the httpOnly cookie set by /connect, not
+  // a client-suppliable "stored_state" query param (see connect/route.ts -
+  // that old check compared two attacker-controllable values against each
+  // other and could always be satisfied, and also never matched for real
+  // users since Discord's redirect never actually carried that param).
+  const cookieStore = await cookies();
+  const storedState = cookieStore.get("discord_oauth_state")?.value;
+
   if (!state || !storedState || state !== storedState) {
-    return NextResponse.redirect(
-      new URL("/settings?error=invalid_state", request.url)
-    );
+    const res = NextResponse.redirect(new URL("/settings?error=invalid_state", request.url));
+    res.cookies.delete("discord_oauth_state");
+    return res;
   }
 
   // Get current user
@@ -64,9 +71,14 @@ export async function GET(request: Request) {
       .eq("provider", "discord")
       .maybeSingle();
 
+    // Both writes below used to be fire-and-forget (error never checked),
+    // so a rejected insert/update (e.g. an RLS or constraint failure) still
+    // redirected to the success page telling the user Discord was linked
+    // when it wasn't.
+    let writeError;
     if (userIntegration) {
       // Update existing integration
-      await supabase
+      ({ error: writeError } = await supabase
         .from("user_integrations")
         .update({
           username: discordUser.username,
@@ -80,10 +92,10 @@ export async function GET(request: Request) {
             verified: discordUser.verified,
           },
         })
-        .eq("id", userIntegration.id);
+        .eq("id", userIntegration.id));
     } else {
       // Create new integration
-      await supabase
+      ({ error: writeError } = await supabase
         .from("user_integrations")
         .insert({
           user_id: user.id,
@@ -99,13 +111,22 @@ export async function GET(request: Request) {
             email: discordUser.email,
             verified: discordUser.verified,
           },
-        });
+        }));
+    }
+
+    if (writeError) {
+      console.error("Discord integration write failed:", writeError.message);
+      const res = NextResponse.redirect(new URL("/settings?error=discord_connection_failed", request.url));
+      res.cookies.delete("discord_oauth_state");
+      return res;
     }
 
     // Redirect back to settings with success
-    return NextResponse.redirect(
+    const res = NextResponse.redirect(
       new URL("/settings?success=discord_connected", request.url)
     );
+    res.cookies.delete("discord_oauth_state");
+    return res;
 
   } catch (error) {
     console.error("Discord OAuth error:", error);

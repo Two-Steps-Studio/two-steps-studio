@@ -77,11 +77,15 @@ export async function GET(request: Request) {
     }
 
     // The public catalog (/games, /games/shop) fetches with
-    // visibility=public, which the query below already scopes to public
-    // rows -- no session needed to read those. Any other listing (e.g. the
-    // unfiltered /dev/games admin panel, which also returns drafts/private
-    // games) still requires one.
-    if (visibility !== 'public') {
+    // visibility=public&status=published, which the query below already
+    // scopes to those rows -- no session needed to read those. Any other
+    // listing must have a session: checking only `visibility !== 'public'`
+    // (as this used to) still let an unauthenticated caller request
+    // visibility=public with no status filter (or status=draft) and get
+    // back public-visibility games that were never actually published,
+    // same class of gap the single-game branch above already guards
+    // against with its isPubliclyVisible check.
+    if (!(visibility === 'public' && status === 'published')) {
       const auth = await requireAuth();
       if (isAuthError(auth)) return auth;
     }

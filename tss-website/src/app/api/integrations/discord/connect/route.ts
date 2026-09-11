@@ -36,16 +36,22 @@ export async function GET(request: Request) {
 
   // Generate state for OAuth flow
   const state = generateState();
-
-  // SECURITY: Store state in session/database for verification
-  // For now, we'll pass it back to client to include in callback
-  // In production, store in Redis or session with expiration
-
-  // Generate Discord OAuth URL with state
   const authUrl = getDiscordAuthUrl(state);
 
-  return NextResponse.json({
-    authUrl,
-    state,
+  // The state has to round-trip through Discord's own redirect untouched to
+  // prove this callback really followed a connection *this* browser
+  // started. It can't live in localStorage/a returned JSON field - Discord's
+  // redirect back to /callback only ever carries `code` and `state` (never
+  // an app-defined "stored_state" param), so a client-side-only copy can
+  // never reach the server route to be compared against. An httpOnly cookie
+  // travels automatically with the redirect and can't be read or forged by
+  // a page an attacker controls.
+  const res = NextResponse.json({ authUrl });
+  res.cookies.set("discord_oauth_state", state, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 600,
   });
+  return res;
 }
