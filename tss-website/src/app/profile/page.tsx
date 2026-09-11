@@ -87,10 +87,6 @@ export default function ProfilePage() {
             fetchStarted = true;
             const discordId = currentUser.user_metadata?.provider_id || currentUser.id;
 
-            // Fetch ranking data FIRST (outside realtime callback)
-            const rankingData = await fetchRankingData();
-            setRankingData(rankingData);
-
             // Get profile with fallback
             const { data: initialProfile } = await supabase
                 .from("profiles")
@@ -102,6 +98,17 @@ export default function ProfilePage() {
 
             // Set profile (but don't call setProfile twice for same event)
             setProfile(profileData);
+            setLoading(false);
+
+            // Ranking data (the leaderboard sidebar) is supplementary - it
+            // used to be awaited BEFORE the profile fetch above, so a slow
+            // or failed leaderboard query (two separate 100-row scans)
+            // blocked the user's own profile from ever rendering, stuck
+            // behind the loading spinner indefinitely. Fetch it after the
+            // page already has something to show.
+            fetchRankingData().then(setRankingData).catch(err => {
+                console.error("[Profile] ranking fetch failed:", err);
+            });
 
             // Backfill profiles.avatar_url from the live Discord OAuth session the
             // first time it's missing - the bot never writes this column, so
@@ -167,8 +174,6 @@ export default function ProfilePage() {
                     return { ...prev, ...payload.new };
                 });
             }).subscribe();
-
-            setLoading(false);
         };
 
         // Set up realtime subscription FIRST, then check current session.
