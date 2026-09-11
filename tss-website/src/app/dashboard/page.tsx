@@ -15,6 +15,7 @@ interface Bucket {
   total: number;
   logged_in: number;
   anonymous: number;
+  discord_online?: number;
 }
 interface LeaderUser {
   id: string;
@@ -77,9 +78,15 @@ export default function DashboardPage() {
     };
   }, []);
 
+  // site-stats-history's `total` is website sessions only (its other
+  // consumer, the homepage's online-chart.tsx, needs that exact meaning
+  // kept intact) - add discord_online here so this chart's "Online" line
+  // matches the same Discord + website definition the top stat tile uses,
+  // instead of only ever showing website traffic and looking disconnected
+  // from a much higher number above it.
   const chartData = history.map((b) => ({
     time: new Date(b.t).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }),
-    Online: b.total,
+    Online: b.total + (b.discord_online || 0),
   }));
 
   return (

@@ -609,6 +609,17 @@ async function updateDiscordStats() {
         }, { onConflict: 'guild_id' });
         if (statsError) console.error('[STATS] Upsert error:', statsError.message);
 
+        // Append-only history (unlike discord_stats above, which only ever
+        // keeps the single latest row) so the website's 24h activity chart
+        // can include Discord online counts instead of only ever showing
+        // website session activity - the chart's numbers looked
+        // disconnected from the "Online" tile above it, which already
+        // combines Discord + website.
+        const { error: historyError } = await supabase.from('discord_online_history').insert({
+            online_count: online || 0,
+        });
+        if (historyError) console.error('[STATS] Online history insert error:', historyError.message);
+
         // Per-user presence, for "who's online right now" badges on the
         // website (e.g. the /dashboard leaderboards) - discord_stats only
         // ever had a single aggregate count, nowhere to read an individual
