@@ -27,6 +27,7 @@ const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, hand
 const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = require('./giveaways');
 const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
+const { checkAutoMod } = require('./automod');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -1103,6 +1104,13 @@ async function handleCommandWithErrors(interaction, fn) {
 // ── Text Leveling ────────────────────────────────────────────
 client.on('messageCreate', async (message) => {
     if (message.author.bot || !message.guild) return;
+
+    const wasBlocked = await checkAutoMod(message, sendModLog).catch(e => {
+        console.error('[AUTOMOD] Błąd:', e.message);
+        return false;
+    });
+    if (wasBlocked) return; // deleted for spam/links/mass-mentions - no XP, doesn't count toward messagesToday
+
     messagesTodayCount++;
 
     // Rate limiting per user (3 seconds)
