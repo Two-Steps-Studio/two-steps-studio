@@ -626,6 +626,35 @@ async function updateDiscordStats() {
             if (presenceError) console.error('[STATS] Presence upsert error:', presenceError.message);
         }
 
+        // Bulk-backfill avatar_url for every existing profile, not just
+        // whoever happens to send a message/run a command after a restart
+        // (getProfile() only syncs the one user it's called for) - without
+        // this, only whoever's currently active shows a real avatar
+        // anywhere on the website while everyone else stays blank
+        // indefinitely.
+        const memberIds = members.filter(m => !m.user.bot).map(m => m.id);
+        if (memberIds.length > 0) {
+            const { data: existingProfiles, error: fetchError } = await supabase
+                .from('profiles')
+                .select('id, avatar_url')
+                .in('id', memberIds);
+            if (fetchError) {
+                console.error('[STATS] Avatar backfill fetch error:', fetchError.message);
+            } else {
+                const currentAvatars = new Map((existingProfiles || []).map(p => [p.id, p.avatar_url]));
+                const avatarRows = members
+                    .filter(m => !m.user.bot && currentAvatars.has(m.id))
+                    .map(m => ({ id: m.id, avatar_url: m.user.displayAvatarURL({ extension: 'png', size: 256 }) }))
+                    // Only include rows that actually changed - avoids a
+                    // pointless full-roster write every 60s once synced.
+                    .filter(row => currentAvatars.get(row.id) !== row.avatar_url);
+                if (avatarRows.length > 0) {
+                    const { error: avatarError } = await supabase.from('profiles').upsert(avatarRows, { onConflict: 'id' });
+                    if (avatarError) console.error('[STATS] Avatar backfill upsert error:', avatarError.message);
+                }
+            }
+        }
+
         await updateStatsChannelName(guild, humans);
     } catch (e) {
         console.error('[STATS] Błąd:', e.message);

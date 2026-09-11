@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createServiceClient } from "@/lib/supabase-server";
 
 type PresenceRow = {
   session_id: string;
@@ -8,9 +8,16 @@ type PresenceRow = {
 };
 
 export async function GET() {
+  // Public, read-only aggregate history (only bucketed counts are ever
+  // returned, never raw session/user IDs) - used the session-bound anon
+  // client before, and site_presence has RLS with no anon-read policy
+  // (verified live: an anon-key SELECT returns [] against a table that
+  // actually has hundreds of rows via the service client), so the 24h
+  // activity chart was always empty for every visitor. Same fix already
+  // applied to get_unified_stats() this session.
   let supabase;
   try {
-    supabase = await createClient();
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: "Site stats unavailable - contact administrator" },
