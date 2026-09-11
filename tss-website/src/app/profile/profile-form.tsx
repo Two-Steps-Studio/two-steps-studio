@@ -91,14 +91,19 @@ export default function ProfileForm({
     setSaveErrorMsg("");
 
     // ── KLUCZ: używamy discordId zamiast user.id ──
+    // money/pln_balance are NEVER included here - they used to be re-sent
+    // from `balance`/`money` React state (read once at page load) on every
+    // profile save, which (a) let a tampered client request overwrite its
+    // own real-money balance directly, and (b) even untampered, clobbered
+    // any legitimate concurrent balance change (e.g. a bot reward) with a
+    // stale value. Those columns are only ever written server-side via the
+    // atomic RPCs in tss-dc-bot/db/atomic_mutations.sql.
     const { error } = await supabase
       .from("profiles")
       .upsert({
         id: discordId,
         username,
         avatar_url: avatarUrl,
-        pln_balance: balance,
-        money: money,
         background,
         equipped_frame: equippedFrame,
         equipped_nick_color: equippedNickColor,
@@ -190,12 +195,12 @@ export default function ProfileForm({
           if (urlData && urlData.publicUrl) {
             setAvatarUrl(urlData.publicUrl);
 
+            // See handleUpdate above - money/pln_balance must never be
+            // written from the client.
             await supabase.from("profiles").upsert({
               id: discordId,
               username,
               avatar_url: urlData.publicUrl,
-              pln_balance: balance,
-              money: money,
               background,
               equipped_frame: equippedFrame,
               equipped_nick_color: equippedNickColor,

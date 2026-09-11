@@ -79,9 +79,16 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ── Shape 1b: /praca — money increment + last_work stamp in one write ──────
+-- REVISION 3: the cooldown was only checked client-side in index.js against
+-- a `profile` object read at the start of the interaction. Two /praca calls
+-- racing on the same stale last_work (e.g. double-click, or two devices)
+-- could both pass that check and both get paid on a single hour's cooldown.
+-- Re-checking last_work in the WHERE clause here makes the guard atomic:
+-- the loser of the race gets 0 rows back instead of a second payout.
 CREATE OR REPLACE FUNCTION apply_work_reward(
     p_user_id TEXT,
-    p_earnings INTEGER
+    p_earnings INTEGER,
+    p_cooldown_seconds INTEGER DEFAULT 3600
 )
 RETURNS TABLE (money INTEGER, last_work TIMESTAMPTZ) AS $$
 #variable_conflict use_column
@@ -92,6 +99,7 @@ BEGIN
         last_work = NOW(),
         updated_at = NOW()
     WHERE id = p_user_id
+      AND (last_work IS NULL OR last_work <= NOW() - (p_cooldown_seconds || ' seconds')::INTERVAL)
     RETURNING profiles.money, profiles.last_work;
 END;
 $$ LANGUAGE plpgsql;

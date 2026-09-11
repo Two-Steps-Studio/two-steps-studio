@@ -536,10 +536,11 @@ client.on('interactionCreate', async interaction => {
             }
 
             try {
-                await supabase
+                const { error: bgError } = await supabase
                     .from('profiles')
                     .update({ background: backgroundName })
                     .eq('id', interaction.user.id);
+                if (bgError) throw new Error(bgError.message);
 
                 await interaction.editReply({
                     content: `✅ Ustawiono tło profilu na: **${backgroundName}**`,
@@ -751,11 +752,23 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.editReply(`⏳ Jesteś zmęczony! Odpocznij jeszcze **${minsLeft} min**.`);
             }
             const earnings = Math.floor(Math.random() * 80) + 20;
-            const { error: workError } = await supabase.rpc('apply_work_reward', {
+            const { data: workData, error: workError } = await supabase.rpc('apply_work_reward', {
                 p_user_id: profile.id,
                 p_earnings: earnings,
             });
-            if (workError) console.error('[DB ERROR] apply_work_reward failed:', workError.message);
+            if (workError) {
+                console.error('[DB ERROR] apply_work_reward failed:', workError.message);
+                return await interaction.editReply('❌ Wystąpił błąd podczas pracy. Spróbuj ponownie.');
+            }
+            // apply_work_reward re-checks the cooldown atomically in the DB
+            // (see db/atomic_mutations.sql REVISION 3) -- two /praca calls
+            // racing past the client-side check above with the same stale
+            // cached profile.last_work would otherwise both earn money on
+            // one cooldown. If the guard rejected the write, 0 rows come
+            // back and we must not claim the user got paid.
+            if (!workData || workData.length === 0) {
+                return await interaction.editReply('⏳ Jesteś zmęczony! Odpocznij chwilę i spróbuj ponownie.');
+            }
             await interaction.editReply(`⛏️ Zapracowałeś ciężko w Studiu i otrzymałeś **${earnings} ${COIN}!**`);
             break;
         }
