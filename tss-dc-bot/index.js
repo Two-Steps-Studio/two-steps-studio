@@ -292,13 +292,31 @@ const commands = [
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 async function registerCommands() {
+    // CLAUDE.md documents commands as guild-specific, and CLIENT_ID/GUILD_ID
+    // are already set in .env for exactly this - but this used to register
+    // globally instead (Routes.applicationCommands, with the app ID
+    // hardcoded rather than read from CLIENT_ID). Global commands can take
+    // up to an hour to propagate after an update, and would silently become
+    // available in any other guild the bot is ever added to.
+    const clientId = process.env.CLIENT_ID || '1484253044421038261';
+    const guildId = process.env.GUILD_ID;
     try {
         console.log('--- SYNCING SLASH COMMANDS ---');
         await rest.put(
-            Routes.applicationCommands('1484253044421038261'),
+            guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId),
             { body: commands },
         );
-        console.log('--- SLASH COMMANDS SYNCED ---');
+        if (guildId) {
+            // Clear the old global registration this used to create -
+            // switching to guild commands alone doesn't remove it, and a
+            // leftover global copy of every command would show up
+            // duplicated (global + guild) until Discord's global cache
+            // catches up, or forever if it never gets cleared.
+            await rest.put(Routes.applicationCommands(clientId), { body: [] }).catch(err =>
+                console.error('Failed to clear old global commands:', err.message)
+            );
+        }
+        console.log(`--- SLASH COMMANDS SYNCED (${guildId ? 'guild-specific' : 'global - GUILD_ID not set'}) ---`);
     } catch (error) {
         console.error('Failed sync:', error);
     }

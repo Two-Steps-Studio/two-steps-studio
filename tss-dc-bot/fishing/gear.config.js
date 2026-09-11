@@ -134,7 +134,13 @@ const GEAR = {
         levels: [
             { level: 0, label: 'Brak',           price: 0,      stat: 0 },
             { level: 1, label: 'Tratwa',         price: 200,    stat: 1 },
-            { level: 2, label: 'Kajak',          price: 600,    stat: 1 },
+            // Kajak gives the same +1 locationSlots as Tratwa (the
+            // documented +4 total cap can't be spread strictly-increasing
+            // across 8 levels as a small integer stat) - was priced at the
+            // normal ~x2.2 curve anyway (600), charging 3x for zero
+            // functional gain. Repriced as a smaller lateral/flavor step
+            // instead of a full price tier.
+            { level: 2, label: 'Kajak',          price: 350,    stat: 1 },
             { level: 3, label: 'Ponton',         price: 1600,   stat: 2 },
             { level: 4, label: 'Łódź wiosłowa',  price: 4000,   stat: 2 },
             { level: 5, label: 'Motorówka',      price: 10000,  stat: 3 },
