@@ -11,6 +11,13 @@ type DiscordOnlineRow = {
   recorded_at: string;
 };
 
+// GET() takes no request params (no cookies/headers/searchParams), so
+// without this Next.js can treat the route as static and cache the
+// response indefinitely - every other stats route here already has this;
+// this one was missing it, which is why the 24h chart never updated no
+// matter how often the dashboard polled it.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   // Public, read-only aggregate history (only bucketed counts are ever
   // returned, never raw session/user IDs) - used the session-bound anon
