@@ -222,6 +222,13 @@ const commands = [
             opt.setName('nazwa')
                 .setDescription('Nazwa eventu')
                 .setRequired(true)
+                // Discord embed field *names* (used in /event_list as
+                // "#<id> – <name>") are capped at 256 chars; without this,
+                // Discord's own 6000-char default allowed a name long
+                // enough to throw building that field, breaking
+                // /event_list for the whole server until the offending
+                // event was found and deleted directly in the DB.
+                .setMaxLength(200)
         )
         .addStringOption(opt =>
             opt.setName('data')
@@ -232,11 +239,20 @@ const commands = [
             opt.setName('opis')
                 .setDescription('Opis eventu (opcjonalnie)')
                 .setRequired(false)
+                // Embed field *values* are capped at 1024 chars, and
+                // /event_list packs date+limit+description+participants
+                // into one field - leave plenty of room for the rest.
+                .setMaxLength(500)
         )
         .addIntegerOption(opt =>
             opt.setName('max_uczestnikow')
                 .setDescription('Maksymalna liczba uczestników (opcjonalnie)')
                 .setRequired(false)
+                // 0 or negative broke the join check in events.js (0
+                // collapsed to "no limit" via `||`; negative made the
+                // event permanently report full, since count>=negative is
+                // always true) - only positive limits make sense anyway.
+                .setMinValue(1)
         ),
     new SlashCommandBuilder()
         .setName('event_list')
@@ -1006,10 +1022,18 @@ async function syncVoiceRewards(userId, minutes, member, username) {
 }
 
 // ── Welcome ──────────────────────────────────────────────────
-client.on('guildMemberAdd', member => {
-    const ch = member.guild.channels.cache.find(c => c.name.includes('powitania') || c.name.includes('welcome'));
-    if (ch) {
-        ch.send({ embeds: [
+client.on('guildMemberAdd', async member => {
+    // The name-substring match can hit a category or other non-text
+    // channel (e.g. a category literally named "👋 Welcome") which has no
+    // .send() -- that used to throw synchronously inside this listener, a
+    // spot neither client.on('error') nor process.on('unhandledRejection')
+    // catches, crashing the whole bot process on every subsequent join.
+    const ch = member.guild.channels.cache.find(c =>
+        c.isTextBased?.() && (c.name.includes('powitania') || c.name.includes('welcome'))
+    );
+    if (!ch) return;
+    try {
+        await ch.send({ embeds: [
                 new EmbedBuilder()
                     .setTitle('👋 Witaj w Two Steps Studio!')
                     .setDescription(`Witaj <@${member.id}>! Cieszymy się, że do nas dołączyłeś.`)
@@ -1017,6 +1041,8 @@ client.on('guildMemberAdd', member => {
                     .setThumbnail(member.user.displayAvatarURL())
                     .addFields({ name: 'Twoje ID', value: member.id }),
             ]});
+    } catch (e) {
+        console.error('[WELCOME] Błąd wysyłania powitania:', e.message);
     }
 });
 

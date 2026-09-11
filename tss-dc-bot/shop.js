@@ -252,6 +252,22 @@ async function handleShopInteraction(interaction, supabase) {
             });
         }
 
+        // Unlike the cosmetic branch above (which rejects an already-owned
+        // item before charging), role items had no repurchase guard at all -
+        // member.roles.add() on a role the member already has is a silent
+        // Discord no-op, so re-buying VIP/SVIP/MVIP/etc. charged the full
+        // price again for literally nothing.
+        let member = null;
+        if (item.type === 'role' && item.roleId) {
+            member = await interaction.guild.members.fetch(userId).catch(() => null);
+            if (!member) {
+                return interaction.reply({ content: '❌ Nie udało się pobrać Twoich danych na serwerze. Spróbuj ponownie.', flags: 1 << 6 });
+            }
+            if (member.roles.cache.has(item.roleId)) {
+                return interaction.reply({ content: `❌ Masz już **${item.label}**.`, flags: 1 << 6 });
+            }
+        }
+
         const { data: purchaseData, error: purchaseError } = await supabase.rpc('increment_profile_money', {
             p_user_id: profile.id,
             p_delta: -item.price,
@@ -267,7 +283,6 @@ async function handleShopInteraction(interaction, supabase) {
         let roleGranted = true;
         if (item.type === 'role' && item.roleId) {
             try {
-                const member = await interaction.guild.members.fetch(userId);
                 await member.roles.add(item.roleId);
             } catch (e) {
                 roleGranted = false;

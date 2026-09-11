@@ -166,10 +166,17 @@ async function handleGearInteraction(interaction, supabase) {
             p_gear_key: key,
             p_price: next.price,
             p_new_level: newLevel,
+            p_expected_level: gearObj[key] ?? 0,
         });
         if (upgradeError) {
+            // STALE_GEAR_LEVEL means another purchase of this same item
+            // (double-click, second device) landed first - the RPC's
+            // compare-and-swap already rolled back this call's money
+            // deduction, nothing was lost.
             const msg = upgradeError.message?.includes('INSUFFICIENT_FUNDS')
                 ? `❌ Brakuje Ci **${(next.price - money).toLocaleString('pl-PL')} ${COIN}**!`
+                : upgradeError.message?.includes('STALE_GEAR_LEVEL')
+                ? '⚠️ Ten sprzęt już został ulepszony (np. w innym kliknięciu). Odśwież i spróbuj ponownie.'
                 : '❌ Wystąpił błąd podczas ulepszania sprzętu.';
             return await interaction.reply({ content: msg, ephemeral: true });
         }

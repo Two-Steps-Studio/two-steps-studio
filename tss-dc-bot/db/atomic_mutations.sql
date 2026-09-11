@@ -238,16 +238,30 @@ $$ LANGUAGE plpgsql;
 -- (verified against fishing/gear.config.js and directly against real rows
 -- in the fishing_gear table), each one a plain, inspectable UPDATE — for a
 -- function that moves money, that's worth the verbosity.
+-- REVISION 5: the money deduction was guarded (money >= p_price) but the
+-- gear-level write was not conditioned on the row's current level at all --
+-- two near-simultaneous purchases of the same item (double-click, or two
+-- devices) both reading the same pre-upgrade level could both pass the
+-- money guard and each get charged p_price, while only the first actually
+-- moved the gear level (the second's unconditional SET just re-wrote the
+-- same target level). p_expected_level makes the gear write a
+-- compare-and-swap: if the row's current level no longer matches what the
+-- caller read, 0 rows update, we raise, and Postgres rolls back the whole
+-- function -- including the money deduction that already happened -- so
+-- the loser of the race gets a clean error and their money back instead of
+-- losing it for nothing.
 CREATE OR REPLACE FUNCTION purchase_gear_upgrade(
     p_user_id TEXT,
     p_gear_key TEXT,
     p_price INTEGER,
-    p_new_level INTEGER
+    p_new_level INTEGER,
+    p_expected_level INTEGER
 )
 RETURNS TABLE (money INTEGER, gear_level INTEGER) AS $$
 #variable_conflict use_column
 DECLARE
     v_money INTEGER;
+    v_rows INTEGER;
 BEGIN
     UPDATE profiles
     SET money = money - p_price, updated_at = NOW()
@@ -262,23 +276,28 @@ BEGIN
     ON CONFLICT (user_id) DO NOTHING;
 
     IF p_gear_key = 'zylka' THEN
-        UPDATE fishing_gear SET zylka = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET zylka = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(zylka, 0) = p_expected_level;
     ELSIF p_gear_key = 'kolowrotek' THEN
-        UPDATE fishing_gear SET kolowrotek = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET kolowrotek = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(kolowrotek, 0) = p_expected_level;
     ELSIF p_gear_key = 'haczyk' THEN
-        UPDATE fishing_gear SET haczyk = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET haczyk = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(haczyk, 0) = p_expected_level;
     ELSIF p_gear_key = 'przynet' THEN
-        UPDATE fishing_gear SET przynet = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET przynet = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(przynet, 0) = p_expected_level;
     ELSIF p_gear_key = 'wedka' THEN
-        UPDATE fishing_gear SET wedka = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET wedka = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(wedka, 0) = p_expected_level;
     ELSIF p_gear_key = 'zaneta' THEN
-        UPDATE fishing_gear SET zaneta = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET zaneta = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(zaneta, 0) = p_expected_level;
     ELSIF p_gear_key = 'lodz' THEN
-        UPDATE fishing_gear SET lodz = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET lodz = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(lodz, 0) = p_expected_level;
     ELSIF p_gear_key = 'skrzynka' THEN
-        UPDATE fishing_gear SET skrzynka = p_new_level, updated_at = NOW() WHERE user_id = p_user_id;
+        UPDATE fishing_gear SET skrzynka = p_new_level, updated_at = NOW() WHERE user_id = p_user_id AND COALESCE(skrzynka, 0) = p_expected_level;
     ELSE
         RAISE EXCEPTION 'INVALID_GEAR_KEY: %', p_gear_key;
+    END IF;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    IF v_rows = 0 THEN
+        RAISE EXCEPTION 'STALE_GEAR_LEVEL';
     END IF;
 
     RETURN QUERY SELECT v_money, p_new_level;

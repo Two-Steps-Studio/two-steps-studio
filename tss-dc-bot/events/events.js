@@ -17,7 +17,10 @@ async function handleEventCreate(interaction, supabase) {
     const name            = interaction.options.getString('nazwa');
     const description     = interaction.options.getString('opis') || null;
     const dateStr         = interaction.options.getString('data');
-    const maxParticipants = interaction.options.getInteger('max_uczestnikow') || null;
+    // getInteger() already returns null when the option wasn't provided --
+    // `|| null` on top of that collapsed a real 0 (announcement-only,
+    // zero-capacity event) into "no limit" too, since 0 is falsy.
+    const maxParticipants = interaction.options.getInteger('max_uczestnikow');
 
     const parts = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
     if (!parts) {
@@ -123,9 +126,15 @@ async function handleEventList(interaction, supabase) {
             participantsList = '\n👤 Brak zapisanych uczestników';
         }
 
+        // Defensive cap regardless of the /event_create input limits below -
+        // any pre-existing row longer than Discord's 256/1024 embed field
+        // limits would otherwise throw here and break /event_list for
+        // every user until the offending event was found and deleted.
+        const fieldName  = `#${event.id} – ${event.name}`.slice(0, 256);
+        const fieldValue = `📅 ${date.toLocaleString('pl-PL')} | 👥 Zapisani: **${limit}**${desc}${participantsList}`.slice(0, 1024);
         embed.addFields({
-            name:   `#${event.id} – ${event.name}`,
-            value:  `📅 ${date.toLocaleString('pl-PL')} | 👥 Zapisani: **${limit}**${desc}${participantsList}`,
+            name:   fieldName,
+            value:  fieldValue,
             inline: false,
         });
     }

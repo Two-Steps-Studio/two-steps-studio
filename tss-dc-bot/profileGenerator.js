@@ -226,14 +226,24 @@ async function createProfileCard(userData) {
     const maxNicknameWidth = 680;
     let fontSize = 85;
     ctx.font = `bold ${fontSize}px "Space Grotesk"`;
-    let nickWidth = ctx.measureText(userData.username).width;
+    let displayName = userData.username;
+    let nickWidth = ctx.measureText(displayName).width;
 
     while (nickWidth > maxNicknameWidth && fontSize > 40) {
         fontSize -= 5;
         ctx.font = `bold ${fontSize}px "Space Grotesk"`;
-        nickWidth = ctx.measureText(userData.username).width;
+        nickWidth = ctx.measureText(displayName).width;
     }
-    ctx.fillText(userData.username, 265, 170);
+    // The shrink loop above bottoms out at fontSize 40 with no fallback -
+    // a name still wider than maxNicknameWidth at the minimum size used to
+    // just keep drawing past the card's right edge, unreadable/invisible.
+    // Truncate with an ellipsis once shrinking alone can't fit it.
+    while (nickWidth > maxNicknameWidth && displayName.length > 1) {
+        displayName = displayName.slice(0, -1);
+        nickWidth = ctx.measureText(displayName + '…').width;
+    }
+    if (displayName !== userData.username) displayName += '…';
+    ctx.fillText(displayName, 265, 170);
 
     // Roles Label
     ctx.font = 'bold 35px "Space Grotesk"';
