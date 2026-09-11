@@ -5,6 +5,7 @@ const {
     ButtonBuilder,
     ButtonStyle,
 } = require('discord.js');
+const { logActivity } = require('./activityLog');
 
 // ── Definicja przedmiotów sklepu ─────────────────────────────
 const SHOP_ITEMS = [
@@ -246,6 +247,7 @@ async function handleShopInteraction(interaction, supabase) {
             }
 
             const newMoney = purchaseData?.[0]?.new_money ?? (money - item.price);
+            logActivity(supabase, 'purchase', interaction.user.username, item.label);
             return interaction.reply({
                 content: `✅ Kupiłeś **${item.label}** za **${item.price.toLocaleString('pl-PL')} ${COIN}**! Ustaw to na stronie w Profilu → Ustawienia. Pozostało: **${newMoney} ${COIN}**.`,
                 flags: 1 << 6,
@@ -297,6 +299,7 @@ async function handleShopInteraction(interaction, supabase) {
             });
         }
 
+        logActivity(supabase, 'purchase', interaction.user.username, item.label);
         return interaction.reply({
             content: `✅ Kupiłeś **${item.label}** za **${item.price.toLocaleString('pl-PL')} ${COIN}**! Pozostało: **${newMoney} ${COIN}**.`,
             flags: 1 << 6,

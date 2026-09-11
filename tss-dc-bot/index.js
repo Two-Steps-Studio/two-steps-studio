@@ -27,6 +27,7 @@ const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, hand
 const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = require('./giveaways');
 const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
+const { logActivity } = require('./activityLog');
 const { checkAutoMod } = require('./automod');
 const { handleServerInfo, handleUserInfo, handleLock, handleUnlock, handleSlowmode } = require('./utility');
 const { loadTags, handleTagAdd, handleTagRemove, handleTagList, checkTag } = require('./tags');
@@ -1330,6 +1331,7 @@ client.on('messageCreate', async (message) => {
             if (message.member) {
                 await syncLevelRole(message.member, newLevel);
             }
+            logActivity(supabase, 'level_up', message.author.username, `poziom ${newLevel}`);
         }
     } catch (e) {
         console.error('[LEVELING] Text leveling error:', e.message);
@@ -1387,12 +1389,15 @@ async function syncVoiceRewards(userId, minutes, member, username) {
 
         if (newLevel > currentLevel && member) {
             await syncLevelRole(member, newLevel);
+            logActivity(supabase, 'level_up', username, `poziom ${newLevel}`);
         }
     } catch (e) { console.error('[VC] Reward sync error:', e); }
 }
 
 // ── Welcome ──────────────────────────────────────────────────
 client.on('guildMemberAdd', async member => {
+    logActivity(supabase, 'join', member.user.username);
+
     const autoRoleId = process.env.AUTO_ROLE_ID;
     if (autoRoleId) {
         await member.roles.add(autoRoleId).catch(e => console.error('[AUTOROLE] Błąd nadawania roli:', e.message));

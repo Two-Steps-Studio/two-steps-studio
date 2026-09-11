@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createServiceClient } from "@/lib/supabase-server";
 
 const DEFAULT_PACKAGES = {
   free: { features: ["Użycie niekomercyjne", "Tylko streaming", "Bez dystrybucji"] },
@@ -9,10 +9,17 @@ const DEFAULT_PACKAGES = {
   exclusive: { features: ["Pełne prawa autorskie", "Beat usuwany ze sklepu", "Wszystkie formaty", "Priorytetowe wsparcie"] },
 };
 
+// Public read-only beat catalog, no auth check by design. Was using the
+// anon-key session-bound client - verified live that beats/records have
+// RLS with no anon-read policy (same symptom already found and fixed for
+// several other tables this session), so every real beat (including one,
+// "Dark Energy", not even represented by the hardcoded sample-data
+// fallback below) silently returned zero rows and this route quietly
+// served fake placeholder products instead of a visible error.
 export async function GET() {
   let supabase;
   try {
-    supabase = await createClient();
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: "Sklep z beatami niedostepny - kontakt z administratorem" },
