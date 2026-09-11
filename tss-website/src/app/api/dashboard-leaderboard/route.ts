@@ -37,9 +37,32 @@ export async function GET() {
       return NextResponse.json({ error: error?.message }, { status: 500 });
     }
 
+    // Per-user "online now" badge, synced by the bot into discord_presence
+    // every 60s (see tss-dc-bot/index.js updateDiscordStats) - matches the
+    // same online/dnd-counts-as-online definition used for the aggregate
+    // discord_stats.online_users count, so the leaderboard dots agree with
+    // the top-level "Online" tile instead of using a different rule.
+    const userIds = [...new Set([...(byLevel.data || []), ...(byMoney.data || [])].map((u) => u.id))];
+    let onlineIds = new Set<string>();
+    if (userIds.length > 0) {
+      const { data: presence, error: presenceError } = await supabase
+        .from("discord_presence")
+        .select("user_id, status")
+        .in("user_id", userIds);
+      if (presenceError) {
+        console.error("[dashboard-leaderboard] presence error:", presenceError.message);
+      } else {
+        onlineIds = new Set(
+          (presence || []).filter((p) => p.status === "online" || p.status === "dnd").map((p) => p.user_id)
+        );
+      }
+    }
+
+    const withOnline = (rows: any[]) => rows.map((u) => ({ ...u, online: onlineIds.has(u.id) }));
+
     return NextResponse.json({
-      byLevel: byLevel.data || [],
-      byMoney: byMoney.data || [],
+      byLevel: withOnline(byLevel.data || []),
+      byMoney: withOnline(byMoney.data || []),
     });
   } catch (err) {
     console.error("[dashboard-leaderboard] unexpected error:", err);

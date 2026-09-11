@@ -477,7 +477,7 @@ async function registerCommands() {
 }
 
 // ── Pobieranie/Tworzenie Profilu ─────────────────────────────
-async function getProfile(userId, username, roles = []) {
+async function getProfile(userId, username, roles = [], avatarUrl = null) {
     try {
         let { data: profile } = await supabase
             .from('profiles')
@@ -492,6 +492,7 @@ async function getProfile(userId, username, roles = []) {
                 .upsert({
                     id: userId,
                     username: username || 'Nieznany',
+                    avatar_url: avatarUrl,
                     xp: 0,
                     level: 0,
                     money: 50,
@@ -510,15 +511,27 @@ async function getProfile(userId, username, roles = []) {
         // to unconditionally rewrite username/discord_roles every single
         // time even when nothing changed - doubling DB writes on the bot's
         // busiest paths for no reason. Only write when something did.
+        //
+        // avatar_url used to only ever be written by the website (on manual
+        // upload, or backfilled from a Discord OAuth session) - anyone who
+        // only ever interacted through the bot, never the site, had it
+        // permanently null. That's most of a Discord-only community, which
+        // is why leaderboards/dashboards reading this column showed blank
+        // avatars for nearly everyone. Keep it synced from the live Discord
+        // avatar here too, same as username/roles.
         const rolesChanged    = JSON.stringify(profile.discord_roles || []) !== JSON.stringify(roles);
         const usernameChanged = profile.username !== username;
-        if (!rolesChanged && !usernameChanged) {
+        const avatarChanged   = avatarUrl && profile.avatar_url !== avatarUrl;
+        if (!rolesChanged && !usernameChanged && !avatarChanged) {
             return profile;
         }
 
+        const updatePayload = { username, discord_roles: roles };
+        if (avatarChanged) updatePayload.avatar_url = avatarUrl;
+
         const { data: updatedProfile } = await supabase
             .from('profiles')
-            .update({ username, discord_roles: roles })
+            .update(updatePayload)
             .eq('id', userId)
             .select()
             .single();
@@ -595,6 +608,23 @@ async function updateDiscordStats() {
             recorded_at:     new Date().toISOString(),
         }, { onConflict: 'guild_id' });
         if (statsError) console.error('[STATS] Upsert error:', statsError.message);
+
+        // Per-user presence, for "who's online right now" badges on the
+        // website (e.g. the /dashboard leaderboards) - discord_stats only
+        // ever had a single aggregate count, nowhere to read an individual
+        // member's status from. One batched upsert (not one call per
+        // member) to avoid hammering the DB every 60s on a larger server.
+        const presenceRows = members
+            .filter(m => !m.user.bot)
+            .map(m => ({
+                user_id: m.id,
+                status: m.presence?.status || 'offline',
+                updated_at: new Date().toISOString(),
+            }));
+        if (presenceRows.length > 0) {
+            const { error: presenceError } = await supabase.from('discord_presence').upsert(presenceRows, { onConflict: 'user_id' });
+            if (presenceError) console.error('[STATS] Presence upsert error:', presenceError.message);
+        }
 
         await updateStatsChannelName(guild, humans);
     } catch (e) {
@@ -708,7 +738,7 @@ client.on('interactionCreate', async interaction => {
     }
 
     const roles   = interaction.member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
-    const profile = await getProfile(interaction.user.id, interaction.user.username, roles);
+    const profile = await getProfile(interaction.user.id, interaction.user.username, roles, interaction.user.displayAvatarURL({ extension: 'png', size: 256 }));
 
     await handleCommandWithErrors(interaction, async () => {
     switch (interaction.commandName) {
@@ -730,7 +760,7 @@ client.on('interactionCreate', async interaction => {
                     });
                 }
                 targetRoles = member.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
-                targetProfile = await getProfile(targetUser.id, targetUser.username, targetRoles);
+                targetProfile = await getProfile(targetUser.id, targetUser.username, targetRoles, targetUser.displayAvatarURL({ extension: 'png', size: 256 }));
             }
 
             if (!targetProfile) {
@@ -925,7 +955,7 @@ client.on('interactionCreate', async interaction => {
             }
 
             const targetRoles = targetMember.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
-            const targetProfile = await getProfile(targetUser.id, targetUser.username, targetRoles);
+            const targetProfile = await getProfile(targetUser.id, targetUser.username, targetRoles, targetUser.displayAvatarURL({ extension: 'png', size: 256 }));
 
             if (!targetProfile) {
                 return await interaction.editReply({ content: `❌ Nie znaleziono profilu dla: ${targetUser.username}`, ephemeral: true });
@@ -1228,7 +1258,7 @@ client.on('messageCreate', async (message) => {
 
     try {
         const roles   = message.member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
-        const profile = await getProfile(message.author.id, message.author.username, roles);
+        const profile = await getProfile(message.author.id, message.author.username, roles, message.author.displayAvatarURL({ extension: 'png', size: 256 }));
         if (!profile) return;
 
         const currentLevel = profile.level ?? 0;
@@ -1296,7 +1326,7 @@ async function syncVoiceRewards(userId, minutes, member, username) {
         // re-synced them, breaking the website's DiscordRolesPanel and the
         // profile card's role badges in the meantime.
         const roles = member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
-        const profile      = await getProfile(userId, username, roles);
+        const profile      = await getProfile(userId, username, roles, member?.user.displayAvatarURL({ extension: 'png', size: 256 }));
         const currentLevel = profile.level ?? 0;
         const newLevel     = getLevelFromXP((profile.xp || 0) + minutes * 3);
 

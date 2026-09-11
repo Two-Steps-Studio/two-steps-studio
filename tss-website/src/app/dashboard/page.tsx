@@ -23,6 +23,7 @@ interface LeaderUser {
   level?: number;
   xp?: number;
   money?: number;
+  online?: boolean;
 }
 
 // Same combined Discord+website stat shown elsewhere on the site (see
@@ -199,11 +200,7 @@ function Leaderboard({
         {users.map((u, i) => (
           <div key={u.id} className="flex items-center gap-4 rounded-2xl bg-white/[0.03] px-5 py-3">
             <span className="text-2xl font-black w-8 text-white/40">#{i + 1}</span>
-            {u.avatar_url ? (
-              <img src={u.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-white/10" />
-            )}
+            <LeaderAvatar avatarUrl={u.avatar_url} online={u.online} />
             <span className="flex-1 text-xl font-bold truncate">{u.username || "Nieznany"}</span>
             <span className="text-xl font-black tabular-nums" style={{ color }}>
               {(u[valueKey] ?? 0).toLocaleString("pl-PL")}
@@ -212,6 +209,27 @@ function Leaderboard({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function LeaderAvatar({ avatarUrl, online }: { avatarUrl?: string; online?: boolean }) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <div className="relative w-10 h-10 shrink-0">
+      {avatarUrl && !broken ? (
+        <img
+          src={avatarUrl}
+          alt=""
+          className="w-10 h-10 rounded-full object-cover"
+          onError={() => setBroken(true)}
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-white/10" />
+      )}
+      {online && (
+        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#06e402] border-2 border-[#05080a]" />
+      )}
     </div>
   );
 }
