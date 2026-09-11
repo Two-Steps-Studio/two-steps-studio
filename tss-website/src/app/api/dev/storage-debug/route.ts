@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient, createClient } from '@/lib/supabase-server';
+import { requireAuth, requireAdmin, isAuthError } from '@/lib/auth-helpers';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  // This is a storage diagnostics endpoint -- it reports whether the
+  // service-role key works, lists every bucket (name/public flag), and
+  // probes bucket name variants. None of that had an auth check, so it was
+  // reachable by anyone who found the URL. Gate it like the other internal
+  // debug/admin tooling.
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+  const adminCheck = requireAdmin(auth);
+  if (adminCheck) return adminCheck;
+
   const results: any = {
     env: {
       hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
