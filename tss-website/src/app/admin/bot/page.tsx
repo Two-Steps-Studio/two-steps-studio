@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Settings, Users, ScrollText, Gift, ShieldAlert, Loader2, ArrowLeft, Search, Save, Check,
   AlertTriangle, UserPlus, TrendingUp, ShoppingBag, MessageSquare, Ticket, PartyPopper,
+  UserX, Ban, VolumeX,
 } from "lucide-react";
 
 const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "channel" | "role"; channelType?: "text" | "voice" }> = {
@@ -389,13 +390,21 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
   );
 }
 
-interface ModWarning {
-  id: number;
+interface ModerationRow {
+  id: string;
+  type: "warn" | "kick" | "ban" | "timeout";
   username: string;
   moderator: string;
   reason: string;
+  duration_minutes: number | null;
   created_at: string;
 }
+const MODERATION_ICON: Record<ModerationRow["type"], { icon: ElementType; color: string; label: string }> = {
+  warn: { icon: AlertTriangle, color: "#f39c12", label: "ostrzeżenie" },
+  kick: { icon: UserX, color: "#e74c3c", label: "wyrzucenie" },
+  ban: { icon: Ban, color: "#992d22", label: "ban" },
+  timeout: { icon: VolumeX, color: "#e67e22", label: "wyciszenie" },
+};
 interface ActivityLogRow {
   id: number;
   type: "join" | "level_up" | "purchase" | "message";
@@ -416,7 +425,7 @@ function formatLogTime(iso: string): string {
 }
 
 function LogsTab() {
-  const [warnings, setWarnings] = useState<ModWarning[]>([]);
+  const [moderation, setModeration] = useState<ModerationRow[]>([]);
   const [activity, setActivity] = useState<ActivityLogRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -424,7 +433,7 @@ function LogsTab() {
     fetch("/api/admin/bot-logs")
       .then((res) => res.json())
       .then((data) => {
-        setWarnings(data.warnings || []);
+        setModeration(data.moderation || []);
         setActivity(data.activity || []);
       })
       .finally(() => setLoading(false));
@@ -443,21 +452,31 @@ function LogsTab() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle size={16} className="text-yellow-500" /> Ostrzeżenia ({warnings.length})
+            <ShieldAlert size={16} className="text-yellow-500" /> Moderacja ({moderation.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
-          {warnings.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak ostrzeżeń.</p>}
-          {warnings.map((w) => (
-            <div key={w.id} className="rounded-lg border border-[var(--border-color)] p-3 text-sm space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{w.username}</span>
-                <span className="text-xs text-[var(--text-muted)]">{formatLogTime(w.created_at)}</span>
+          {moderation.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak akcji moderacyjnych.</p>}
+          {moderation.map((m) => {
+            const meta = MODERATION_ICON[m.type];
+            const Icon = meta.icon;
+            return (
+              <div key={m.id} className="rounded-lg border border-[var(--border-color)] p-3 text-sm space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium flex items-center gap-1.5">
+                    <Icon size={14} style={{ color: meta.color }} /> {m.username}
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{meta.label}</Badge>
+                  </span>
+                  <span className="text-xs text-[var(--text-muted)]">{formatLogTime(m.created_at)}</span>
+                </div>
+                <p className="text-[var(--text-muted)]">
+                  {m.reason}
+                  {m.duration_minutes ? ` (${m.duration_minutes} min)` : ""}
+                </p>
+                <p className="text-xs text-[var(--text-muted)]">od: {m.moderator}</p>
               </div>
-              <p className="text-[var(--text-muted)]">{w.reason}</p>
-              <p className="text-xs text-[var(--text-muted)]">od: {w.moderator}</p>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
 

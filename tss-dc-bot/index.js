@@ -1325,15 +1325,15 @@ client.on('interactionCreate', async interaction => {
 
         // ── Moderacja ──────────────────────────────────────────
         case 'kick':
-            await handleKick(interaction);
+            await handleKick(interaction, supabase);
             break;
 
         case 'ban':
-            await handleBan(interaction);
+            await handleBan(interaction, supabase);
             break;
 
         case 'timeout':
-            await handleTimeout(interaction);
+            await handleTimeout(interaction, supabase);
             break;
 
         case 'warn':

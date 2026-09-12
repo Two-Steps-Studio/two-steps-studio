@@ -21,8 +21,25 @@ async function sendModLog(guild, embed) {
     }
 }
 
+// Persists kick/ban/timeout so the admin bot panel's Logi tab can show
+// them (mirrors mod_warnings, which /warn already wrote to) - these used
+// to only ever reach the mod-log Discord channel, with no queryable
+// history anywhere. Best-effort: a logging failure shouldn't undo an
+// already-applied moderation action.
+async function logModAction(supabase, { type, userId, moderatorId, reason, durationMinutes }) {
+    try {
+        const { error } = await supabase.from('mod_actions').insert({
+            type, user_id: userId, moderator_id: moderatorId, reason,
+            duration_minutes: durationMinutes ?? null,
+        });
+        if (error) console.error('[MODLOG] Błąd zapisu akcji:', error.message);
+    } catch (e) {
+        console.error('[MODLOG] Błąd zapisu akcji:', e.message);
+    }
+}
+
 // ── /kick ──────────────────────────────────────────────────────────────
-async function handleKick(interaction) {
+async function handleKick(interaction, supabase) {
     const target = interaction.options.getUser('uzytkownik');
     const reason = interaction.options.getString('powod') || 'Brak podanego powodu';
 
@@ -53,10 +70,11 @@ async function handleKick(interaction) {
 
     await interaction.editReply({ embeds: [embed] });
     await sendModLog(interaction.guild, embed);
+    await logModAction(supabase, { type: 'kick', userId: target.id, moderatorId: interaction.user.id, reason });
 }
 
 // ── /ban ───────────────────────────────────────────────────────────────
-async function handleBan(interaction) {
+async function handleBan(interaction, supabase) {
     const target = interaction.options.getUser('uzytkownik');
     const reason = interaction.options.getString('powod') || 'Brak podanego powodu';
     const deleteDays = Math.min(Math.max(interaction.options.getInteger('usun_wiadomosci_dni') ?? 0, 0), 7);
@@ -85,10 +103,11 @@ async function handleBan(interaction) {
 
     await interaction.editReply({ embeds: [embed] });
     await sendModLog(interaction.guild, embed);
+    await logModAction(supabase, { type: 'ban', userId: target.id, moderatorId: interaction.user.id, reason });
 }
 
 // ── /timeout ───────────────────────────────────────────────────────────
-async function handleTimeout(interaction) {
+async function handleTimeout(interaction, supabase) {
     const target = interaction.options.getUser('uzytkownik');
     const minutes = interaction.options.getInteger('minuty');
     const reason = interaction.options.getString('powod') || 'Brak podanego powodu';
@@ -121,6 +140,7 @@ async function handleTimeout(interaction) {
 
     await interaction.editReply({ embeds: [embed] });
     await sendModLog(interaction.guild, embed);
+    await logModAction(supabase, { type: 'timeout', userId: target.id, moderatorId: interaction.user.id, reason, durationMinutes: minutes });
 }
 
 // ── /warn ──────────────────────────────────────────────────────────────
