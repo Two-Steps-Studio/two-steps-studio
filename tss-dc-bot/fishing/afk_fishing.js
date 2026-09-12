@@ -7,7 +7,10 @@ const { getGearStats } = require('./gear.config');
 const { fetchGearRow, rowToGearObj } = require('./wedka');
 
 // ── Stałe AFK ────────────────────────────────────────────────
-const AFK_VALUE_PENALTY  = 0.60;  // gracz dostaje 60% normalnej wartości ryby
+// Obniżone z 0.60 - AFK wymaga zera uwagi i może iść całymi godzinami bez
+// przerwy, więc powinno być wyraźnie gorsze od ręcznego łowienia, nie tylko
+// nieznacznie.
+const AFK_VALUE_PENALTY  = 0.40;  // gracz dostaje 40% normalnej wartości ryby
 const AFK_XP_PENALTY     = 0.70;  // gracz dostaje 70% normalnego XP
 const AFK_INTERVAL_MS    = 60_000; // łowi co 60 sekund
 const AFK_BAIT_COST      = 10;    // bazowy koszt przynęty (przed rabatem ze sprzętu)

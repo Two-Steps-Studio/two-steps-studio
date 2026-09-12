@@ -37,12 +37,17 @@ const FISH = {
     miecznik: { name: "Miecznik", emoji: "⚔️", rarity: "epic", chance: 0.2, minWeight: 80.0, maxWeight: 500.0, baseValue: 2200, xp: 550 },
 
     // ── LEGENDARNE (legendary) ─────────────────────────────
-    zlota_rybka: { name: "Złota Rybka", emoji: "✨🐠", rarity: "legendary", chance: 0.6, minWeight: 0.01, maxWeight: 0.1, baseValue: 5000, xp: 500 },
-    smok_wodny: { name: "Smok Wodny", emoji: "🐉", rarity: "legendary", chance: 0.2, minWeight: 100.0, maxWeight: 500.0, baseValue: 20000, xp: 1500 },
-    kraken: { name: "Młody Kraken", emoji: "🦑", rarity: "legendary", chance: 0.1, minWeight: 500.0, maxWeight: 2500.0, baseValue: 60000, xp: 5000 },
-    lewiatan: { name: "Lewiatan", emoji: "🌊", rarity: "legendary", chance: 0.05, minWeight: 5000.0, maxWeight: 20000.0, baseValue: 250000, xp: 20000 },
-    duch_ryby: { name: "Duch Rzeki", emoji: "👻🐟", rarity: "legendary", chance: 0.03, minWeight: 1.0, maxWeight: 5.0, baseValue: 80000, xp: 7000 },
-    starozytny_rekin: { name: "Starożytny Rekin", emoji: "🦈👁️", rarity: "legendary", chance: 0.02, minWeight: 2000.0, maxWeight: 8000.0, baseValue: 150000, xp: 12000 },
+    // baseValue cut ~90% across this tier (was 5000-250000) - live data
+    // showed a single Starożytny Rekin catch paying out 265,281 coins with
+    // maxed gear, more than 400x a /weekly reward (300-600) and dwarfing
+    // every other income source combined for most players. XP left as-is
+    // (leveling wasn't the reported problem, payouts were).
+    zlota_rybka: { name: "Złota Rybka", emoji: "✨🐠", rarity: "legendary", chance: 0.6, minWeight: 0.01, maxWeight: 0.1, baseValue: 500, xp: 500 },
+    smok_wodny: { name: "Smok Wodny", emoji: "🐉", rarity: "legendary", chance: 0.2, minWeight: 100.0, maxWeight: 500.0, baseValue: 2000, xp: 1500 },
+    kraken: { name: "Młody Kraken", emoji: "🦑", rarity: "legendary", chance: 0.1, minWeight: 500.0, maxWeight: 2500.0, baseValue: 6000, xp: 5000 },
+    lewiatan: { name: "Lewiatan", emoji: "🌊", rarity: "legendary", chance: 0.05, minWeight: 5000.0, maxWeight: 20000.0, baseValue: 25000, xp: 20000 },
+    duch_ryby: { name: "Duch Rzeki", emoji: "👻🐟", rarity: "legendary", chance: 0.03, minWeight: 1.0, maxWeight: 5.0, baseValue: 8000, xp: 7000 },
+    starozytny_rekin: { name: "Starożytny Rekin", emoji: "🦈👁️", rarity: "legendary", chance: 0.02, minWeight: 2000.0, maxWeight: 8000.0, baseValue: 15000, xp: 12000 },
 
     // ── ŚMIECI ─────────────────────────────────────────────
     but: { name: "Stary But", emoji: "👟", rarity: "trash", chance: 0, minWeight: 0.1, maxWeight: 0.5, baseValue: 0, xp: 1 },
