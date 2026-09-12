@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 interface RecruitmentFormData {
+  type: "dev" | "discord_admin";
   name: string;
   email: string;
   discord: string;
@@ -10,32 +11,49 @@ interface RecruitmentFormData {
   portfolio?: string;
 }
 
-// General studio recruitment (any role - mod, graphic, music, whatever the
-// applicant writes in `position`), separate from /api/dev/recruitment
-// which is specifically for the dev team. Same delivery mechanism (posts
-// via the bot's own token, not an incoming webhook) so it needs no new
-// Discord-side setup beyond an optional channel id.
+const TYPE_META: Record<RecruitmentFormData["type"], { title: string; color: number; channelEnvVars: string[] }> = {
+  // Routed to the same channel /api/dev/recruitment already uses, so dev
+  // applications land in one place regardless of which form they came
+  // through.
+  dev: { title: "📋 Nowe zgłoszenie rekrutacyjne (Dev)", color: 1815228, channelEnvVars: ["DISCORD_RECRUITMENT_CHANNEL_ID"] },
+  discord_admin: {
+    title: "🛡️ Nowe zgłoszenie rekrutacyjne (Administracja Discordowa)",
+    color: 0x5865f2,
+    channelEnvVars: ["DISCORD_ADMIN_RECRUITMENT_CHANNEL_ID", "DISCORD_GENERAL_RECRUITMENT_CHANNEL_ID", "DISCORD_RECRUITMENT_CHANNEL_ID"],
+  },
+};
+
+// Recruitment with a type selector (Dev / Discord Administration, more may
+// be added later) - separate from /api/dev/recruitment, which is the
+// dev-only form this one's "Dev" option is meant to feed into the same
+// channel as. Same delivery mechanism (posts via the bot's own token, not
+// an incoming webhook) so it needs no new Discord-side setup beyond an
+// optional channel id per type.
 export async function POST(request: NextRequest) {
   try {
     const body: RecruitmentFormData = await request.json();
 
+    if (!body.type || !TYPE_META[body.type]) {
+      return NextResponse.json({ error: "Invalid application type" }, { status: 400 });
+    }
     if (!body.name || !body.email || !body.discord || !body.position || !body.experience || !body.motivation) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const meta = TYPE_META[body.type];
     const discordToken = process.env.DISCORD_TOKEN;
-    // Falls back to the dev-recruitment channel if a dedicated one isn't
-    // configured, rather than requiring new setup before this works at all.
-    const channelId = process.env.DISCORD_GENERAL_RECRUITMENT_CHANNEL_ID || process.env.DISCORD_RECRUITMENT_CHANNEL_ID;
+    // First configured channel env var for this type wins, so a dedicated
+    // channel can be added later without this breaking in the meantime.
+    const channelId = meta.channelEnvVars.map((name) => process.env[name]).find(Boolean);
 
     if (!discordToken || !channelId) {
-      console.error("DISCORD_TOKEN or DISCORD_GENERAL_RECRUITMENT_CHANNEL_ID/DISCORD_RECRUITMENT_CHANNEL_ID not set");
+      console.error(`DISCORD_TOKEN or one of [${meta.channelEnvVars.join(", ")}] not set`);
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
     const embed = {
-      title: "📋 Nowe zgłoszenie rekrutacyjne (ogólne)",
-      color: 1815228, // TSS teal
+      title: meta.title,
+      color: meta.color,
       fields: [
         { name: "👤 Imię i nazwisko", value: body.name, inline: true },
         { name: "📧 Email", value: body.email, inline: true },

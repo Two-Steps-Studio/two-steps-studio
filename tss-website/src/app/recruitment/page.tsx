@@ -41,6 +41,7 @@ export default function RekrutacjaPage() {
   const [discordLoading, setDiscordLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    type: "dev" as "dev" | "discord_admin",
     name: "",
     email: "",
     discord: "",
@@ -66,7 +67,7 @@ export default function RekrutacjaPage() {
       if (!response.ok) throw new Error("Failed to submit application");
 
       toast.success(t.rekrutacja.submitSuccess);
-      setFormData({ name: "", email: "", discord: "", position: "", experience: "", motivation: "", portfolio: "" });
+      setFormData((prev) => ({ ...prev, name: "", email: "", discord: "", position: "", experience: "", motivation: "", portfolio: "" }));
     } catch (error) {
       toast.error(t.rekrutacja.submitError);
       console.error(error);
@@ -111,6 +112,25 @@ export default function RekrutacjaPage() {
         </CardHeader>
         <CardContent className="relative z-10 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t.rekrutacja.type}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["dev", "discord_admin"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, type }))}
+                    className={`h-11 rounded-xl text-sm font-bold border transition-colors ${
+                      formData.type === type
+                        ? "bg-[var(--color-general)] text-white border-[var(--color-general)]"
+                        : `border-[var(--border-color)] text-[var(--text)] ${!darkMode ? "hover:bg-neutral-100" : "hover:bg-white/5"}`
+                    }`}
+                  >
+                    {type === "dev" ? t.rekrutacja.typeDev : t.rekrutacja.typeDiscordAdmin}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{t.rekrutacja.name}</Label>
@@ -127,7 +147,14 @@ export default function RekrutacjaPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="position">{t.rekrutacja.position}</Label>
-              <Input id="position" name="position" value={formData.position} onChange={handleChange} required placeholder={t.rekrutacja.positionPlaceholder} />
+              <Input
+                id="position"
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                required
+                placeholder={formData.type === "dev" ? t.rekrutacja.positionPlaceholderDev : t.rekrutacja.positionPlaceholderDiscordAdmin}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="experience">{t.rekrutacja.experience}</Label>
