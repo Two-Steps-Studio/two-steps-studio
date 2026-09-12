@@ -2,7 +2,7 @@
 // Mniej opłacalne niż ręczne (~40% mniej kasy, ~30% mniej XP)
 
 const { EmbedBuilder } = require('discord.js');
-const { FISH, RARITY_STYLES, TRASH_CHANCE } = require('./fish.config');
+const { FISH, RARITY_STYLES, TRASH_CHANCE, MAX_LOCATION_LEGENDARY_BOOST, getUnlockedFish } = require('./fish.config');
 const { getGearStats } = require('./gear.config');
 const { fetchGearRow, rowToGearObj } = require('./wedka');
 
@@ -45,16 +45,19 @@ function maxAfkMinutesForGearSlots(gearSlots) {
 const activeSessions = new Map();
 
 // ── Helpers (uproszczone wersje z fishing.js) ─────────────────
-function rollFishAfk(rarityBonus = 0) {
+function rollFishAfk(rarityBonus = 0, locationSlots = 0) {
     if (Math.random() * 100 < TRASH_CHANCE) {
         const trash = Object.values(FISH).filter(f => f.rarity === 'trash');
         return trash[Math.floor(Math.random() * trash.length)];
     }
-    const pool = Object.values(FISH).filter(f => f.chance > 0);
+    const pool = getUnlockedFish(locationSlots);
     const BOOSTED = new Set(['rare', 'epic', 'legendary']);
+    const legendaryBoost = locationSlots >= 4 ? MAX_LOCATION_LEGENDARY_BOOST : 0;
     const boosted = pool.map(f => ({
         ...f,
-        chance: BOOSTED.has(f.rarity) ? f.chance * (1 + rarityBonus) : f.chance,
+        chance: f.rarity === 'legendary'
+            ? f.chance * (1 + rarityBonus + legendaryBoost)
+            : BOOSTED.has(f.rarity) ? f.chance * (1 + rarityBonus) : f.chance,
     }));
     const total = boosted.reduce((s, f) => s + f.chance, 0);
     let roll = Math.random() * total;
@@ -87,7 +90,7 @@ async function afkCatch(userId, supabase, gearStats) {
     const session = activeSessions.get(userId);
     if (!session) return;
 
-    const { valueBonus, rarityBonus, baitDiscount } = gearStats;
+    const { valueBonus, rarityBonus, baitDiscount, locationSlots } = gearStats;
     const baitCost = Math.max(0, AFK_BAIT_COST - baitDiscount);
 
     // Pobierz aktualny profil
@@ -111,7 +114,7 @@ async function afkCatch(userId, supabase, gearStats) {
         return;
     }
 
-    const fish    = rollFishAfk(rarityBonus);
+    const fish    = rollFishAfk(rarityBonus, locationSlots);
     const isTrash = fish.rarity === 'trash';
     const weight  = rollWeight(fish);
     const value   = isTrash ? 0 : calcValueAfk(fish, weight, valueBonus);

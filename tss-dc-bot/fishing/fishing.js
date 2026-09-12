@@ -1,6 +1,6 @@
 // fishing/fishing.js – logika łowienia zintegrowana z Supabase
 const { EmbedBuilder } = require('discord.js');
-const { FISH, RARITY_STYLES, FISHING_COOLDOWN, TRASH_CHANCE } = require('./fish.config');
+const { FISH, RARITY_STYLES, FISHING_COOLDOWN, TRASH_CHANCE, MAX_LOCATION_LEGENDARY_BOOST, getUnlockedFish } = require('./fish.config');
 const { getGearStats } = require('./gear.config');
 const { fetchGearRow, rowToGearObj } = require('./wedka');
 
@@ -8,20 +8,23 @@ const cooldowns = new Map();
 
 // ── Losowanie ryby z uwzględnieniem bonusu rzadkości ─────────
 
-function rollFish(rarityBonus = 0) {
+function rollFish(rarityBonus = 0, locationSlots = 0) {
     if (Math.random() * 100 < TRASH_CHANCE) {
         const trash = Object.values(FISH).filter(f => f.rarity === 'trash');
         return trash[Math.floor(Math.random() * trash.length)];
     }
 
-    const pool = Object.values(FISH).filter(f => f.chance > 0);
+    const pool = getUnlockedFish(locationSlots);
 
     const BOOSTED_RARITIES = new Set(['rare', 'epic', 'legendary']);
+    const legendaryBoost = locationSlots >= 4 ? MAX_LOCATION_LEGENDARY_BOOST : 0;
     const boostedPool = pool.map(fish => ({
         ...fish,
-        chance: BOOSTED_RARITIES.has(fish.rarity)
-            ? fish.chance * (1 + rarityBonus)
-            : fish.chance,
+        chance: fish.rarity === 'legendary'
+            ? fish.chance * (1 + rarityBonus + legendaryBoost)
+            : BOOSTED_RARITIES.has(fish.rarity)
+                ? fish.chance * (1 + rarityBonus)
+                : fish.chance,
     }));
 
     const total = boostedPool.reduce((s, f) => s + f.chance, 0);
@@ -85,7 +88,7 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
     // 3. Pobierz sprzęt z Supabase
     const gearRow = await fetchGearRow(supabase, userId);
     const gearObj = rowToGearObj(gearRow);
-    const { valueBonus, cooldownReduction, rarityBonus, baitDiscount, xpBonus } = getGearStats(gearObj);
+    const { valueBonus, cooldownReduction, rarityBonus, baitDiscount, xpBonus, locationSlots } = getGearStats(gearObj);
 
     const effectiveCooldown = Math.max(5, FISHING_COOLDOWN - cooldownReduction);
     const BAIT_COST         = Math.max(0, 10 - baitDiscount);
@@ -106,7 +109,7 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
     await new Promise(r => setTimeout(r, 2000));
 
     // 6. Losuj i oblicz
-    const fish    = rollFish(rarityBonus);
+    const fish    = rollFish(rarityBonus, locationSlots);
     const weight  = rollWeight(fish);
     const value   = calcValue(fish, weight, valueBonus);
     const xpGain  = calcXp(fish, fish.rarity === 'trash' ? 0 : xpBonus); // śmieci bez bonusu XP

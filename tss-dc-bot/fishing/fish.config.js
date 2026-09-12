@@ -68,4 +68,30 @@ const RARITY_STYLES = {
 const FISHING_COOLDOWN = 30;
 const TRASH_CHANCE = 10; // lekko więcej śmieci dla balansu
 
-module.exports = { FISH, RARITY_STYLES, FISHING_COOLDOWN, TRASH_CHANCE };
+// Real function for the "łódź" gear - its own shop description already
+// promised "access to more distant and richer fishing grounds" but nothing
+// gated anything on it: everyone could always roll the biggest legendary
+// fish straight from level 0 gear. locationSlots (0-4, see gear.config.js)
+// now gates which rarity tiers are even reachable: rare needs a raft,
+// epic needs a proper boat, legendary needs a real motorboat (level 5,
+// 10000 coins) or better. At max locationSlots (4, the 55000-coin Jacht),
+// legendary odds get a further boost on top of unlocking them - a reason
+// to go past the boat that already unlocked everything.
+const LOCATION_TIER_UNLOCK = { common: 0, uncommon: 0, rare: 1, epic: 2, legendary: 3 };
+const MAX_LOCATION_LEGENDARY_BOOST = 0.5; // +50% legendary chance at locationSlots 4
+
+function getUnlockedFish(locationSlots = 0) {
+    return Object.values(FISH).filter(
+        (f) => f.chance > 0 && (LOCATION_TIER_UNLOCK[f.rarity] ?? 0) <= locationSlots
+    );
+}
+
+module.exports = {
+    FISH,
+    RARITY_STYLES,
+    FISHING_COOLDOWN,
+    TRASH_CHANCE,
+    LOCATION_TIER_UNLOCK,
+    MAX_LOCATION_LEGENDARY_BOOST,
+    getUnlockedFish,
+};
