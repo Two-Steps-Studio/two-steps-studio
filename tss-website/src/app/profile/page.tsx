@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic, Copy, Check, Gift } from "lucide-react";
+import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic, Copy, Check, Gift, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import LogoutButton from "./logout-button";
 import Image from "next/image";
@@ -466,6 +466,12 @@ export default function ProfilePage() {
                                     <span className="text-xl font-black text-[var(--color-general)]">{profile?.pln_balance?.toFixed(2) || "0.00"} zł</span>
                                 </div>
                             </div>
+                            <Link href="/shop" className="block">
+                                <Button className="w-full rounded-2xl font-bold gap-2">
+                                    <ShoppingBag size={18} />
+                                    {t.profile.goToShop}
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 </div>
