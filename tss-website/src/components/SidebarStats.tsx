@@ -38,9 +38,9 @@ export function SidebarStats({ translations, stats }: SidebarStatsProps) {
               <div className="w-8 h-8 rounded-lg glass flex items-center justify-center border border-[var(--border-color)]">
                 <Users size={14} className="opacity-70 text-[var(--text)]" />
               </div>
-              <span className="text-xs font-bold opacity-60 text-[var(--text)] truncate">{translations.nav.online}</span>
+              <span className="text-xs font-bold opacity-60 text-[var(--text)] truncate">{translations.home.totalMembers}</span>
             </div>
-            <span className="text-xs font-black text-[var(--text)] whitespace-nowrap shrink-0">{(stats.online_users || 0).toString()}</span>
+            <span className="text-xs font-black text-[var(--text)] whitespace-nowrap shrink-0">{(stats.total_members || 0).toLocaleString()}</span>
           </div>
 
           <div className="flex items-center justify-between">
@@ -48,9 +48,9 @@ export function SidebarStats({ translations, stats }: SidebarStatsProps) {
               <div className="w-8 h-8 rounded-lg glass flex items-center justify-center border border-[var(--border-color)]">
                 <Users size={14} className="opacity-70 text-[var(--text)]" />
               </div>
-              <span className="text-xs font-bold opacity-60 text-[var(--text)] truncate">{translations.home.totalMembers}</span>
+              <span className="text-xs font-bold opacity-60 text-[var(--text)] truncate">{translations.nav.online}</span>
             </div>
-            <span className="text-xs font-black text-[var(--text)] whitespace-nowrap shrink-0">{(stats.total_members || 0).toLocaleString()}</span>
+            <span className="text-xs font-black text-[var(--text)] whitespace-nowrap shrink-0">{(stats.online_users || 0).toString()}</span>
           </div>
 
           <div className="flex items-center justify-between">
