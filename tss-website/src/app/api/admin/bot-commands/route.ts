@@ -36,24 +36,31 @@ export async function POST(request: Request) {
   if (forbidden) return forbidden;
 
   const body = await request.json().catch(() => null);
-  if (!body || body.type !== "giveaway_start") {
+  if (!body || (body.type !== "giveaway_start" && body.type !== "ticket_panel")) {
     return NextResponse.json({ error: "Nieobsługiwany typ polecenia" }, { status: 400 });
   }
 
-  const { channel_id, prize, winner_count, minutes } = body.payload || {};
+  const { channel_id } = body.payload || {};
   if (!SNOWFLAKE.test(String(channel_id || ""))) {
     return NextResponse.json({ error: "Nieprawidłowe ID kanału" }, { status: 400 });
   }
-  if (!prize || typeof prize !== "string" || prize.length > 200) {
-    return NextResponse.json({ error: "Podaj nagrodę (max 200 znaków)" }, { status: 400 });
-  }
-  const winnerCount = Number(winner_count) || 1;
-  const durationMinutes = Number(minutes) || 0;
-  if (winnerCount < 1 || winnerCount > 20) {
-    return NextResponse.json({ error: "Liczba zwycięzców musi być między 1 a 20" }, { status: 400 });
-  }
-  if (durationMinutes < 1 || durationMinutes > 60 * 24 * 30) {
-    return NextResponse.json({ error: "Czas trwania musi być między 1 minutą a 30 dniami" }, { status: 400 });
+
+  let payload: Record<string, unknown> = { channel_id: String(channel_id) };
+
+  if (body.type === "giveaway_start") {
+    const { prize, winner_count, minutes } = body.payload || {};
+    if (!prize || typeof prize !== "string" || prize.length > 200) {
+      return NextResponse.json({ error: "Podaj nagrodę (max 200 znaków)" }, { status: 400 });
+    }
+    const winnerCount = Number(winner_count) || 1;
+    const durationMinutes = Number(minutes) || 0;
+    if (winnerCount < 1 || winnerCount > 20) {
+      return NextResponse.json({ error: "Liczba zwycięzców musi być między 1 a 20" }, { status: 400 });
+    }
+    if (durationMinutes < 1 || durationMinutes > 60 * 24 * 30) {
+      return NextResponse.json({ error: "Czas trwania musi być między 1 minutą a 30 dniami" }, { status: 400 });
+    }
+    payload = { ...payload, prize, winner_count: winnerCount, minutes: durationMinutes };
   }
 
   const supabase = createServiceClient();
@@ -62,8 +69,8 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("bot_commands")
     .insert({
-      type: "giveaway_start",
-      payload: { channel_id: String(channel_id), prize, winner_count: winnerCount, minutes: durationMinutes },
+      type: body.type,
+      payload,
       requested_by: requestedBy,
     })
     .select()

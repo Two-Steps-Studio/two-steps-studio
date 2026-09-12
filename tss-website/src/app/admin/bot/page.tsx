@@ -501,11 +501,10 @@ function EngagementTab() {
         </div>
       )}
 
-      <NewGiveawayForm
-        onQueued={() => {
-          loadCommands();
-        }}
-      />
+      <div className="grid md:grid-cols-2 gap-4">
+        <NewGiveawayForm onQueued={loadCommands} />
+        <NewTicketPanelForm onQueued={loadCommands} />
+      </div>
 
       {commands.length > 0 && (
         <Card>
@@ -515,7 +514,9 @@ function EngagementTab() {
           <CardContent className="space-y-1.5">
             {commands.map((c) => (
               <div key={c.id} className="flex items-center justify-between text-sm">
-                <span className="truncate">{c.payload?.prize || c.type}</span>
+                <span className="truncate">
+                  {c.type === "ticket_panel" ? "Panel ticketów" : c.payload?.prize || c.type}
+                </span>
                 <Badge variant={c.status === "done" ? "default" : c.status === "failed" ? "destructive" : "secondary"}>
                   {c.status === "pending" ? "w kolejce..." : c.status === "done" ? "wysłane" : `błąd: ${c.error}`}
                 </Badge>
@@ -525,9 +526,6 @@ function EngagementTab() {
         </Card>
       )}
 
-      <p className="text-xs text-[var(--text-muted)]">
-        Tickety: na razie podgląd — tworzenie panelu ticketów z tej strony to osobny krok.
-      </p>
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
@@ -674,6 +672,66 @@ function NewGiveawayForm({ onQueued }: { onQueued: () => void }) {
         <div className="flex items-center gap-3">
           <Button onClick={submit} disabled={sending || !channelId.trim() || !prize.trim()}>
             {sending ? "Wysyłanie..." : "Uruchom giveaway"}
+          </Button>
+          {queuedAt && Date.now() - queuedAt < 4000 && (
+            <span className="text-xs text-[var(--text-muted)]">Dodano do kolejki — bot odbierze w ciągu ~60s.</span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function NewTicketPanelForm({ onQueued }: { onQueued: () => void }) {
+  const [channelId, setChannelId] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [queuedAt, setQueuedAt] = useState<number | null>(null);
+
+  const submit = async () => {
+    setError(null);
+    setSending(true);
+    try {
+      const res = await fetch("/api/admin/bot-commands", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "ticket_panel", payload: { channel_id: channelId.trim() } }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Nie udało się dodać do kolejki.");
+        return;
+      }
+      setChannelId("");
+      setQueuedAt(Date.now());
+      onQueued();
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Ticket size={16} className="text-[var(--color-general)]" /> Nowy panel ticketów
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <label className="space-y-1 block">
+          <span className="text-xs text-[var(--text-muted)]">ID kanału, gdzie ma pojawić się przycisk "Otwórz zgłoszenie"</span>
+          <input
+            type="text"
+            value={channelId}
+            onChange={(e) => setChannelId(e.target.value)}
+            placeholder="np. 1234567890123456"
+            className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+          />
+        </label>
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        <div className="flex items-center gap-3">
+          <Button onClick={submit} disabled={sending || !channelId.trim()}>
+            {sending ? "Wysyłanie..." : "Wyślij panel"}
           </Button>
           {queuedAt && Date.now() - queuedAt < 4000 && (
             <span className="text-xs text-[var(--text-muted)]">Dodano do kolejki — bot odbierze w ciągu ~60s.</span>

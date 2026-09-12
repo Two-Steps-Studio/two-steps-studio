@@ -25,7 +25,7 @@ const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete }
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
 const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, handleReactionRemove } = require('./reactionRoles');
 const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler, createGiveawayFromQueue } = require('./giveaways');
-const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
+const { handleTicketPanel, handleTicketOpen, handleTicketClose, createTicketPanelFromQueue } = require('./tickets');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
 const { logActivity } = require('./activityLog');
 const { getSetting, ensureFresh: ensureFreshSettings } = require('./settings');
@@ -623,6 +623,8 @@ async function processBotCommands() {
             try {
                 if (cmd.type === 'giveaway_start') {
                     await createGiveawayFromQueue(client, supabase, cmd.payload);
+                } else if (cmd.type === 'ticket_panel') {
+                    await createTicketPanelFromQueue(client, cmd.payload);
                 } else {
                     throw new Error(`Nieznany typ polecenia: ${cmd.type}`);
                 }

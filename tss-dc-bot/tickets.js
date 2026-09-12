@@ -15,6 +15,26 @@ async function handleTicketPanel(interaction) {
     await interaction.editReply('✅ Panel zgłoszeń utworzony na tym kanale.');
 }
 
+// ── Post a ticket panel from the website's admin command queue - same
+//    embed/button as handleTicketPanel, just without a Discord interaction
+//    to send it through (see giveaways.js's createGiveawayFromQueue for
+//    the same pattern). ──────────────────────────────────────────────────
+async function createTicketPanelFromQueue(client, { channel_id }) {
+    const channel = await client.channels.fetch(channel_id).catch(() => null);
+    if (!channel || !channel.isTextBased?.()) {
+        throw new Error(`Nie znaleziono kanału tekstowego o ID ${channel_id}.`);
+    }
+
+    const embed = new EmbedBuilder()
+        .setColor('#1bbdbd')
+        .setTitle('🎫 Wsparcie')
+        .setDescription('Kliknij przycisk poniżej, żeby otworzyć prywatne zgłoszenie do administracji.');
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('ticket_open').setLabel('Otwórz zgłoszenie').setStyle(ButtonStyle.Primary).setEmoji('🎫')
+    );
+    await channel.send({ embeds: [embed], components: [row] });
+}
+
 // ── Button: ticket_open ──────────────────────────────────────
 async function handleTicketOpen(interaction, supabase) {
     await interaction.deferReply({ flags: 1 << 6 });
@@ -96,4 +116,4 @@ async function handleTicketClose(interaction, supabase) {
     }, 5000);
 }
 
-module.exports = { handleTicketPanel, handleTicketOpen, handleTicketClose };
+module.exports = { handleTicketPanel, handleTicketOpen, handleTicketClose, createTicketPanelFromQueue };
