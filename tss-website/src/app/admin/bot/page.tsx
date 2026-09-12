@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ElementType } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Settings, Users, ScrollText, Gift, ShieldAlert, Loader2, ArrowLeft, Search, Save, Check } from "lucide-react";
+import {
+  Settings, Users, ScrollText, Gift, ShieldAlert, Loader2, ArrowLeft, Search, Save, Check,
+  AlertTriangle, UserPlus, TrendingUp, ShoppingBag, MessageSquare,
+} from "lucide-react";
 
 const SETTING_LABELS: Record<string, { label: string; hint: string }> = {
   MOD_LOG_CHANNEL_ID: { label: "Kanał logów moderacji", hint: "ID kanału, gdzie bot wysyła kick/ban/timeout/warn" },
@@ -139,8 +142,9 @@ export default function AdminBotPage() {
       )}
 
       {tab === "users" && <UsersTab />}
+      {tab === "logs" && <LogsTab />}
 
-      {(tab === "logs" || tab === "engagement") && (
+      {tab === "engagement" && (
         <Card>
           <CardContent className="py-10 text-center text-sm text-[var(--text-muted)]">
             Ta zakładka będzie gotowa w kolejnym kroku.
@@ -318,6 +322,106 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
           <Save size={14} className="mr-1" /> {saving ? "..." : "Zapisz"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+interface ModWarning {
+  id: number;
+  username: string;
+  moderator: string;
+  reason: string;
+  created_at: string;
+}
+interface ActivityLogRow {
+  id: number;
+  type: "join" | "level_up" | "purchase" | "message";
+  username: string;
+  detail: string | null;
+  created_at: string;
+}
+
+const ACTIVITY_ICON: Record<ActivityLogRow["type"], { icon: ElementType; color: string }> = {
+  join: { icon: UserPlus, color: "#06e402" },
+  level_up: { icon: TrendingUp, color: "#ffcb2f" },
+  purchase: { icon: ShoppingBag, color: "#1bbdbd" },
+  message: { icon: MessageSquare, color: "#9aa5b1" },
+};
+
+function formatLogTime(iso: string): string {
+  return new Date(iso).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+function LogsTab() {
+  const [warnings, setWarnings] = useState<ModWarning[]>([]);
+  const [activity, setActivity] = useState<ActivityLogRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/bot-logs")
+      .then((res) => res.json())
+      .then((data) => {
+        setWarnings(data.warnings || []);
+        setActivity(data.activity || []);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="animate-spin text-[var(--color-general)]" size={22} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <AlertTriangle size={16} className="text-yellow-500" /> Ostrzeżenia ({warnings.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
+          {warnings.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak ostrzeżeń.</p>}
+          {warnings.map((w) => (
+            <div key={w.id} className="rounded-lg border border-[var(--border)] p-3 text-sm space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{w.username}</span>
+                <span className="text-xs text-[var(--text-muted)]">{formatLogTime(w.created_at)}</span>
+              </div>
+              <p className="text-[var(--text-muted)]">{w.reason}</p>
+              <p className="text-xs text-[var(--text-muted)]">od: {w.moderator}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ScrollText size={16} /> Aktywność ({activity.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
+          {activity.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak aktywności.</p>}
+          {activity.map((a) => {
+            const meta = ACTIVITY_ICON[a.type] ?? ACTIVITY_ICON.join;
+            const Icon = meta.icon;
+            return (
+              <div key={a.id} className="flex items-start gap-2.5 rounded-lg border border-[var(--border)] p-3 text-sm">
+                <Icon size={16} style={{ color: meta.color }} className="shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium">{a.username}</span>
+                  {a.detail && <span className="text-[var(--text-muted)]"> — {a.detail}</span>}
+                </div>
+                <span className="text-xs text-[var(--text-muted)] shrink-0">{formatLogTime(a.created_at)}</span>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 }
