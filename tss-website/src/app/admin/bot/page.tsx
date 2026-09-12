@@ -436,20 +436,54 @@ interface TicketRow {
   closed_at: string | null;
 }
 
+interface BotCommand {
+  id: number;
+  type: string;
+  status: "pending" | "done" | "failed";
+  error: string | null;
+  payload: { prize?: string };
+  created_at: string;
+}
+
 function EngagementTab() {
   const [giveaways, setGiveaways] = useState<GiveawayRow[]>([]);
   const [tickets, setTickets] = useState<TicketRow[]>([]);
+  const [commands, setCommands] = useState<BotCommand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [migrationMissing, setMigrationMissing] = useState(false);
 
-  useEffect(() => {
+  const loadEngagement = () =>
     fetch("/api/admin/bot-engagement")
       .then((res) => res.json())
       .then((data) => {
         setGiveaways(data.giveaways || []);
         setTickets(data.tickets || []);
-      })
-      .finally(() => setLoading(false));
+      });
+  const loadCommands = () =>
+    fetch("/api/admin/bot-commands")
+      .then((res) => res.json())
+      .then((data) => {
+        setCommands(data.commands || []);
+        setMigrationMissing(!!data.migrationMissing);
+      });
+
+  useEffect(() => {
+    Promise.all([loadEngagement(), loadCommands()]).finally(() => setLoading(false));
   }, []);
+
+  // Bot picks commands up on its 60s stats loop - poll a bit faster while
+  // anything is still pending so the status badge updates without a manual
+  // refresh, then stop once nothing's waiting.
+  useEffect(() => {
+    const hasPending = commands.some((c) => c.status === "pending");
+    if (!hasPending) return;
+    const t = setInterval(() => {
+      loadCommands();
+      loadEngagement();
+    }, 5000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commands]);
 
   if (loading) {
     return (
@@ -461,8 +495,38 @@ function EngagementTab() {
 
   return (
     <div className="space-y-4">
+      {migrationMissing && (
+        <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm text-yellow-600 dark:text-yellow-400">
+          Tabela <code>bot_commands</code> nie istnieje jeszcze w bazie — wklej <code>tss-dc-bot/db/bot_commands_schema.sql</code> do Supabase SQL Editor, żeby tworzenie giveawayów działało.
+        </div>
+      )}
+
+      <NewGiveawayForm
+        onQueued={() => {
+          loadCommands();
+        }}
+      />
+
+      {commands.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Ostatnie polecenia</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            {commands.map((c) => (
+              <div key={c.id} className="flex items-center justify-between text-sm">
+                <span className="truncate">{c.payload?.prize || c.type}</span>
+                <Badge variant={c.status === "done" ? "default" : c.status === "failed" ? "destructive" : "secondary"}>
+                  {c.status === "pending" ? "w kolejce..." : c.status === "done" ? "wysłane" : `błąd: ${c.error}`}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       <p className="text-xs text-[var(--text-muted)]">
-        Na razie podgląd — tworzenie giveawayów/ticketów z panelu wymaga bota do realnego wysłania wiadomości na Discorda, to osobny krok.
+        Tickety: na razie podgląd — tworzenie panelu ticketów z tej strony to osobny krok.
       </p>
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
@@ -518,5 +582,104 @@ function EngagementTab() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function NewGiveawayForm({ onQueued }: { onQueued: () => void }) {
+  const [channelId, setChannelId] = useState("");
+  const [prize, setPrize] = useState("");
+  const [winnerCount, setWinnerCount] = useState(1);
+  const [minutes, setMinutes] = useState(60);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [queuedAt, setQueuedAt] = useState<number | null>(null);
+
+  const submit = async () => {
+    setError(null);
+    setSending(true);
+    try {
+      const res = await fetch("/api/admin/bot-commands", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "giveaway_start",
+          payload: { channel_id: channelId.trim(), prize: prize.trim(), winner_count: winnerCount, minutes },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Nie udało się dodać do kolejki.");
+        return;
+      }
+      setPrize("");
+      setQueuedAt(Date.now());
+      onQueued();
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <PartyPopper size={16} className="text-[var(--color-general)]" /> Nowy giveaway
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <label className="space-y-1">
+            <span className="text-xs text-[var(--text-muted)]">ID kanału (skopiuj z Discorda)</span>
+            <input
+              type="text"
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+              placeholder="np. 1234567890123456"
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs text-[var(--text-muted)]">Nagroda</span>
+            <input
+              type="text"
+              value={prize}
+              onChange={(e) => setPrize(e.target.value)}
+              placeholder="np. Discord Nitro"
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs text-[var(--text-muted)]">Liczba zwycięzców</span>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={winnerCount}
+              onChange={(e) => setWinnerCount(parseInt(e.target.value) || 1)}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs text-[var(--text-muted)]">Czas trwania (minuty)</span>
+            <input
+              type="number"
+              min={1}
+              value={minutes}
+              onChange={(e) => setMinutes(parseInt(e.target.value) || 1)}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+            />
+          </label>
+        </div>
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        <div className="flex items-center gap-3">
+          <Button onClick={submit} disabled={sending || !channelId.trim() || !prize.trim()}>
+            {sending ? "Wysyłanie..." : "Uruchom giveaway"}
+          </Button>
+          {queuedAt && Date.now() - queuedAt < 4000 && (
+            <span className="text-xs text-[var(--text-muted)]">Dodano do kolejki — bot odbierze w ciągu ~60s.</span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -49,6 +49,41 @@ async function handleGiveawayStart(interaction, supabase) {
     }
 }
 
+// ── Start from the website's admin panel command queue (index.js's
+//    processBotCommands) - no Discord interaction to reply to/reuse here,
+//    so this posts straight to the channel instead of going through
+//    handleGiveawayStart's interaction.editReply() flow. Kept as its own
+//    function rather than refactoring that one, to not risk changing the
+//    behavior of the already-working slash command. ─────────────────────
+async function createGiveawayFromQueue(client, supabase, { channel_id, prize, winner_count, minutes, requested_by }) {
+    const guild = client.guilds.cache.first();
+    if (!guild) throw new Error('Bot nie jest na żadnym serwerze.');
+
+    const channel = await client.channels.fetch(channel_id).catch(() => null);
+    if (!channel || !channel.isTextBased?.()) {
+        throw new Error(`Nie znaleziono kanału tekstowego o ID ${channel_id}.`);
+    }
+
+    const winnerCount = winner_count || 1;
+    const endsAt = new Date(Date.now() + minutes * 60000);
+    const hostTag = requested_by ? `<@${requested_by}>` : 'Panel admina';
+
+    const embed = buildGiveawayEmbed({ prize, winnerCount, endsAt, hostTag });
+    const message = await channel.send({ embeds: [embed] });
+    await message.react(GIVEAWAY_EMOJI).catch(() => {});
+
+    const { error } = await supabase.from('giveaways').insert({
+        guild_id: guild.id,
+        channel_id,
+        message_id: message.id,
+        prize,
+        winner_count: winnerCount,
+        ends_at: endsAt.toISOString(),
+        created_by: requested_by || guild.ownerId,
+    });
+    if (error) throw new Error(`Rozdanie wystartowało, ale nie zapisało się do bazy: ${error.message}`);
+}
+
 // ── /giveaway end (manual, before the timer) ──────────────────
 async function handleGiveawayEnd(interaction, supabase, client) {
     const messageId = interaction.options.getString('message_id');
@@ -117,4 +152,4 @@ function startGiveawayScheduler(client, supabase) {
     }, 30000);
 }
 
-module.exports = { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler };
+module.exports = { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler, createGiveawayFromQueue };

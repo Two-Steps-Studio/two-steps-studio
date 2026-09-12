@@ -24,7 +24,7 @@ const { handleAfkFishing, handleAfkStop } = require('./fishing/afk_fishing');
 const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete } = require('./events/events');
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
 const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, handleReactionRemove } = require('./reactionRoles');
-const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = require('./giveaways');
+const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler, createGiveawayFromQueue } = require('./giveaways');
 const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
 const { logActivity } = require('./activityLog');
@@ -601,10 +601,51 @@ async function cleanupSitePresence() {
     }
 }
 
+// Command queue for the website's /admin/bot panel (see
+// db/bot_commands_schema.sql) - the panel writes a pending row for actions
+// only the bot process can actually perform (posting to Discord), this
+// picks them up on the existing 60s loop instead of a dedicated interval.
+// Limit 5/tick so a burst of queued commands can't hold up the stats loop.
+async function processBotCommands() {
+    try {
+        const { data: pending, error } = await supabase
+            .from('bot_commands')
+            .select('*')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: true })
+            .limit(5);
+        if (error) {
+            if (error.code !== 'PGRST205') console.error('[BOT COMMANDS] Fetch error:', error.message);
+            return; // table not created yet (PGRST205) - silently no-op
+        }
+
+        for (const cmd of pending || []) {
+            try {
+                if (cmd.type === 'giveaway_start') {
+                    await createGiveawayFromQueue(client, supabase, cmd.payload);
+                } else {
+                    throw new Error(`Nieznany typ polecenia: ${cmd.type}`);
+                }
+                await supabase.from('bot_commands').update({ status: 'done', processed_at: new Date().toISOString() }).eq('id', cmd.id);
+            } catch (cmdError) {
+                console.error('[BOT COMMANDS] Błąd wykonania:', cmdError.message);
+                await supabase.from('bot_commands').update({
+                    status: 'failed',
+                    error: cmdError.message,
+                    processed_at: new Date().toISOString(),
+                }).eq('id', cmd.id);
+            }
+        }
+    } catch (e) {
+        console.error('[BOT COMMANDS] Błąd:', e.message);
+    }
+}
+
 async function updateDiscordStats() {
     try {
         await ensureFreshSettings(supabase);
         await cleanupSitePresence();
+        await processBotCommands();
 
         const guild = client.guilds.cache.first();
         if (!guild) return;
