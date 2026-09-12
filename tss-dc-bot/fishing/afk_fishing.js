@@ -17,12 +17,29 @@ const AFK_BAIT_COST      = 10;    // bazowy koszt przynęty (przed rabatem ze sp
 
 // Opcje czasu sesji (minuty)
 const SESSION_OPTIONS = [
-    { label: '15 minut',   value: '15',  minutes: 15  },
-    { label: '30 minut',   value: '30',  minutes: 30  },
-    { label: '1 godzina',  value: '60',  minutes: 60  },
-    { label: '2 godziny',  value: '120', minutes: 120 },
-    { label: '4 godziny',  value: '240', minutes: 240 },
+    { label: '15 minut',   value: '15',   minutes: 15   },
+    { label: '30 minut',   value: '30',   minutes: 30   },
+    { label: '1 godzina',  value: '60',   minutes: 60   },
+    { label: '2 godziny',  value: '120',  minutes: 120  },
+    { label: '4 godziny',  value: '240',  minutes: 240  },
+    { label: '8 godzin',   value: '480',  minutes: 480  },
+    { label: '24 godziny', value: '1440', minutes: 1440 },
 ];
+
+// Real function for the "skrzynka" gear (was pure flavor text before - its
+// own shop description already promised "more room before selling" but
+// nothing enforced any limit). gearSlots is the skrzynka level (0-7,
+// 1:1 - see gear.config.js) and gates how long an unattended AFK session
+// is allowed to run: better storage = can stay out longer before needing
+// to come back. Gives the two most expensive tiers (10000/23000 coins)
+// a concrete payoff instead of a stat nothing ever read.
+function maxAfkMinutesForGearSlots(gearSlots) {
+    if (gearSlots >= 7) return 1440; // Magazyn Pro - full 24h
+    if (gearSlots >= 6) return 480;  // Lodówka turystyczna - 8h
+    if (gearSlots >= 4) return 240;  // Skrzynia/Kontener - 4h (previous global max)
+    if (gearSlots >= 2) return 120;  // Plecak/Walizka - 2h
+    return 60;                        // Brak/Torebka - 1h
+}
 
 // Map aktywnych sesji: userId → { interval, endTime, catches[], spent, supabase, profileId }
 const activeSessions = new Map();
@@ -168,6 +185,16 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
     // Pobierz wybrany czas z subkomendy (domyślnie 60 minut)
     const minutesRaw = interaction.options.getInteger('czas', false) ?? 60;
     const option     = SESSION_OPTIONS.find(o => o.minutes === minutesRaw) || SESSION_OPTIONS[2];
+
+    const maxAllowed = maxAfkMinutesForGearSlots(gearStats.gearSlots || 0);
+    if (option.minutes > maxAllowed) {
+        activeSessions.delete(userId); // release the reservation - session isn't starting
+        const maxOption = SESSION_OPTIONS.find(o => o.minutes === maxAllowed);
+        return interaction.editReply({
+            content: `🧰 Twoja skrzynka na sprzęt jest za mała na **${option.label}** sesję. Maksimum dla Twojego poziomu: **${maxOption?.label || maxAllowed + ' min'}**. Ulepsz skrzynkę w \`/gear\`, żeby zostawać dłużej.`,
+        });
+    }
+
     const durationMs = option.minutes * 60 * 1000;
     const catches    = option.minutes; // ile połowów maksymalnie (1/min)
 

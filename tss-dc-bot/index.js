@@ -225,11 +225,13 @@ const commands = [
                         .setDescription('Jak długo chcesz siedzieć przy jeziorze?')
                         .setRequired(false)
                         .addChoices(
-                            { name: '15 minut',  value: 15  },
-                            { name: '30 minut',  value: 30  },
-                            { name: '1 godzina', value: 60  },
-                            { name: '2 godziny', value: 120 },
-                            { name: '4 godziny', value: 240 },
+                            { name: '15 minut',   value: 15   },
+                            { name: '30 minut',   value: 30   },
+                            { name: '1 godzina',  value: 60   },
+                            { name: '2 godziny',  value: 120  },
+                            { name: '4 godziny',  value: 240  },
+                            { name: '8 godzin',   value: 480  },
+                            { name: '24 godziny', value: 1440 },
                         )
                 )
         )
