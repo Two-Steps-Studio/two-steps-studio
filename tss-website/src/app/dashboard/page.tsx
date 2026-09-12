@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Users, Wifi, Clock, MessageSquare, Trophy, Coins, UserPlus, TrendingUp, ShoppingBag, Bot } from "lucide-react";
+import { Users, Wifi, Clock, MessageSquare, Trophy, Coins, UserPlus, TrendingUp, ShoppingBag, Bot, Paperclip } from "lucide-react";
 
 interface Stats {
   online_users: number;
@@ -250,11 +250,17 @@ function StatTile({
   );
 }
 
+// `text` is just the action line (username + this) - message content used to
+// be crammed into the same single-line, single-`truncate` span as the
+// action verb ('napisał(a): "..."'), so anything past a few words got cut
+// off mid-sentence with no visual separation from the "who did what" line.
+// Message previews now render as their own quoted line below (see
+// ActivityFeed), so `text` for 'message' stays a plain action verb.
 const ACTIVITY_META: Record<ActivityEvent["type"], { icon: React.ElementType; color: string; text: (e: ActivityEvent) => string }> = {
   join: { icon: UserPlus, color: "#06e402", text: () => "dołączył(a) do serwera" },
   level_up: { icon: TrendingUp, color: "#ffcb2f", text: (e) => `awansował(a) na ${e.detail || "nowy poziom"}` },
   purchase: { icon: ShoppingBag, color: "#1bbdbd", text: (e) => `kupił(a) ${e.detail || "przedmiot"}` },
-  message: { icon: MessageSquare, color: "#9aa5b1", text: (e) => e.detail ? `napisał(a): "${e.detail}"` : "napisał(a) na czacie" },
+  message: { icon: MessageSquare, color: "#9aa5b1", text: () => "napisał(a) na czacie" },
 };
 
 function formatRelativeTime(iso: string): string {
@@ -285,16 +291,31 @@ function ActivityFeed({ events, messagesToday }: { events: ActivityEvent[]; mess
         {events.map((e, i) => {
           const meta = ACTIVITY_META[e.type] ?? ACTIVITY_META.join;
           const Icon = meta.icon;
+          const isAttachmentNote = e.detail === "[załącznik]";
+          const showQuote = e.type === "message" && !!e.detail;
           return (
-            <div key={i} className="flex items-center gap-4 rounded-2xl bg-white/[0.03] px-5 py-4">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${meta.color}22` }}>
+            <div key={i} className="flex items-start gap-4 rounded-2xl bg-white/[0.03] px-5 py-4">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${meta.color}22` }}>
                 <Icon size={20} style={{ color: meta.color }} />
               </div>
-              <span className="flex-1 text-xl truncate">
-                <span className="font-bold">{e.username}</span>{" "}
-                <span className="text-white/50">{meta.text(e)}</span>
-              </span>
-              <span className="text-white/30 text-sm tabular-nums shrink-0">{formatRelativeTime(e.created_at)}</span>
+              <div className="flex-1 min-w-0">
+                <span className="text-xl truncate block">
+                  <span className="font-bold">{e.username}</span>{" "}
+                  <span className="text-white/50">{meta.text(e)}</span>
+                </span>
+                {showQuote && (
+                  isAttachmentNote ? (
+                    <span className="mt-1 inline-flex items-center gap-1.5 text-white/40 text-base">
+                      <Paperclip size={14} /> wysłał(a) załącznik
+                    </span>
+                  ) : (
+                    <p className="mt-1 text-white/40 text-lg italic leading-snug line-clamp-2 break-words">
+                      „{e.detail}”
+                    </p>
+                  )
+                )}
+              </div>
+              <span className="text-white/30 text-sm tabular-nums shrink-0 mt-1">{formatRelativeTime(e.created_at)}</span>
             </div>
           );
         })}
