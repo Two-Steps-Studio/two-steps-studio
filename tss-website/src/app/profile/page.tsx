@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic, Copy, Check, Gift, ShoppingBag } from "lucide-react";
+import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic, Copy, Check, Gift, ShoppingBag, Crown, Zap } from "lucide-react";
 import { toast } from "sonner";
 import LogoutButton from "./logout-button";
 import Image from "next/image";
@@ -277,6 +277,12 @@ export default function ProfilePage() {
     // for the same account.
     const level = xp < 100 ? 0 : Math.floor(0.1 * Math.sqrt(xp));
     const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: nickColorValue || "var(--color-general)", label: `LEVEL ${level}` };
+    // Real effects the shop's VIP/SVIP/MVIP/X2/X3 items grant (see
+    // tss-dc-bot/economyBonus.js) had nowhere on the site showing they're
+    // active - a purchase that visibly does nothing until your next /work
+    // is a bad experience even when it's working correctly.
+    const vipTier = profile?.mvip_status ? "MVIP" : profile?.svip_status ? "SVIP" : profile?.vip_status ? "VIP" : null;
+    const multiplierActive = profile?.multiplier > 1 && profile?.multiplier_expires_at && new Date(profile.multiplier_expires_at) > new Date();
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;
@@ -399,15 +405,27 @@ export default function ProfilePage() {
                                     >
                                         {discordName}
                                     </h1>
-                                    {isDiscordLinked ? (
-                                        <Badge variant="outline" className="mt-2 border-emerald-400/40 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 gap-1.5">
-                                            <CheckCircle2 size={12} /> {t.profile.discordVerified}
-                                        </Badge>
-                                    ) : (
-                                        <Button variant="outline" size="sm" className="mt-2 h-7 bg-indigo-500/20 backdrop-blur-sm border-indigo-400/40 text-indigo-300 text-xs rounded-full gap-2">
-                                            <LinkIcon size={12} /> {t.profile.connectDiscord}
-                                        </Button>
-                                    )}
+                                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                        {isDiscordLinked ? (
+                                            <Badge variant="outline" className="border-emerald-400/40 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 gap-1.5">
+                                                <CheckCircle2 size={12} /> {t.profile.discordVerified}
+                                            </Badge>
+                                        ) : (
+                                            <Button variant="outline" size="sm" className="h-7 bg-indigo-500/20 backdrop-blur-sm border-indigo-400/40 text-indigo-300 text-xs rounded-full gap-2">
+                                                <LinkIcon size={12} /> {t.profile.connectDiscord}
+                                            </Button>
+                                        )}
+                                        {vipTier && (
+                                            <Badge variant="outline" className="border-amber-400/40 bg-amber-500/20 backdrop-blur-sm text-amber-300 gap-1.5">
+                                                <Crown size={12} /> {vipTier}
+                                            </Badge>
+                                        )}
+                                        {multiplierActive && (
+                                            <Badge variant="outline" className="border-[var(--color-general)]/40 bg-[var(--color-general)]/20 backdrop-blur-sm text-[var(--color-general)] gap-1.5">
+                                                <Zap size={12} /> x{profile.multiplier} {t.profile.multiplierUntil} {new Date(profile.multiplier_expires_at).toLocaleDateString("pl-PL")}
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-white">
                                     <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-sm"><Mail size={13} /> {user?.email}</span>
