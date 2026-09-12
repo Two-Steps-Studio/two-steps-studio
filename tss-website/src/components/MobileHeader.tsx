@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
+import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -174,7 +175,7 @@ export function MobileHeader() {
                 )}
                 <Avatar className="w-8 h-8 border border-[var(--border-color)]">
                   {avatarUrl ? (
-                    <AvatarImage src={avatarUrl} alt="Avatar" />
+                    <AvatarImage src={toProxiedAvatarUrl(avatarUrl)} alt="Avatar" />
                   ) : (
                     <AvatarFallback className="text-xs">{displayName?.[0]?.toUpperCase()}</AvatarFallback>
                   )}

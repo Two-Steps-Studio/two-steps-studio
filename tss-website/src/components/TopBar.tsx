@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { LanguageSelect } from "./LanguageSelect";
 import { supabase } from "@/lib/supabase";
+import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 
 export function TopBar({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
@@ -227,7 +228,7 @@ export function TopBar({ className }: { className?: string }) {
                     >
                       <Avatar className="w-11 h-11">
                         {avatarUrl ? (
-                            <AvatarImage src={avatarUrl} alt="Avatar" onError={() => setAvatarUrl(null)} />
+                            <AvatarImage src={toProxiedAvatarUrl(avatarUrl)} alt="Avatar" onError={() => setAvatarUrl(null)} />
                         ) : (
                             <AvatarFallback className="uppercase font-bold">
                               {(displayName?.[0] || "U").toUpperCase()}

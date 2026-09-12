@@ -7,6 +7,7 @@ import { useLanguage } from "@/hooks/use-translation";
 import ProfileForm from "./profile-form";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -382,7 +383,7 @@ export default function ProfilePage() {
                                     frame can spin without rotating the avatar image itself. */}
                                 <AvatarFrame frameId={profile?.equipped_frame} />
                                 <Avatar className="relative h-36 w-36 md:h-44 md:w-44 ring-4 ring-[var(--color-general)]/30 border-2 border-white/30">
-                                    <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
+                                    <AvatarImage src={toProxiedAvatarUrl(profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture)} />
                                     <AvatarFallback className="text-4xl bg-white text-black font-bold">{discordName?.[0]}</AvatarFallback>
                                 </Avatar>
                                 <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-white font-bold rounded-full shadow-lg" style={{ backgroundColor: roleInfo.color }}>
@@ -565,7 +566,7 @@ export default function ProfilePage() {
                                     <div className="flex items-center gap-4">
                                         <span className="font-black w-6 text-center">{u.rank}</span>
                                         <Avatar className="h-9 w-9 shrink-0">
-                                            <AvatarImage src={u.avatar_url} />
+                                            <AvatarImage src={toProxiedAvatarUrl(u.avatar_url)} />
                                             <AvatarFallback className="text-xs bg-white text-black font-bold">
                                                 {(u.username || u.discord_name || "?")[0]}
                                             </AvatarFallback>

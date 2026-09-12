@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Users, Wifi, Clock, MessageSquare, Trophy, Coins, UserPlus, TrendingUp, ShoppingBag, Bot, Paperclip } from "lucide-react";
+import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 
 interface Stats {
   online_users: number;
@@ -369,11 +370,7 @@ function LeaderAvatar({ avatarUrl, online }: { avatarUrl?: string; online?: bool
     <div className="relative w-10 h-10 shrink-0">
       {avatarUrl && !broken ? (
         <img
-          // Routed through our own origin - direct <img src> to
-          // cdn.discordapp.com failed to load on this site specifically
-          // (verified: same URL loads fine navigated to directly or from
-          // discordapp.com itself), see api/avatar-proxy/route.ts.
-          src={`/api/avatar-proxy?url=${encodeURIComponent(avatarUrl)}`}
+          src={toProxiedAvatarUrl(avatarUrl)}
           alt=""
           className="w-10 h-10 rounded-full object-cover"
           onError={() => setBroken(true)}
