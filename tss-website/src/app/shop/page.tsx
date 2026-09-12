@@ -135,10 +135,10 @@ export default function ShopPage() {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl pb-16">
       <div className="mb-8 text-center">
-        <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
+        <h1 className="text-5xl font-black tracking-tight text-[var(--text)] font-[family-name:var(--font-space)] mb-4">
           {t.shopPage.title}
         </h1>
-        <p className="text-xl text-zinc-400 font-[family-name:var(--font-outfit)]">
+        <p className="text-xl text-[var(--text)] font-[family-name:var(--font-outfit)]">
           {t.shopPage.subtitle}
         </p>
         {money !== null && (
@@ -158,12 +158,12 @@ export default function ShopPage() {
         <Card className="w-full max-w-3xl mx-auto glass rounded-[2.5rem] shadow-2xl">
           <CardContent className="p-12 text-center">
             <ShoppingCart className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">{t.shopPage.emptyTitle}</h2>
+            <h2 className="text-2xl font-bold mb-2 text-[var(--text)] ">{t.shopPage.emptyTitle}</h2>
             <p className="text-zinc-400 mb-6">{t.shopPage.emptyDesc1}</p>
             <p className="text-zinc-400 mb-6">{t.shopPage.emptyDesc2}</p>
             <Button
               onClick={() => router.push("/games")}
-              className="mt-6 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-white font-bold"
+              className="mt-6 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-[var(--text)]  font-bold"
             >
               {t.shopPage.exploreGames}
             </Button>
@@ -176,7 +176,7 @@ export default function ShopPage() {
 
           return (
             <div key={key} className="mb-12">
-              <h2 className="flex items-center gap-2 text-2xl font-bold text-white mb-5 font-[family-name:var(--font-space)]">
+              <h2 className="flex items-center gap-2 text-2xl font-bold text-[var(--text)]  mb-5 font-[family-name:var(--font-space)]">
                 {icon} {label}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@ export default function ShopPage() {
                       <CardHeader className="p-6 pb-4 relative z-10 flex-row items-center gap-4">
                         {renderPreview(product)}
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg font-bold text-white truncate">{product.name}</CardTitle>
+                          <CardTitle className="text-lg font-bold text-[var(--text)]  truncate">{product.name}</CardTitle>
                           <p className="text-sm text-zinc-400 line-clamp-2 font-[family-name:var(--font-outfit)]">
                             {product.description}
                           </p>
@@ -202,7 +202,7 @@ export default function ShopPage() {
                       </CardHeader>
                       <CardContent className="p-4 pt-0 relative z-10">
                         <div className="flex items-center justify-between">
-                          <span className="text-xl font-black text-white flex items-center gap-1.5">
+                          <span className="text-xl font-black text-[var(--text)]  flex items-center gap-1.5">
                             <Coins size={16} className="text-[var(--color-general)]" /> {product.price}
                           </span>
                           <Button
@@ -211,7 +211,7 @@ export default function ShopPage() {
                             className={`rounded-2xl font-bold transition-all ${
                               isOwned
                                 ? "bg-emerald-500/20 text-emerald-400"
-                                : "bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white"
+                                : "bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-[var(--text)] "
                             }`}
                           >
                             {isOwned ? (
