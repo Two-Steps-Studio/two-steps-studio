@@ -165,7 +165,7 @@ export default function Page() {
             placeholder={t.gamesCatalog.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border)] text-[var(--text)] placeholder:text-zinc-500"
+            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border-color)] text-[var(--text)] placeholder:text-zinc-500"
           />
         </div>
 

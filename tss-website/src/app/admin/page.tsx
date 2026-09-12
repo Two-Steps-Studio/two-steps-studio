@@ -47,18 +47,18 @@ export default function AdminPage() {
     <div className="min-h-screen p-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
             <Shield className="w-8 h-8" />
             Admin Panel
           </h1>
-          <p className="text-white/70">Wybierz panel do zarządzania.</p>
+          <p className="text-[var(--text-muted)]">Wybierz panel do zarządzania.</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/admin/bot">
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer h-full">
+            <Card className="bg-[var(--card-bg)] border-[var(--border-color)] hover:bg-[var(--bg)] transition-colors cursor-pointer h-full">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
+                <CardTitle className="flex items-center gap-2 text-[var(--text)]">
                   <Bot className="w-5 h-5" /> Sterowanie botem
                 </CardTitle>
                 <CardDescription>Ustawienia, userzy, logi, giveaway i tickety Discord bota.</CardDescription>
@@ -66,9 +66,9 @@ export default function AdminPage() {
             </Card>
           </Link>
           <Link href="/admin/games">
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer h-full">
+            <Card className="bg-[var(--card-bg)] border-[var(--border-color)] hover:bg-[var(--bg)] transition-colors cursor-pointer h-full">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
+                <CardTitle className="flex items-center gap-2 text-[var(--text)]">
                   <Gamepad2 className="w-5 h-5" /> Gry
                 </CardTitle>
                 <CardDescription>Zarządzanie wydaniami gier.</CardDescription>

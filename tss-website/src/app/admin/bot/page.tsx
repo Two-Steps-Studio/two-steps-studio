@@ -46,13 +46,13 @@ function DiscordIdPicker({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="ID (np. 1234567890123456)"
-          className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+          className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
         />
       ) : (
         <select
           value={options.some((o) => o.id === value) ? value : ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+          className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
         >
           <option value="">— wybierz —</option>
           {options.map((o) => (
@@ -153,7 +153,7 @@ export default function AdminBotPage() {
         <p className="text-sm text-[var(--text-muted)]">Ustawienia Discord bota bez ruszania .env czy komend.</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-[var(--border)] pb-3">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--border-color)] pb-3">
         {TABS.map((t) => {
           const Icon = t.icon;
           const active = tab === t.id;
@@ -270,7 +270,7 @@ function UsersTab() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Szukaj po nicku..."
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] pl-9 pr-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+            className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] pl-9 pr-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
           />
         </div>
 
@@ -323,13 +323,13 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
   };
 
   return (
-    <div className="rounded-xl border border-[var(--border)] p-3 flex flex-wrap items-center gap-3">
+    <div className="rounded-xl border border-[var(--border-color)] p-3 flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-2 min-w-[140px]">
         {user.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.avatar_url} alt="" width={32} height={32} className="rounded-full" />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-[var(--card-bg)] border border-[var(--border)]" />
+          <div className="w-8 h-8 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)]" />
         )}
         <span className="text-sm font-medium truncate">{user.username || user.id}</span>
       </div>
@@ -340,7 +340,7 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
           type="number"
           value={level}
           onChange={(e) => setLevel(parseInt(e.target.value) || 0)}
-          className="w-16 rounded border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-sm"
+          className="w-16 rounded border border-[var(--border-color)] bg-[var(--bg)] px-2 py-1 text-sm"
         />
       </label>
       <label className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
@@ -349,7 +349,7 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
           type="number"
           value={money}
           onChange={(e) => setMoney(parseInt(e.target.value) || 0)}
-          className="w-24 rounded border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-sm"
+          className="w-24 rounded border border-[var(--border-color)] bg-[var(--bg)] px-2 py-1 text-sm"
         />
       </label>
       <label className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
@@ -358,7 +358,7 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
           type="number"
           value={bank}
           onChange={(e) => setBank(parseInt(e.target.value) || 0)}
-          className="w-24 rounded border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-sm"
+          className="w-24 rounded border border-[var(--border-color)] bg-[var(--bg)] px-2 py-1 text-sm"
         />
       </label>
 
@@ -371,7 +371,7 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
             className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide border transition-colors ${
               vip[key]
                 ? "bg-[var(--color-general)] text-white border-[var(--color-general)]"
-                : "bg-transparent text-[var(--text-muted)] border-[var(--border)]"
+                : "bg-transparent text-[var(--text-muted)] border-[var(--border-color)]"
             }`}
           >
             {key.replace("_status", "")}
@@ -449,7 +449,7 @@ function LogsTab() {
         <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
           {warnings.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak ostrzeżeń.</p>}
           {warnings.map((w) => (
-            <div key={w.id} className="rounded-lg border border-[var(--border)] p-3 text-sm space-y-1">
+            <div key={w.id} className="rounded-lg border border-[var(--border-color)] p-3 text-sm space-y-1">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{w.username}</span>
                 <span className="text-xs text-[var(--text-muted)]">{formatLogTime(w.created_at)}</span>
@@ -473,7 +473,7 @@ function LogsTab() {
             const meta = ACTIVITY_ICON[a.type] ?? ACTIVITY_ICON.join;
             const Icon = meta.icon;
             return (
-              <div key={a.id} className="flex items-start gap-2.5 rounded-lg border border-[var(--border)] p-3 text-sm">
+              <div key={a.id} className="flex items-start gap-2.5 rounded-lg border border-[var(--border-color)] p-3 text-sm">
                 <Icon size={16} style={{ color: meta.color }} className="shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <span className="font-medium">{a.username}</span>
@@ -616,7 +616,7 @@ function EngagementTab() {
             {giveaways.map((g) => {
               const isPast = new Date(g.ends_at) < new Date();
               return (
-                <div key={g.id} className="rounded-lg border border-[var(--border)] p-3 text-sm space-y-1">
+                <div key={g.id} className="rounded-lg border border-[var(--border-color)] p-3 text-sm space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{g.prize}</span>
                     <Badge variant={g.ended ? "outline" : isPast ? "secondary" : "default"}>
@@ -641,7 +641,7 @@ function EngagementTab() {
           <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
             {tickets.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak ticketów.</p>}
             {tickets.map((t) => (
-              <div key={t.id} className="rounded-lg border border-[var(--border)] p-3 text-sm space-y-1">
+              <div key={t.id} className="rounded-lg border border-[var(--border-color)] p-3 text-sm space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{t.user_name}</span>
                   <Badge variant={t.status === "open" ? "default" : "outline"}>
@@ -715,7 +715,7 @@ function NewGiveawayForm({ onQueued, channels }: { onQueued: () => void; channel
               value={prize}
               onChange={(e) => setPrize(e.target.value)}
               placeholder="np. Discord Nitro"
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+              className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
             />
           </label>
           <label className="space-y-1">
@@ -726,7 +726,7 @@ function NewGiveawayForm({ onQueued, channels }: { onQueued: () => void; channel
               max={20}
               value={winnerCount}
               onChange={(e) => setWinnerCount(parseInt(e.target.value) || 1)}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+              className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
             />
           </label>
           <label className="space-y-1">
@@ -736,7 +736,7 @@ function NewGiveawayForm({ onQueued, channels }: { onQueued: () => void; channel
               min={1}
               value={minutes}
               onChange={(e) => setMinutes(parseInt(e.target.value) || 1)}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+              className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
             />
           </label>
         </div>
