@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/hooks/use-translation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Mail, User, Shield, Users, TrendingUp } from "lucide-react";
+import { Loader2, Shield, Users, Send } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function RekrutacjaPage() {
@@ -33,71 +35,73 @@ export default function RekrutacjaPage() {
       return () => mediaQuery.removeEventListener('change', handler);
     }
   }, []);
+
   const { t } = useLanguage();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [discordRoles, setDiscordRoles] = useState<string[]>([]);
-  const [discordData, setDiscordData] = useState<any>(null);
+  const [discordLoading, setDiscordLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    discord: "",
+    position: "",
+    experience: "",
+    motivation: "",
+    portfolio: "",
+  });
 
-  useEffect(() => {
-    const fetchDiscordData = async () => {
-      try {
-        const response = await fetch("/api/stats");
-        const data = await response.json();
-        if (data.discord_roles) {
-          setDiscordRoles(data.discord_roles);
-        }
-      } catch (error) {
-        console.error("Błąd pobierania danych Discorda:", error);
-      }
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
-    fetchDiscordData();
-  }, []);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/recruitment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) throw new Error("Failed to submit application");
+
+      toast.success(t.rekrutacja.submitSuccess);
+      setFormData({ name: "", email: "", discord: "", position: "", experience: "", motivation: "", portfolio: "" });
+    } catch (error) {
+      toast.error(t.rekrutacja.submitError);
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleDiscordLogin = async () => {
-    // window.supabase was never assigned anywhere -- this was always
-    // undefined, so the optional chain short-circuited and awaiting it
-    // threw trying to destructure `error` off `undefined`, landing in the
-    // catch block below every single time. Use the actual client module
-    // (same one every other OAuth button in the app uses), matching
-    // login/login.tsx's Discord sign-in.
     if (!supabase) {
-      toast.error("Błąd logowania", {
-        description: "Usługa logowania jest obecnie niedostępna.",
-      });
+      toast.error(t.rekrutacja.loginErrorTitle, { description: "Usługa logowania jest obecnie niedostępna." });
       return;
     }
 
-    setLoading(true);
+    setDiscordLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
-        options: {
-          redirectTo: `${window.location.origin}/registration`,
-        },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/registration` },
       });
-
       if (error) {
-        toast.error("Błąd logowania", {
-          description: error.message,
-        });
+        toast.error(t.rekrutacja.loginErrorTitle, { description: error.message });
       }
     } catch (err) {
-      toast.error("Błąd logowania", {
-        description: "Spróbuj ponownie później",
-      });
+      toast.error(t.rekrutacja.loginErrorTitle, { description: t.rekrutacja.loginErrorRetry });
       console.error(err);
     } finally {
-      setLoading(false);
+      setDiscordLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-200px)] w-full items-center justify-center p-4">
+    <div className="flex min-h-[calc(100vh-200px)] w-full items-center justify-center p-4 py-12">
       <Card className="w-full max-w-2xl glass rounded-[2.5rem] shadow-2xl overflow-hidden relative border-black/10 dark:border-white/5">
-        <div className={`absolute inset-0 bg-gradient-to-br from-[var(--color-general)]/10 via-transparent to-transparent opacity-50 transition-colors ${!darkMode ? 'bg-gradient-to-br from-[var(--bg)]/10 via-transparent to-transparent' : ''}`}>
-        </div>
+        <div className={`absolute inset-0 bg-gradient-to-br from-[var(--color-general)]/10 via-transparent to-transparent opacity-50 transition-colors ${!darkMode ? 'bg-gradient-to-br from-[var(--bg)]/10 via-transparent to-transparent' : ''}`} />
         <CardHeader className="text-center space-y-4 relative z-10">
           <Users className="w-16 h-16 mx-auto text-[var(--color-general)] opacity-80" />
           <CardTitle className="text-3xl font-bold text-center">{t.rekrutacja.title}</CardTitle>
@@ -106,70 +110,77 @@ export default function RekrutacjaPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="relative z-10 space-y-6">
-          <div className={`bg-gradient-to-r from-[var(--bg)] via-[var(--bg)] to-[var(--bg)] rounded-2xl p-6 border border-[var(--border-color)] transition-colors`}>
-            <div className="space-y-4 font-[family-name:var(--font-outfit)]">
-              <div className="flex items-start gap-3">
-                <User className="w-5 h-5 mt-0.5 text-[var(--color-general)] flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-[var(--text)] mb-1">{t.rekrutacja.email}</h3>
-                  <input
-                    type="email"
-                    placeholder={t.rekrutacja.emailPlaceholder}
-                    className="w-full bg-transparent border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text)] placeholder:text-neutral-400 focus:border-[var(--color-general)] focus:outline-none transition-colors"
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">{t.rekrutacja.name}</Label>
+                <Input id="name" name="name" value={formData.name} onChange={handleChange} required placeholder={t.rekrutacja.namePlaceholder} />
               </div>
-              <div className="flex items-start gap-3">
-                <User className="w-5 h-5 mt-0.5 text-[var(--color-general)] flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-[var(--text)] mb-1">{t.rekrutacja.name}</h3>
-                  <input
-                    type="text"
-                    placeholder={t.rekrutacja.namePlaceholder}
-                    className="w-full bg-transparent border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text)] placeholder:text-neutral-400 focus:border-[var(--color-general)] focus:outline-none transition-colors"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">{t.rekrutacja.email}</Label>
+                <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required placeholder={t.rekrutacja.emailPlaceholder} />
               </div>
-              {discordData?.roles && discordData.roles.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="font-bold text-[var(--text)] text-sm">{t.rekrutacja.discordRoles}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {discordData.roles.map((role: string) => (
-                      <Badge
-                        key={role}
-                        className="bg-[var(--color-general)]/10 text-[var(--color-general)] border border-[var(--color-general)]/20 text-xs px-2 py-1"
-                      >
-                        {role}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="discord">{t.rekrutacja.discord}</Label>
+              <Input id="discord" name="discord" value={formData.discord} onChange={handleChange} required placeholder={t.rekrutacja.discordPlaceholder} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position">{t.rekrutacja.position}</Label>
+              <Input id="position" name="position" value={formData.position} onChange={handleChange} required placeholder={t.rekrutacja.positionPlaceholder} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="experience">{t.rekrutacja.experience}</Label>
+              <Textarea id="experience" name="experience" value={formData.experience} onChange={handleChange} required placeholder={t.rekrutacja.experiencePlaceholder} rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="motivation">{t.rekrutacja.motivation}</Label>
+              <Textarea id="motivation" name="motivation" value={formData.motivation} onChange={handleChange} required placeholder={t.rekrutacja.motivationPlaceholder} rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="portfolio">{t.rekrutacja.portfolio}</Label>
+              <Input id="portfolio" name="portfolio" value={formData.portfolio} onChange={handleChange} placeholder={t.rekrutacja.portfolioPlaceholder} />
+            </div>
+            <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-2xl font-bold gap-2">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t.rekrutacja.submitting}
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" /> {t.rekrutacja.submit}
+                </>
+              )}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3">
+            <div className={`h-px flex-1 ${!darkMode ? 'bg-neutral-200' : 'bg-white/10'}`} />
+            <span className="text-xs text-neutral-400 uppercase tracking-widest">{t.rekrutacja.or}</span>
+            <div className={`h-px flex-1 ${!darkMode ? 'bg-neutral-200' : 'bg-white/10'}`} />
           </div>
 
           <div className="flex flex-col gap-3">
             <Button
               onClick={handleDiscordLogin}
-              disabled={loading}
-              className="w-full h-12 rounded-2xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold gap-2 transition-all"
+              disabled={discordLoading}
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-[#5865F2]/40 hover:bg-[#5865F2]/10 font-bold gap-2 transition-all"
             >
-              {loading ? (
+              {discordLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Łączenie z Discordem...
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t.rekrutacja.connectingDiscord}
                 </>
               ) : (
                 <>
-                  <Shield className="h-4 w-4" />
-                  Połącz z Discordem
+                  <Shield className="h-4 w-4" /> {t.rekrutacja.connectDiscord}
                 </>
               )}
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => router.push("/")}
-              className={`w-full h-12 rounded-2xl font-bold transition-colors ${!darkMode ? 'border-neutral-300 hover:border-neutral-400' : 'border-white/10 hover:border-white/20'}`}
+              className={`w-full h-12 rounded-2xl font-bold transition-colors ${!darkMode ? 'hover:bg-neutral-100' : 'hover:bg-white/5'}`}
             >
               {t.rekrutacja.backToHome}
             </Button>
@@ -177,7 +188,7 @@ export default function RekrutacjaPage() {
 
           <div className={`text-center text-xs pt-4 border-t transition-colors ${!darkMode ? 'text-neutral-500 border-neutral-200' : 'text-neutral-400 border-white/5'}`}>
             <p>
-              Potrzebujesz pomocy? <Link href="/contact" className="text-[var(--color-general)] hover:underline">Kontakt</Link>
+              {t.rekrutacja.needHelp} <Link href="/contact" className="text-[var(--color-general)] hover:underline">{t.rekrutacja.contactLink}</Link>
             </p>
           </div>
         </CardContent>
