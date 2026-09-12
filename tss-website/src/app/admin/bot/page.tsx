@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Settings, Users, ScrollText, Gift, ShieldAlert, Loader2, ArrowLeft, Search, Save, Check,
-  AlertTriangle, UserPlus, TrendingUp, ShoppingBag, MessageSquare,
+  AlertTriangle, UserPlus, TrendingUp, ShoppingBag, MessageSquare, Ticket, PartyPopper,
 } from "lucide-react";
 
 const SETTING_LABELS: Record<string, { label: string; hint: string }> = {
@@ -143,14 +143,7 @@ export default function AdminBotPage() {
 
       {tab === "users" && <UsersTab />}
       {tab === "logs" && <LogsTab />}
-
-      {tab === "engagement" && (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-[var(--text-muted)]">
-            Ta zakładka będzie gotowa w kolejnym kroku.
-          </CardContent>
-        </Card>
-      )}
+      {tab === "engagement" && <EngagementTab />}
     </div>
   );
 }
@@ -422,6 +415,108 @@ function LogsTab() {
           })}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+interface GiveawayRow {
+  id: number;
+  prize: string;
+  winner_count: number;
+  ends_at: string;
+  ended: boolean;
+  created_by_name: string;
+  created_at: string;
+}
+interface TicketRow {
+  id: number;
+  user_name: string;
+  status: "open" | "closed";
+  created_at: string;
+  closed_at: string | null;
+}
+
+function EngagementTab() {
+  const [giveaways, setGiveaways] = useState<GiveawayRow[]>([]);
+  const [tickets, setTickets] = useState<TicketRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/bot-engagement")
+      .then((res) => res.json())
+      .then((data) => {
+        setGiveaways(data.giveaways || []);
+        setTickets(data.tickets || []);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="animate-spin text-[var(--color-general)]" size={22} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-[var(--text-muted)]">
+        Na razie podgląd — tworzenie giveawayów/ticketów z panelu wymaga bota do realnego wysłania wiadomości na Discorda, to osobny krok.
+      </p>
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PartyPopper size={16} className="text-[var(--color-general)]" /> Giveaway ({giveaways.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
+            {giveaways.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak giveawayów.</p>}
+            {giveaways.map((g) => {
+              const isPast = new Date(g.ends_at) < new Date();
+              return (
+                <div key={g.id} className="rounded-lg border border-[var(--border)] p-3 text-sm space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{g.prize}</span>
+                    <Badge variant={g.ended ? "outline" : isPast ? "secondary" : "default"}>
+                      {g.ended ? "zakończony" : isPast ? "do rozstrzygnięcia" : "trwa"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {g.winner_count}× zwycięzca • koniec {formatLogTime(g.ends_at)} • od {g.created_by_name}
+                  </p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Ticket size={16} className="text-[var(--color-general)]" /> Tickety ({tickets.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
+            {tickets.length === 0 && <p className="text-sm text-[var(--text-muted)]">Brak ticketów.</p>}
+            {tickets.map((t) => (
+              <div key={t.id} className="rounded-lg border border-[var(--border)] p-3 text-sm space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{t.user_name}</span>
+                  <Badge variant={t.status === "open" ? "default" : "outline"}>
+                    {t.status === "open" ? "otwarty" : "zamknięty"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-[var(--text-muted)]">
+                  otwarty {formatLogTime(t.created_at)}
+                  {t.closed_at ? ` • zamknięty ${formatLogTime(t.closed_at)}` : ""}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
