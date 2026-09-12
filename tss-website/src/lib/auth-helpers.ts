@@ -23,7 +23,7 @@ export interface AuthContext {
 }
 
 export interface OwnershipCheck {
-  resourceType: 'game' | 'music_track' | 'podcast' | 'dev_project';
+  resourceType: 'game' | 'music_track' | 'podcast';
   resourceId: number;
 }
 
@@ -247,7 +247,6 @@ export async function requireOwnership(
     'game': 'games',
     'music_track': 'music_tracks',
     'podcast': 'podcasts',
-    'dev_project': 'dev_projects',
   };
 
   const tableName = RESOURCE_TABLES[resourceType];
@@ -272,40 +271,6 @@ export async function requireOwnership(
   return null;
 }
 
-// ============================================
-// 5. requireProjectAccess()
-// ============================================
-
-/**
- * Checks if user has access to a DEV project with required permission
- * Integrates with existing DEV permission system
- * @param auth - AuthContext from requireAuth()
- * @param projectId - ID of the project
- * @param permission - Required permission (view_project, edit_project, manage_tasks, etc.)
- * @returns NextResponse with 403 if no access, null if authorized
- */
-export async function requireProjectAccess(
-  auth: AuthContext | NextResponse,
-  projectId: number,
-  permission: string
-): Promise<NextResponse | null> {
-  // If auth is an error response, return it
-  if (auth instanceof NextResponse) {
-    return auth;
-  }
-
-  // Import existing DEV permission system
-  const { checkProjectPermission } = await import("@/lib/dev-permissions");
-  
-  const result = await checkProjectPermission(projectId, permission as any);
-  
-  if (!result.hasAccess) {
-    console.error(`[SECURITY] User ${auth.user.id} attempted to access project ${projectId} with permission ${permission}:`, result.error);
-    return NextResponse.json({ error: result.error || "Forbidden" }, { status: 403 });
-  }
-
-  return null;
-}
 
 // ============================================
 // 6. validateInput()

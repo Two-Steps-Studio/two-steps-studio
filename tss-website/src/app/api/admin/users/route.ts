@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   let query = supabase
     .from("profiles")
     .select(
-      "id, username, avatar_url, xp, level, project_limit, subscription_plan, created_at, money, bank, vip_status, svip_status, mvip_status, discord_id",
+      "id, username, avatar_url, xp, level, created_at, money, bank, vip_status, svip_status, mvip_status, discord_id",
       { count: "exact" }
     )
     .order("created_at", { ascending: false })
@@ -43,29 +43,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Plan breakdown across ALL matching users, not just this page - the
-  // admin page's "Quick Stats" card used to derive this by filtering the
-  // current page's 20-row `users` array, so on any page beyond the first
-  // (or with a search active) it silently summed a small subset instead of
-  // the real totals. Mirrors the same search filter as the query above so
-  // it stays consistent with `total` when a search is active.
-  let paidCountQuery = supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .neq("subscription_plan", "free");
-  if (search) {
-    paidCountQuery = paidCountQuery.ilike("username", `%${search}%`);
-  }
-  const { count: paidCount } = await paidCountQuery;
-
   return NextResponse.json({
     users: data,
     total: count,
     page,
     limit,
     totalPages: Math.ceil((count || 0) / limit),
-    paidCount: paidCount || 0,
-    freeCount: (count || 0) - (paidCount || 0),
   });
 }
 
@@ -94,18 +77,13 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { userId, project_limit, subscription_plan, money, bank, level, vip_status, svip_status, mvip_status } = body;
+  const { userId, money, bank, level, vip_status, svip_status, mvip_status } = body;
 
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
 
   const updateData: any = {};
-  if (project_limit !== undefined) updateData.project_limit = project_limit;
-  if (subscription_plan !== undefined) updateData.subscription_plan = subscription_plan;
-  // Bot-panel fields (money/bank/level/VIP tiers) - same route, extended
-  // rather than duplicated, since it already does exactly what's needed
-  // here: admin-gated, service-role write, single profiles row by id.
   if (money !== undefined) updateData.money = money;
   if (bank !== undefined) updateData.bank = bank;
   if (level !== undefined) updateData.level = level;

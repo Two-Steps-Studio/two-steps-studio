@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   let { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("games_visible, records_visible, dev_visible, project_limit, joined_projects_limit, subscription_plan")
+    .select("games_visible, records_visible, dev_visible")
     .eq("id", discordId)
     .maybeSingle();
 
@@ -47,9 +47,6 @@ export async function GET(request: Request) {
         games_visible: true,
         records_visible: true,
         dev_visible: true,
-        project_limit: 1,
-        joined_projects_limit: 3,
-        subscription_plan: 'free',
       })
       .select()
       .single();
@@ -61,18 +58,6 @@ export async function GET(request: Request) {
     // Use the newly created profile
     profile = newProfile;
   }
-
-  // Count current projects
-  const { count: ownProjectsCount } = await supabase
-    .from("dev_projects")
-    .select("*", { count: "exact", head: true })
-    .eq("owner_id", user.id);
-
-  // Count joined projects
-  const { count: joinedProjectsCount } = await supabase
-    .from("dev_project_members")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id);
 
   // Default DEV visibility: TRUE (always visible)
   let devVisible = profile?.dev_visible;
@@ -94,17 +79,6 @@ export async function GET(request: Request) {
       records: profile?.records_visible ?? true,
       dev: devVisible,
     },
-    limits: {
-      own_projects: {
-        current: ownProjectsCount || 0,
-        limit: profile?.project_limit || 1,
-      },
-      joined_projects: {
-        current: joinedProjectsCount || 0,
-        limit: profile?.joined_projects_limit || 3,
-      },
-    },
-    subscription: profile?.subscription_plan || 'free',
   });
 }
 
@@ -144,9 +118,6 @@ export async function PATCH(request: Request) {
         games_visible: true,
         records_visible: true,
         dev_visible: true,
-        project_limit: 1,
-        joined_projects_limit: 3,
-        subscription_plan: 'free',
       });
 
     if (createError) {
@@ -160,7 +131,7 @@ export async function PATCH(request: Request) {
   const ALLOWED_FIELDS = ['username', 'games_visible', 'records_visible', 'dev_visible'];
   
   // SECURITY: Blocked fields that users should never be able to modify
-  const BLOCKED_FIELDS = ['money', 'bank', 'pln_balance', 'xp', 'level', 'rank', 'role', 'permissions', 'settings', 'is_admin', 'isAdmin', 'project_limit', 'joined_projects_limit', 'subscription_plan'];
+  const BLOCKED_FIELDS = ['money', 'bank', 'pln_balance', 'xp', 'level', 'rank', 'role', 'permissions', 'settings', 'is_admin', 'isAdmin'];
   
   // SECURITY: Log if user attempts to modify blocked fields
   const attemptedBlockedFields = BLOCKED_FIELDS.filter(field => field in body);

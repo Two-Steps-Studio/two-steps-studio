@@ -267,42 +267,6 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   );
 
-  // DEV routes - check specific project access for /dev/projects/[id] routes
-  const isDevRoute = request.nextUrl.pathname.startsWith("/dev");
-  const projectMatch = request.nextUrl.pathname.match(/^\/dev\/projects\/(\d+)/);
-  if (isDevRoute && user && supabase && projectMatch) {
-    try {
-      const projectId = parseInt(projectMatch[1]);
-
-      // Check if user has access to this specific project
-      const { data: project, error: projectError } = await supabase
-        .from("dev_projects")
-        .select("id, owner_id")
-        .eq("id", projectId)
-        .single();
-
-      if (projectError || !project) {
-        return NextResponse.redirect(new URL("/dev?project-not-found=true", request.url));
-      }
-
-      // Check if user is owner or member
-      const isOwner = project.owner_id === user.id;
-      const { count: memberCount } = await supabase
-        .from("dev_project_members")
-        .select("*", { count: "exact", head: true })
-        .eq("project_id", projectId)
-        .eq("user_id", user.id);
-
-      if (!isOwner && (!memberCount || memberCount === 0)) {
-        // User doesn't have access to this specific project
-        return NextResponse.redirect(new URL("/dev?project-access-denied=true", request.url));
-      }
-    } catch (error) {
-      console.error("DEV project access check failed:", error);
-      // Allow access if check fails to avoid blocking legitimate users
-    }
-  }
-
   // profiles.id is the Discord snowflake (user_metadata.provider_id), not
   // the Supabase Auth UUID — user.id never matched the real row for a
   // Discord-linked account, so `profile` below was always null and every

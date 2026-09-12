@@ -31,11 +31,6 @@ type CategoryVisibility = {
   records: boolean;
   dev: boolean;
 };
-type ProjectLimits = {
-  own_projects: { current: number; limit: number };
-  joined_projects: { current: number; limit: number };
-};
-
 type Integration = {
   provider: string;
   username: string;
@@ -68,11 +63,6 @@ export default function SettingsPage() {
     dev: true,
   });
 
-  const [projectLimits, setProjectLimits] = useState<ProjectLimits>({
-    own_projects: { current: 0, limit: 1 },
-    joined_projects: { current: 0, limit: 3 },
-  });
-
   const [loadingSettings, setLoadingSettings] = useState(false);
   const [username, setUsername] = useState("");
   const [loadingUsername, setLoadingUsername] = useState(false);
@@ -96,7 +86,6 @@ export default function SettingsPage() {
         if (response.ok) {
           const data = await response.json();
           setCategoryVisibility(data.visibility);
-          setProjectLimits(data.limits);
         }
       } catch (error) {
         console.error("Failed to load user settings:", error);
