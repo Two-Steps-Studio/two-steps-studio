@@ -13,44 +13,49 @@ const SHOP_ITEMS = [
         name: 'VIP',
         label: '〔 🐨 ︱ VIP 〕',
         price: 1500,
-        description: 'VIP',
+        description: 'VIP — +10% z wiadomości, voice, /work, /daily, /weekly',
         type: 'role',
         // Discord snowflakes exceed Number.MAX_SAFE_INTEGER — as bare number
         // literals these silently lost precision, so every role grant below
         // was attempted with a corrupted, non-existent id. Must stay strings.
         roleId: '1448013683526467756',
+        effect: { type: 'vip_status', column: 'vip_status' },
     },
     {
         name: 'SVIP',
         label: '〔 🐄 ︱ SVIP 〕',
         price: 3000,
-        description: 'SVIP',
+        description: 'SVIP — +20% z wiadomości, voice, /work, /daily, /weekly',
         type: 'role',
         roleId: '1448017195790635099',
+        effect: { type: 'vip_status', column: 'svip_status' },
     },
     {
         name: 'MVIP',
         label: '〔 🦣 ︱ MVIP 〕',
         price: 6000,
-        description: 'MVIP',
+        description: 'MVIP — +35% z wiadomości, voice, /work, /daily, /weekly',
         type: 'role',
         roleId: '1448017207501000908',
+        effect: { type: 'vip_status', column: 'mvip_status' },
     },
     {
         name: 'X2',
         label: '〔 ✖️ ︱ X2 〕',
         price: 6000,
-        description: 'X2',
+        description: 'X2 — podwaja zarobki z wiadomości/voice/pracy na 3 dni',
         type: 'role',
         roleId: '1362307366372114582',
+        effect: { type: 'multiplier', value: 2, days: 3 },
     },
     {
         name: 'X3',
         label: '〔 ✖️ ︱ X3 〕',
         price: 10000,
-        description: 'X3',
+        description: 'X3 — potraja zarobki z wiadomości/voice/pracy na 5 dni',
         type: 'role',
         roleId: '1362307473804886168',
+        effect: { type: 'multiplier', value: 3, days: 5 },
     },
 ];
 
@@ -297,6 +302,37 @@ async function handleShopInteraction(interaction, supabase) {
                 content: `⚠️ Pobrano **${item.price.toLocaleString('pl-PL')} ${COIN}**, ale nie udało się nadać roli **${item.label}**. Napisz do administracji, żeby to poprawić.`,
                 flags: 1 << 6,
             });
+        }
+
+        // Real gameplay effect behind the role - see economyBonus.js. Before
+        // this, VIP/SVIP/MVIP/X2/X3 only ever granted a cosmetic Discord
+        // role; profiles.multiplier/vip_status etc. existed but nothing
+        // wrote to them, so people paid coins for a boost that did nothing.
+        if (item.effect?.type === 'vip_status') {
+            const { error: effectError } = await supabase
+                .from('profiles')
+                .update({ [item.effect.column]: true })
+                .eq('id', profile.id);
+            if (effectError) console.error('[SHOP] Błąd nadawania statusu VIP:', effectError.message);
+        } else if (item.effect?.type === 'multiplier') {
+            // Stacks fairly: a repeat purchase while one is still active
+            // extends the remaining time rather than resetting it, and the
+            // multiplier only ever goes up (buying X2 after X3 doesn't
+            // downgrade an already-active X3).
+            const { data: current } = await supabase
+                .from('profiles')
+                .select('multiplier, multiplier_expires_at')
+                .eq('id', profile.id)
+                .maybeSingle();
+            const stillActive = current?.multiplier_expires_at && new Date(current.multiplier_expires_at) > new Date();
+            const newMultiplier = stillActive ? Math.max(current.multiplier, item.effect.value) : item.effect.value;
+            const base = stillActive ? new Date(current.multiplier_expires_at) : new Date();
+            const newExpiry = new Date(base.getTime() + item.effect.days * 24 * 60 * 60 * 1000).toISOString();
+            const { error: effectError } = await supabase
+                .from('profiles')
+                .update({ multiplier: newMultiplier, multiplier_expires_at: newExpiry })
+                .eq('id', profile.id);
+            if (effectError) console.error('[SHOP] Błąd nadawania mnożnika:', effectError.message);
         }
 
         logActivity(supabase, 'purchase', interaction.user.username, item.label);

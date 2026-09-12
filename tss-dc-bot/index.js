@@ -29,6 +29,7 @@ const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./ti
 const { handleVoiceStateUpdate } = require('./voiceChannels');
 const { logActivity } = require('./activityLog');
 const { getSetting, ensureFresh: ensureFreshSettings } = require('./settings');
+const { getEarningsMultiplier } = require('./economyBonus');
 const { checkAutoMod } = require('./automod');
 const { handleServerInfo, handleUserInfo, handleLock, handleUnlock, handleSlowmode } = require('./utility');
 const { loadTags, handleTagAdd, handleTagRemove, handleTagList, checkTag } = require('./tags');
@@ -1103,7 +1104,7 @@ client.on('interactionCreate', async interaction => {
                 const minsLeft = Math.ceil((3600000 - diff) / 60000);
                 return await interaction.editReply(`⏳ Jesteś zmęczony! Odpocznij jeszcze **${minsLeft} min**.`);
             }
-            const earnings = Math.floor(Math.random() * 80) + 20;
+            const earnings = Math.round((Math.floor(Math.random() * 80) + 20) * getEarningsMultiplier(profile));
             const { data: workData, error: workError } = await supabase.rpc('apply_work_reward', {
                 p_user_id: profile.id,
                 p_earnings: earnings,
@@ -1132,7 +1133,7 @@ client.on('interactionCreate', async interaction => {
                 const hoursLeft = Math.ceil((86400000 - diff) / 3600000);
                 return await interaction.editReply(`⏳ Codzienną nagrodę odbierzesz za **${hoursLeft} h**.`);
             }
-            const earnings = Math.floor(Math.random() * 101) + 50; // 50-150
+            const earnings = Math.round((Math.floor(Math.random() * 101) + 50) * getEarningsMultiplier(profile)); // 50-150 base
             const { data, error } = await supabase.rpc('apply_daily_reward', {
                 p_user_id: profile.id,
                 p_earnings: earnings,
@@ -1155,7 +1156,7 @@ client.on('interactionCreate', async interaction => {
                 const daysLeft = Math.ceil((604800000 - diff) / 86400000);
                 return await interaction.editReply(`⏳ Tygodniową nagrodę odbierzesz za **${daysLeft} dni**.`);
             }
-            const earnings = Math.floor(Math.random() * 301) + 300; // 300-600
+            const earnings = Math.round((Math.floor(Math.random() * 301) + 300) * getEarningsMultiplier(profile)); // 300-600 base
             const { data, error } = await supabase.rpc('apply_weekly_reward', {
                 p_user_id: profile.id,
                 p_earnings: earnings,
@@ -1343,13 +1344,16 @@ client.on('messageCreate', async (message) => {
         const profile = await getProfile(message.author.id, message.author.username, roles, message.author.displayAvatarURL({ extension: 'png', size: 256 }));
         if (!profile) return;
 
+        const mult = getEarningsMultiplier(profile);
+        const xpDelta = Math.round(MESSAGE_XP_REWARD * mult);
+        const moneyDelta = Math.round(MESSAGE_MONEY_REWARD * mult);
         const currentLevel = profile.level ?? 0;
-        const newLevel     = getLevelFromXP((profile.xp ?? 0) + MESSAGE_XP_REWARD);
+        const newLevel     = getLevelFromXP((profile.xp ?? 0) + xpDelta);
 
         const { error: updateError } = await supabase.rpc('apply_xp_money_reward', {
             p_user_id: profile.id,
-            p_xp_delta: MESSAGE_XP_REWARD,
-            p_money_delta: MESSAGE_MONEY_REWARD,
+            p_xp_delta: xpDelta,
+            p_money_delta: moneyDelta,
             p_new_level: newLevel,
         });
 
@@ -1410,13 +1414,16 @@ async function syncVoiceRewards(userId, minutes, member, username) {
         // profile card's role badges in the meantime.
         const roles = member?.roles.cache.filter(r => r.name !== '@everyone').map(r => r.name) || [];
         const profile      = await getProfile(userId, username, roles, member?.user.displayAvatarURL({ extension: 'png', size: 256 }));
+        const mult         = getEarningsMultiplier(profile);
+        const xpDelta      = Math.round(minutes * VOICE_XP_REWARD * mult);
+        const moneyDelta   = Math.round(minutes * VOICE_MONEY_REWARD * mult);
         const currentLevel = profile.level ?? 0;
-        const newLevel     = getLevelFromXP((profile.xp || 0) + minutes * 3);
+        const newLevel     = getLevelFromXP((profile.xp || 0) + xpDelta);
 
         await supabase.rpc('apply_xp_money_reward', {
             p_user_id: profile.id,
-            p_xp_delta: minutes * 3,
-            p_money_delta: minutes * 2,
+            p_xp_delta: xpDelta,
+            p_money_delta: moneyDelta,
             p_new_level: newLevel,
         });
 
