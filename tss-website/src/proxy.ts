@@ -219,7 +219,20 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  // getUser() is a network round trip to Supabase Auth to validate the JWT
+  // (~100-900ms measured live, worse under the project's current compute
+  // strain - see get_unified_stats timeouts). It was called unconditionally
+  // for every visitor to /games, /records, /dev, even anonymous ones with
+  // no session cookie at all, whose result (null) was already knowable from
+  // the request itself - every one of those visits paid the full round trip
+  // for a check that could never have found a session. Skip creating the
+  // client / calling the API entirely when there's no Supabase auth cookie
+  // present; every branch below already treats a missing `user` correctly.
+  const hasAuthCookie = request.cookies.getAll().some(
+    (c) => c.name.startsWith("sb-") && c.name.includes("-auth-token")
+  );
+
+  if (hasAuthCookie && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
