@@ -223,6 +223,8 @@
     "bank": "Bank",
     "plnBalance": "PLN-Guthaben",
     "goToShop": "Zum Shop",
+    "promoCodePlaceholder": "Hast du einen Promo-Code?",
+    "redeemCode": "Einlösen",
     "leaderboard": "Rangliste",
     "levels": "Level",
     "money": "Geld",

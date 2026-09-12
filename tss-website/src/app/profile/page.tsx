@@ -69,6 +69,8 @@ export default function ProfilePage() {
     // shop_items.id reference, not the color directly.
     const [nickColorValue, setNickColorValue] = useState<string | null>(null);
     const [achievements, setAchievements] = useState<Achievement[]>([]);
+    const [promoCode, setPromoCode] = useState("");
+    const [redeemingPromo, setRedeemingPromo] = useState(false);
 
     useEffect(() => {
         let channel: any = null;
@@ -318,6 +320,33 @@ export default function ProfilePage() {
         }
     };
 
+    const redeemPromoCode = async () => {
+        if (!promoCode.trim()) return;
+        setRedeemingPromo(true);
+        try {
+            const res = await fetch("/api/promo/redeem", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: promoCode.trim() }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data.error || "Nieprawidłowy kod.");
+                return;
+            }
+            const parts = [];
+            if (data.rewardMoney > 0) parts.push(`${data.rewardMoney} coinów`);
+            if (data.rewardXp > 0) parts.push(`${data.rewardXp} XP`);
+            toast.success(`Kod odebrany! Otrzymujesz: ${parts.join(" + ")}`);
+            setPromoCode("");
+            setProfile((p: any) => (p ? { ...p, money: data.newMoney } : p));
+        } catch {
+            toast.error("Wystąpił błąd. Spróbuj ponownie.");
+        } finally {
+            setRedeemingPromo(false);
+        }
+    };
+
     return (
         <div className="container mx-auto p-6 space-y-8 mt-20 max-w-6xl pb-16" suppressHydrationWarning>
 
@@ -472,6 +501,25 @@ export default function ProfilePage() {
                                     {t.profile.goToShop}
                                 </Button>
                             </Link>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={promoCode}
+                                    onChange={(e) => setPromoCode(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && redeemPromoCode()}
+                                    placeholder={t.profile.promoCodePlaceholder}
+                                    className="flex-1 rounded-2xl border border-[var(--border-color)] bg-[var(--bg)] px-4 py-2 text-sm outline-none focus:border-[var(--color-general)] text-[var(--text)]"
+                                />
+                                <Button
+                                    variant="outline"
+                                    className="rounded-2xl font-bold shrink-0"
+                                    disabled={redeemingPromo || !promoCode.trim()}
+                                    onClick={redeemPromoCode}
+                                >
+                                    <Gift size={16} className="mr-1.5" />
+                                    {t.profile.redeemCode}
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

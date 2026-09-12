@@ -26,6 +26,7 @@ const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarn
 const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, handleReactionRemove } = require('./reactionRoles');
 const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler, createGiveawayFromQueue } = require('./giveaways');
 const { handleTicketPanel, handleTicketOpen, handleTicketClose, createTicketPanelFromQueue } = require('./tickets');
+const { handlePromoCreate, handleRedeemCode } = require('./promo');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
 const { logActivity } = require('./activityLog');
 const { getSetting, ensureFresh: ensureFreshSettings } = require('./settings');
@@ -405,6 +406,25 @@ const commands = [
         .setName('ticket_panel')
         .setDescription('Wyślij panel z przyciskiem do otwierania zgłoszeń na tym kanale')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+    // ── Kody promocyjne ──────────────────────────────────────────
+    new SlashCommandBuilder()
+        .setName('promo')
+        .setDescription('Zarządzaj kodami promocyjnymi')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .addSubcommand(sub => sub
+            .setName('create')
+            .setDescription('Stwórz nowy kod promocyjny')
+            .addStringOption(opt => opt.setName('kod').setDescription('Treść kodu (np. LATO2026)').setRequired(true))
+            .addIntegerOption(opt => opt.setName('coiny').setDescription('Ile coinów daje kod').setRequired(false).setMinValue(0))
+            .addIntegerOption(opt => opt.setName('xp').setDescription('Ile XP daje kod').setRequired(false).setMinValue(0))
+            .addIntegerOption(opt => opt.setName('limit').setDescription('Maks. liczba użyć (puste = bez limitu)').setRequired(false).setMinValue(1))
+            .addIntegerOption(opt => opt.setName('wygasa_za_dni').setDescription('Kod wygasa po X dniach (puste = nigdy)').setRequired(false).setMinValue(1))
+        ),
+    new SlashCommandBuilder()
+        .setName('kod')
+        .setDescription('Odbierz kod promocyjny')
+        .addStringOption(opt => opt.setName('kod').setDescription('Treść kodu').setRequired(true)),
 
     // ── Narzędzia ────────────────────────────────────────────────
     new SlashCommandBuilder()
@@ -1301,6 +1321,16 @@ client.on('interactionCreate', async interaction => {
 
         case 'ticket_panel':
             await handleTicketPanel(interaction);
+            break;
+
+        case 'promo': {
+            const sub = interaction.options.getSubcommand();
+            if (sub === 'create') await handlePromoCreate(interaction, supabase);
+            break;
+        }
+
+        case 'kod':
+            await handleRedeemCode(interaction, supabase, profile);
             break;
 
         case 'serverinfo':
