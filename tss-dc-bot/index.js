@@ -578,9 +578,30 @@ client.once('clientReady', async () => {
     await loadTags(supabase);
 });
 
+// site_presence gets one INSERT every 30s per open page (see
+// api/ping/route.ts) and is never cleaned up on the website side - only
+// the last 24h is ever read (api/site-stats-history), so anything older
+// is pure dead weight that makes that query scan more rows every day for
+// no benefit. /dashboard is meant to run on a TV 24/7, so this table only
+// ever grows. Throttled like updateStatsChannelName - no need to run this
+// every 60s, just often enough that the table never gets far ahead of it.
+let lastPresenceCleanup = 0;
+async function cleanupSitePresence() {
+    if (Date.now() - lastPresenceCleanup < 60 * 60 * 1000) return;
+    lastPresenceCleanup = Date.now();
+    try {
+        const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+        const { error } = await supabase.from('site_presence').delete().lt('seen_at', cutoff);
+        if (error) console.error('[PRESENCE CLEANUP] Błąd:', error.message);
+    } catch (e) {
+        console.error('[PRESENCE CLEANUP] Błąd:', e.message);
+    }
+}
+
 async function updateDiscordStats() {
     try {
         await ensureFreshSettings(supabase);
+        await cleanupSitePresence();
 
         const guild = client.guilds.cache.first();
         if (!guild) return;

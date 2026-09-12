@@ -93,7 +93,11 @@ export default function DashboardPage() {
       }
     };
     load();
-    const interval = setInterval(load, 30000);
+    // 60s, not 30s: this page is meant to be left open on a TV 24/7, so its
+    // poll runs forever - halving the rate meaningfully cuts sustained load
+    // on the DB (4 endpoints x every poll) without hurting a TV display,
+    // which doesn't need 30s data freshness.
+    const interval = setInterval(load, 60000);
     return () => {
       cancelled = true;
       clearInterval(interval);
