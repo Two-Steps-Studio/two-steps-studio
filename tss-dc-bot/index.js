@@ -498,6 +498,7 @@ async function getProfile(userId, username, roles = [], avatarUrl = null) {
                 .from('profiles')
                 .upsert({
                     id: userId,
+                    discord_id: userId,
                     username: username || 'Nieznany',
                     avatar_url: avatarUrl,
                     xp: 0,

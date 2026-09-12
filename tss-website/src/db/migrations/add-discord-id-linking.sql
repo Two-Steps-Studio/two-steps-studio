@@ -1,0 +1,27 @@
+-- Fixes account duplication between Discord-native accounts (profiles.id =
+-- the Discord snowflake, created by the bot or by "Sign in with Discord")
+-- and email/password accounts (profiles.id = a random Supabase Auth UUID,
+-- see registration/actions.ts). The two never shared an identity key, so
+-- the same real person signing up both ways got two disconnected profile
+-- rows - confirmed live: this happened for real (two "kenic" rows).
+--
+-- The `discord_id` column already existed on profiles but was never
+-- populated by anything. This backfills it for existing Discord-native
+-- rows and adds a uniqueness guard; requireAuth() (auth-helpers.ts) and
+-- the Discord-connect callback (api/integrations/discord/callback) now
+-- read/write it so a linked email account resolves to the same identity.
+--
+-- HOW TO APPLY: paste into the Supabase SQL Editor and run once, together
+-- with user-integrations-schema.sql (already in this repo, never applied -
+-- that's why "connect Discord" on /settings has been failing).
+-- Idempotent: safe to run multiple times.
+--
+-- The backfill UPDATE and the two-duplicate-account cleanup that used to
+-- be here were already applied directly (via the service-role API, same
+-- effect as running the SQL) while diagnosing this - only the index below
+-- is still needed.
+
+-- Guards against two profile rows ever claiming the same Discord identity
+-- (e.g. a race between the bot creating a row and someone connecting
+-- Discord to an email account at the same moment).
+CREATE UNIQUE INDEX IF NOT EXISTS uq_profiles_discord_id ON profiles(discord_id) WHERE discord_id IS NOT NULL;

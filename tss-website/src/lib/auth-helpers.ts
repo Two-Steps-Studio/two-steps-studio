@@ -81,10 +81,15 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
   // was always null and neither settings.isAdmin nor the OWNER role check
   // could ever see real data. profile.rank isn't used anywhere in this
   // file, so it's just dropped rather than quoted.
+  // Matches on discord_id too, not just id - an email-registered account
+  // (profiles.id = its own Supabase Auth UUID) that later connects Discord
+  // (see api/integrations/discord/callback) gets discord_id stamped with
+  // its Discord snowflake, so this still resolves the right row instead of
+  // treating it as a separate, unlinked identity.
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, username, avatar_url, settings, discord_roles")
-    .eq("id", discordId)
+    .or(`id.eq.${discordId},discord_id.eq.${discordId}`)
     .maybeSingle();
   if (profileError) {
     console.error("[requireAuth] profile lookup failed:", profileError.message);

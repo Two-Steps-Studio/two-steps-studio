@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
 import { exchangeCodeForToken, getDiscordUser, getDiscordAvatarUrl } from "@/lib/discord-oauth";
 
 export async function GET(request: Request) {
@@ -119,6 +119,26 @@ export async function GET(request: Request) {
       const res = NextResponse.redirect(new URL("/settings?error=discord_connection_failed", request.url));
       res.cookies.delete("discord_oauth_state");
       return res;
+    }
+
+    // Also stamp discord_id on this account's own profiles row, so code
+    // that looks a user up by their Discord identity (see auth-helpers.ts)
+    // can find an email-registered account once Discord is connected, not
+    // just accounts that signed up via Discord OAuth directly. Best-effort:
+    // the integration link above is the source of truth and already
+    // succeeded, so a failure here shouldn't block a successful connect.
+    // Through the service client - profiles' own update policy has a
+    // documented history of silently rejecting writes (see
+    // fix-profiles-update-policy.sql), not worth risking here.
+    try {
+      const serviceClient = createServiceClient();
+      const { error: discordIdError } = await serviceClient
+        .from("profiles")
+        .update({ discord_id: discordUser.id })
+        .eq("id", user.id);
+      if (discordIdError) console.error("discord_id sync failed:", discordIdError.message);
+    } catch (e: any) {
+      console.error("discord_id sync failed:", e.message);
     }
 
     // Redirect back to settings with success
