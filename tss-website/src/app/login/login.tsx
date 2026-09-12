@@ -76,7 +76,7 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: `${window.location.origin}/profile`,
+            redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
           },
         });
         // signInWithOAuth returns {data, error} and doesn't throw - a
@@ -199,7 +199,7 @@ export default function LoginPage() {
                   setLoading(true);
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: "discord",
-                    options: { redirectTo: `${window.location.origin}/profile` }
+                    options: { redirectTo: `${window.location.origin}/auth/callback?next=/profile` }
                   });
                   // This didn't even read the returned error before - a
                   // provider-side failure looked identical to nothing
