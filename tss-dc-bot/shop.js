@@ -57,7 +57,7 @@ const SHOP_ITEMS = [
 const ITEMS_PER_PAGE = 10;
 // Matches the coin emoji used everywhere else in the bot (index.js,
 // fishing/*, wedka.js) — this file was the only one on a different id.
-const COIN = '<:CoinTSS:1486049846132605042>';
+const COIN = '<:CoinTSS:1548220404693213195>';
 
 // ── Kosmetyki z tej samej tabeli co sklep na stronie (frame/nick_color/
 //    background w shop_items) — pobierane na żywo, żeby oba miejsca

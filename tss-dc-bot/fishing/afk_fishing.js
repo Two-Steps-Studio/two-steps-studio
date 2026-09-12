@@ -134,7 +134,7 @@ function stopSession(userId) {
 }
 
 // ── /afk start – start ───────────────────────────────────
-async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1486049846132605042>') {
+async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1548220404693213195>') {
     const userId = interaction.user.id;
 
     // Sprawdź czy już ma aktywną sesję
@@ -256,7 +256,7 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
 }
 
 // ── /afk stop – wcześniejsze zakończenie ─────────────────────
-async function handleAfkStop(interaction, COIN = '<:CoinTSS:1486049846132605042>') {
+async function handleAfkStop(interaction, COIN = '<:CoinTSS:1548220404693213195>') {
     const userId = interaction.user.id;
     const session = activeSessions.get(userId);
 

@@ -16,7 +16,7 @@ const {
     emptyGearObj,
 } = require('./gear.config');
 
-const COIN = '<:CoinTSS:1486049846132605042>';
+const COIN = '<:CoinTSS:1548220404693213195>';
 
 // ── Helpery DB ────────────────────────────────────────────────
 

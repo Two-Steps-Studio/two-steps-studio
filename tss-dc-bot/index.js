@@ -35,7 +35,7 @@ const { loadTags, handleTagAdd, handleTagRemove, handleTagList, checkTag } = req
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const COIN = '<:CoinTSS:1486049846132605042>';
+const COIN = '<:CoinTSS:1548220404693213195>';
 const ALLOWED_CHANNEL_ID = '1360920823258550353';
 
 // ── Rangi Levelowe ───────────────────────────────────────────

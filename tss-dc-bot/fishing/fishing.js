@@ -58,7 +58,7 @@ function getLevelFromXP(xp) {
 
 // ── /fish ────────────────────────────────────────────────────
 
-async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1486049846132605042>') {
+async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1548220404693213195>') {
     const userId = interaction.user.id;
 
     // 1. Cooldown z pamięci – przed defer, żeby nie blokować
@@ -181,7 +181,7 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
 
 // ── /catches ─────────────────────────────────────────────────
 
-async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486049846132605042>') {
+async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1548220404693213195>') {
     const userId = interaction.user.id;
 
     const { data: catches } = await supabase
@@ -227,7 +227,7 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1486
 
 // ── /top_fish ────────────────────────────────────────────────
 
-async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1486049846132605042>') {
+async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1548220404693213195>') {
     const { data: rows } = await supabase
         .from('fishing_catches')
         .select('user_id, value');
