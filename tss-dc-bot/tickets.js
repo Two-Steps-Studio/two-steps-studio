@@ -1,5 +1,6 @@
 // tickets.js – button-panel support ticket system
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { getSetting } = require('./settings');
 
 // ── /ticket_panel (admin) – posts the "open a ticket" button ──
 async function handleTicketPanel(interaction) {
@@ -36,7 +37,7 @@ async function handleTicketOpen(interaction, supabase) {
         await supabase.from('tickets').update({ status: 'closed' }).eq('channel_id', existing.channel_id);
     }
 
-    const staffRoleId = process.env.TICKET_STAFF_ROLE_ID;
+    const staffRoleId = getSetting('TICKET_STAFF_ROLE_ID');
     const overwrites = [
         { id: interaction.guild.roles.everyone.id, deny: [PermissionFlagsBits.ViewChannel] },
         { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] },

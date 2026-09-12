@@ -28,6 +28,7 @@ const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler } = requi
 const { handleTicketPanel, handleTicketOpen, handleTicketClose } = require('./tickets');
 const { handleVoiceStateUpdate } = require('./voiceChannels');
 const { logActivity } = require('./activityLog');
+const { getSetting, ensureFresh: ensureFreshSettings } = require('./settings');
 const { checkAutoMod } = require('./automod');
 const { handleServerInfo, handleUserInfo, handleLock, handleUnlock, handleSlowmode } = require('./utility');
 const { loadTags, handleTagAdd, handleTagRemove, handleTagList, checkTag } = require('./tags');
@@ -578,6 +579,8 @@ client.once('clientReady', async () => {
 
 async function updateDiscordStats() {
     try {
+        await ensureFreshSettings(supabase);
+
         const guild = client.guilds.cache.first();
         if (!guild) return;
 
@@ -684,7 +687,7 @@ async function updateDiscordStats() {
 // per 10 minutes per channel, and updateDiscordStats runs every 60s.
 let lastStatsChannelUpdate = 0;
 async function updateStatsChannelName(guild, memberCount) {
-    const channelId = process.env.STATS_CHANNEL_ID;
+    const channelId = getSetting('STATS_CHANNEL_ID');
     if (!channelId) return;
     if (Date.now() - lastStatsChannelUpdate < 10 * 60 * 1000) return;
 
@@ -1302,14 +1305,15 @@ client.on('messageCreate', async (message) => {
     }
     cooldowns.set(userCooldownKey, Date.now() + 3000);
 
-    // Activity feed entry - never includes message content (privacy: this
-    // feeds a public-facing TV dashboard), just that a message happened.
-    // join/level_up/purchase are all rare on a quiet server, so without
-    // this the feed looked permanently empty even while working correctly.
+    // Activity feed entry - shows a trimmed preview of what was said (per
+    // explicit request; this feeds the public TV dashboard, so keep it
+    // short and free of raw newlines/mentions clutter).
     const lastActivityLog = messageActivityCooldowns.get(message.author.id) || 0;
     if (Date.now() - lastActivityLog > MESSAGE_ACTIVITY_COOLDOWN_MS) {
         messageActivityCooldowns.set(message.author.id, Date.now());
-        logActivity(supabase, 'message', message.author.username);
+        const preview = message.content.replace(/\s+/g, ' ').trim().slice(0, 120)
+            || (message.attachments.size > 0 ? '[załącznik]' : null);
+        logActivity(supabase, 'message', message.author.username, preview);
     }
 
     try {
@@ -1413,7 +1417,7 @@ async function syncVoiceRewards(userId, minutes, member, username) {
 client.on('guildMemberAdd', async member => {
     logActivity(supabase, 'join', member.user.username);
 
-    const autoRoleId = process.env.AUTO_ROLE_ID;
+    const autoRoleId = getSetting('AUTO_ROLE_ID');
     if (autoRoleId) {
         await member.roles.add(autoRoleId).catch(e => console.error('[AUTOROLE] Błąd nadawania roli:', e.message));
     }

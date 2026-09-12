@@ -250,7 +250,7 @@ const ACTIVITY_META: Record<ActivityEvent["type"], { icon: React.ElementType; co
   join: { icon: UserPlus, color: "#06e402", text: () => "dołączył(a) do serwera" },
   level_up: { icon: TrendingUp, color: "#ffcb2f", text: (e) => `awansował(a) na ${e.detail || "nowy poziom"}` },
   purchase: { icon: ShoppingBag, color: "#1bbdbd", text: (e) => `kupił(a) ${e.detail || "przedmiot"}` },
-  message: { icon: MessageSquare, color: "#9aa5b1", text: () => "napisał(a) na czacie" },
+  message: { icon: MessageSquare, color: "#9aa5b1", text: (e) => e.detail ? `napisał(a): "${e.detail}"` : "napisał(a) na czacie" },
 };
 
 function formatRelativeTime(iso: string): string {

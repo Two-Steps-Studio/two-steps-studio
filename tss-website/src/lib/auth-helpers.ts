@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
 import { User } from "@supabase/supabase-js";
 
 // ============================================
@@ -106,23 +106,42 @@ export async function requireAuth(): Promise<AuthContext | NextResponse> {
   // one.
   const OWNER_ROLE_LABELS = new Set(["owner", "owner records"]);
   const discordRoles: string[] = Array.isArray((profile as any)?.discord_roles) ? (profile as any).discord_roles : [];
+  const extractRoleLabel = (r: string) => r.match(/︱\s*(.+?)\s*〕/)?.[1]?.trim().toLowerCase();
   const hasOwnerDiscordRole = discordRoles.some((r) => {
-    const match = r.match(/︱\s*(.+?)\s*〕/);
-    const inner = match?.[1]?.trim().toLowerCase();
+    const inner = extractRoleLabel(r);
     return !!inner && OWNER_ROLE_LABELS.has(inner);
   });
 
   const roles: GlobalRole[] = [];
 
-  if (hasOwnerDiscordRole) {
-    roles.push('OWNER');
-  } else if (profile?.settings?.isAdmin === true) {
-    roles.push('ADMIN');
-  } else {
-    roles.push('USER');
+  if (hasOwnerDiscordRole) roles.push('OWNER');
+  if (profile?.settings?.isAdmin === true) roles.push('ADMIN');
+
+  // Table-based grants (the "future" from the TODO this replaces): lets an
+  // existing admin hand out ADMIN/MODERATOR either to one user directly or
+  // to everyone holding a given Discord role, without a code change. Reads
+  // through the service client - user_roles has RLS with no anon/
+  // authenticated policy (deny-by-default, same as every other bot-owned
+  // table), so the session client above would silently see nothing here.
+  try {
+    const serviceClient = createServiceClient();
+    const roleLabels = discordRoles.map(extractRoleLabel).filter((l): l is string => !!l);
+
+    const [{ data: userGrants }, { data: roleGrants }] = await Promise.all([
+      serviceClient.from("user_roles").select("role").eq("user_id", discordId),
+      roleLabels.length
+        ? serviceClient.from("user_roles").select("role").in("discord_role_name", roleLabels)
+        : Promise.resolve({ data: [] as { role: string }[] }),
+    ]);
+
+    for (const grant of [...(userGrants || []), ...(roleGrants || [])]) {
+      if (!roles.includes(grant.role as GlobalRole)) roles.push(grant.role as GlobalRole);
+    }
+  } catch (e: any) {
+    console.error("[requireAuth] user_roles lookup failed:", e.message);
   }
 
-  // TODO: In future, fetch from user_roles table instead of settings.isAdmin
+  if (roles.length === 0) roles.push('USER');
 
   return {
     user,

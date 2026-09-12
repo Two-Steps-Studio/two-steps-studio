@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Search, Users, Settings } from "lucide-react";
+import { Shield, Search, Users, Settings, Bot, Gamepad2 } from "lucide-react";
+import Link from "next/link";
 
 interface UserProfile {
   id: string;
@@ -120,6 +121,18 @@ export default function AdminPage() {
             Admin Panel
           </h1>
           <p className="text-white/70">Manage user project limits and subscriptions</p>
+          <div className="flex gap-2 mt-4">
+            <Link href="/admin/bot">
+              <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Bot className="w-4 h-4 mr-1" /> Sterowanie botem
+              </Button>
+            </Link>
+            <Link href="/admin/games">
+              <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Gamepad2 className="w-4 h-4 mr-1" /> Gry
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Card className="mb-6">

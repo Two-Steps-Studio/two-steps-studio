@@ -1,5 +1,6 @@
 // voiceChannels.js – "join to create" temporary voice channels
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
+const { getSetting } = require('./settings');
 
 // In-memory only: a bot restart forgets which channels this feature made,
 // so a temp channel emptied out during a restart won't get auto-deleted
@@ -9,7 +10,7 @@ const { ChannelType, PermissionFlagsBits } = require('discord.js');
 const tempChannels = new Set();
 
 async function handleVoiceStateUpdate(oldState, newState) {
-    const triggerChannelId = process.env.JOIN_TO_CREATE_CHANNEL_ID;
+    const triggerChannelId = getSetting('JOIN_TO_CREATE_CHANNEL_ID');
     if (!triggerChannelId) return; // feature disabled unless configured
 
     // Joined the trigger channel -> spin up a personal channel and move them in.

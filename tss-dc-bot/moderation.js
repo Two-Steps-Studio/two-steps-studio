@@ -1,12 +1,13 @@
 // moderation.js – kick/ban/timeout/warn + mod-log helper
 const { EmbedBuilder } = require('discord.js');
+const { getSetting } = require('./settings');
 
 // ── Mod-log: posts to MOD_LOG_CHANNEL_ID if set, otherwise falls back to
 //    a channel matched by name (same convention as the welcome channel in
 //    index.js) ───────────────────────────────────────────────────────────
 async function sendModLog(guild, embed) {
     try {
-        const channelId = process.env.MOD_LOG_CHANNEL_ID;
+        const channelId = getSetting('MOD_LOG_CHANNEL_ID');
         const ch = channelId
             ? guild.channels.cache.get(channelId)
             : guild.channels.cache.find(c =>
