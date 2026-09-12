@@ -91,8 +91,8 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
   }, []);
 
   const [stats, setStats] = useState({
-    online_users: 0,
     total_members: 0,
+    online_users: 0,
     total_voice_minutes: 0
   });
 
@@ -103,8 +103,8 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
         const res = await fetch("/api/stats");
         const data = await res.json();
         setStats({
-          online_users: data.online_users || 0,
           total_members: data.member_count || data.online_users || 0,
+          online_users: data.online_users || 0,
           total_voice_minutes: data.total_voice_minutes || 0,
         });
       } catch (error) {
