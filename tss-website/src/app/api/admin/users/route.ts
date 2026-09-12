@@ -26,7 +26,10 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from("profiles")
-    .select("id, username, avatar_url, xp, level, project_limit, subscription_plan, created_at", { count: "exact" })
+    .select(
+      "id, username, avatar_url, xp, level, project_limit, subscription_plan, created_at, money, bank, vip_status, svip_status, mvip_status, discord_id",
+      { count: "exact" }
+    )
     .order("created_at", { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 
@@ -91,7 +94,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { userId, project_limit, subscription_plan } = body;
+  const { userId, project_limit, subscription_plan, money, bank, level, vip_status, svip_status, mvip_status } = body;
 
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
@@ -100,6 +103,15 @@ export async function PATCH(request: Request) {
   const updateData: any = {};
   if (project_limit !== undefined) updateData.project_limit = project_limit;
   if (subscription_plan !== undefined) updateData.subscription_plan = subscription_plan;
+  // Bot-panel fields (money/bank/level/VIP tiers) - same route, extended
+  // rather than duplicated, since it already does exactly what's needed
+  // here: admin-gated, service-role write, single profiles row by id.
+  if (money !== undefined) updateData.money = money;
+  if (bank !== undefined) updateData.bank = bank;
+  if (level !== undefined) updateData.level = level;
+  if (vip_status !== undefined) updateData.vip_status = vip_status;
+  if (svip_status !== undefined) updateData.svip_status = svip_status;
+  if (mvip_status !== undefined) updateData.mvip_status = mvip_status;
 
   const { data, error } = await serviceClient
     .from("profiles")
