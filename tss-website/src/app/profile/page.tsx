@@ -276,7 +276,7 @@ export default function ProfilePage() {
     // member saw "LEVEL 1" here while the bot correctly showed "LEVEL 0"
     // for the same account.
     const level = xp < 100 ? 0 : Math.floor(0.1 * Math.sqrt(xp));
-    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: "var(--color-general)", label: `LEVEL ${level}` };
+    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: nickColorValue || "var(--color-general)", label: `LEVEL ${level}` };
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;
