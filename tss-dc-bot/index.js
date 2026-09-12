@@ -14,6 +14,7 @@ const {
     StringSelectMenuBuilder,
     PermissionFlagsBits,
     Partials,
+    ChannelType,
 } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
 const { createProfileCard, createWelcomeCard, availableBackgrounds, refreshBackgrounds } = require('./profileGenerator');
@@ -663,6 +664,42 @@ async function processBotCommands() {
     }
 }
 
+// Snapshot of the guild's text channels/roles into Supabase (see
+// db/guild_options_schema.sql) so the website's admin panel can offer a
+// dropdown of real names instead of admins copy-pasting raw IDs. Channel/
+// role lists barely change, so this is throttled much looser than the
+// other loop tasks - full replace (delete-then-insert) rather than
+// upsert, since a renamed/deleted channel needs to actually disappear
+// from the picker, not just never update.
+let lastGuildOptionsSync = 0;
+async function syncGuildOptions(guild) {
+    if (Date.now() - lastGuildOptionsSync < 10 * 60 * 1000) return;
+    lastGuildOptionsSync = Date.now();
+    try {
+        const channels = guild.channels.cache
+            .filter(c => c.type === ChannelType.GuildText || c.type === ChannelType.GuildVoice)
+            .map(c => ({
+                id: c.id,
+                name: c.name,
+                type: c.type === ChannelType.GuildVoice ? 'voice' : 'text',
+                position: c.position || 0,
+            }));
+        const roles = guild.roles.cache
+            .filter(r => r.name !== '@everyone')
+            .map(r => ({ id: r.id, name: r.name, position: r.position || 0 }));
+
+        await supabase.from('guild_channels').delete().neq('id', '0');
+        if (channels.length) await supabase.from('guild_channels').insert(channels);
+
+        await supabase.from('guild_roles').delete().neq('id', '0');
+        if (roles.length) await supabase.from('guild_roles').insert(roles);
+    } catch (e) {
+        // Table not created yet (PGRST205) or any other issue - silently
+        // skip, same as processBotCommands' no-op for a missing table.
+        if (e.code !== 'PGRST205') console.error('[GUILD OPTIONS] Błąd:', e.message);
+    }
+}
+
 async function updateDiscordStats() {
     try {
         await ensureFreshSettings(supabase);
@@ -671,6 +708,8 @@ async function updateDiscordStats() {
 
         const guild = client.guilds.cache.first();
         if (!guild) return;
+
+        await syncGuildOptions(guild);
 
         const members  = await guild.members.fetch();
         const humans   = members.filter(m => !m.user.bot).size;

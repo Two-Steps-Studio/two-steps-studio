@@ -10,13 +10,68 @@ import {
   AlertTriangle, UserPlus, TrendingUp, ShoppingBag, MessageSquare, Ticket, PartyPopper,
 } from "lucide-react";
 
-const SETTING_LABELS: Record<string, { label: string; hint: string }> = {
-  MOD_LOG_CHANNEL_ID: { label: "Kanał logów moderacji", hint: "ID kanału, gdzie bot wysyła kick/ban/timeout/warn" },
-  TICKET_STAFF_ROLE_ID: { label: "Rola obsługi zgłoszeń", hint: "ID roli, która widzi nowo tworzone tickety" },
-  JOIN_TO_CREATE_CHANNEL_ID: { label: "Kanał głosowy \"stwórz kanał\"", hint: "ID kanału głosowego wyzwalającego auto-kanały" },
-  AUTO_ROLE_ID: { label: "Auto-rola", hint: "ID roli nadawanej automatycznie nowym członkom" },
-  STATS_CHANNEL_ID: { label: "Kanał live-staty", hint: "ID kanału głosowego pokazującego liczbę członków w nazwie" },
+const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "channel" | "role"; channelType?: "text" | "voice" }> = {
+  MOD_LOG_CHANNEL_ID: { label: "Kanał logów moderacji", hint: "Kanał, gdzie bot wysyła kick/ban/timeout/warn", kind: "channel", channelType: "text" },
+  TICKET_STAFF_ROLE_ID: { label: "Rola obsługi zgłoszeń", hint: "Rola, która widzi nowo tworzone tickety", kind: "role" },
+  JOIN_TO_CREATE_CHANNEL_ID: { label: "Kanał głosowy \"stwórz kanał\"", hint: "Kanał głosowy wyzwalający auto-kanały", kind: "channel", channelType: "voice" },
+  AUTO_ROLE_ID: { label: "Auto-rola", hint: "Rola nadawana automatycznie nowym członkom", kind: "role" },
+  STATS_CHANNEL_ID: { label: "Kanał live-staty", hint: "Kanał głosowy pokazujący liczbę członków w nazwie", kind: "channel", channelType: "voice" },
 };
+
+interface GuildChannel { id: string; name: string; type: "text" | "voice"; }
+interface GuildRole { id: string; name: string; }
+
+// Lets an admin pick a real channel/role by name instead of copy-pasting a
+// raw Discord ID - falls back to manual entry when the guild_channels/
+// guild_roles sync hasn't run yet (or for anything the sync missed).
+function DiscordIdPicker({
+  value,
+  onChange,
+  options,
+  kind,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { id: string; name: string }[];
+  kind: "channel" | "role";
+}) {
+  const [manualMode, setManualMode] = useState(options.length === 0);
+  const prefix = kind === "channel" ? "#" : "@";
+
+  return (
+    <div className="space-y-1">
+      {manualMode ? (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="ID (np. 1234567890123456)"
+          className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+        />
+      ) : (
+        <select
+          value={options.some((o) => o.id === value) ? value : ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+        >
+          <option value="">— wybierz —</option>
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>{prefix}{o.name}</option>
+          ))}
+        </select>
+      )}
+      {options.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setManualMode((m) => !m)}
+          className="text-xs text-[var(--color-general)] hover:underline"
+        >
+          {manualMode ? "Wybierz z listy" : "Wpisz ID ręcznie"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 const TABS = [
   { id: "settings", label: "Ustawienia bota", icon: Settings },
@@ -32,6 +87,8 @@ export default function AdminBotPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [guildChannels, setGuildChannels] = useState<GuildChannel[]>([]);
+  const [guildRoles, setGuildRoles] = useState<GuildRole[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -44,6 +101,14 @@ export default function AdminBotPage() {
         setValues(data.values || {});
       })
       .finally(() => setLoading(false));
+
+    fetch("/api/admin/guild-options")
+      .then((res) => res.json())
+      .then((data) => {
+        setGuildChannels(data.channels || []);
+        setGuildRoles(data.roles || []);
+      })
+      .catch(() => {}); // manual ID entry still works if this fails
   }, []);
 
   const save = async () => {
@@ -115,19 +180,24 @@ export default function AdminBotPage() {
             <CardTitle>Ustawienia bota</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {Object.entries(SETTING_LABELS).map(([key, meta]) => (
-              <div key={key} className="space-y-1">
-                <label className="text-sm font-medium">{meta.label}</label>
-                <p className="text-xs text-[var(--text-muted)]">{meta.hint}</p>
-                <input
-                  type="text"
-                  value={values[key] || ""}
-                  onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-                  placeholder="puste = użyj wartości z .env bota"
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
-                />
-              </div>
-            ))}
+            {Object.entries(SETTING_LABELS).map(([key, meta]) => {
+              const options =
+                meta.kind === "channel"
+                  ? guildChannels.filter((c) => c.type === meta.channelType)
+                  : guildRoles;
+              return (
+                <div key={key} className="space-y-1">
+                  <label className="text-sm font-medium">{meta.label}</label>
+                  <p className="text-xs text-[var(--text-muted)]">{meta.hint} (puste = użyj wartości z .env bota)</p>
+                  <DiscordIdPicker
+                    value={values[key] || ""}
+                    onChange={(v) => setValues((val) => ({ ...val, [key]: v }))}
+                    options={options}
+                    kind={meta.kind}
+                  />
+                </div>
+              );
+            })}
             <div className="flex items-center gap-3 pt-2">
               <Button onClick={save} disabled={saving}>
                 {saving ? "Zapisywanie..." : "Zapisz"}
@@ -451,6 +521,14 @@ function EngagementTab() {
   const [commands, setCommands] = useState<BotCommand[]>([]);
   const [loading, setLoading] = useState(true);
   const [migrationMissing, setMigrationMissing] = useState(false);
+  const [textChannels, setTextChannels] = useState<GuildChannel[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/guild-options")
+      .then((res) => res.json())
+      .then((data) => setTextChannels((data.channels || []).filter((c: GuildChannel) => c.type === "text")))
+      .catch(() => {});
+  }, []);
 
   const loadEngagement = () =>
     fetch("/api/admin/bot-engagement")
@@ -502,8 +580,8 @@ function EngagementTab() {
       )}
 
       <div className="grid md:grid-cols-2 gap-4">
-        <NewGiveawayForm onQueued={loadCommands} />
-        <NewTicketPanelForm onQueued={loadCommands} />
+        <NewGiveawayForm onQueued={loadCommands} channels={textChannels} />
+        <NewTicketPanelForm onQueued={loadCommands} channels={textChannels} />
       </div>
 
       {commands.length > 0 && (
@@ -583,7 +661,7 @@ function EngagementTab() {
   );
 }
 
-function NewGiveawayForm({ onQueued }: { onQueued: () => void }) {
+function NewGiveawayForm({ onQueued, channels }: { onQueued: () => void; channels: GuildChannel[] }) {
   const [channelId, setChannelId] = useState("");
   const [prize, setPrize] = useState("");
   const [winnerCount, setWinnerCount] = useState(1);
@@ -627,14 +705,8 @@ function NewGiveawayForm({ onQueued }: { onQueued: () => void }) {
       <CardContent className="space-y-3">
         <div className="grid sm:grid-cols-2 gap-3">
           <label className="space-y-1">
-            <span className="text-xs text-[var(--text-muted)]">ID kanału (skopiuj z Discorda)</span>
-            <input
-              type="text"
-              value={channelId}
-              onChange={(e) => setChannelId(e.target.value)}
-              placeholder="np. 1234567890123456"
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
-            />
+            <span className="text-xs text-[var(--text-muted)]">Kanał</span>
+            <DiscordIdPicker value={channelId} onChange={setChannelId} options={channels} kind="channel" />
           </label>
           <label className="space-y-1">
             <span className="text-xs text-[var(--text-muted)]">Nagroda</span>
@@ -682,7 +754,7 @@ function NewGiveawayForm({ onQueued }: { onQueued: () => void }) {
   );
 }
 
-function NewTicketPanelForm({ onQueued }: { onQueued: () => void }) {
+function NewTicketPanelForm({ onQueued, channels }: { onQueued: () => void; channels: GuildChannel[] }) {
   const [channelId, setChannelId] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -719,14 +791,8 @@ function NewTicketPanelForm({ onQueued }: { onQueued: () => void }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <label className="space-y-1 block">
-          <span className="text-xs text-[var(--text-muted)]">ID kanału, gdzie ma pojawić się przycisk "Otwórz zgłoszenie"</span>
-          <input
-            type="text"
-            value={channelId}
-            onChange={(e) => setChannelId(e.target.value)}
-            placeholder="np. 1234567890123456"
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
-          />
+          <span className="text-xs text-[var(--text-muted)]">Kanał, gdzie ma pojawić się przycisk "Otwórz zgłoszenie"</span>
+          <DiscordIdPicker value={channelId} onChange={setChannelId} options={channels} kind="channel" />
         </label>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex items-center gap-3">
