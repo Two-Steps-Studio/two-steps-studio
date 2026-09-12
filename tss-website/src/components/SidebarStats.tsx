@@ -58,7 +58,7 @@ export function SidebarStats({ translations, stats }: SidebarStatsProps) {
               <div className="w-8 h-8 rounded-lg glass flex items-center justify-center border border-[var(--border-color)]">
                 <Clock size={14} className="opacity-70 text-[var(--text)]" />
               </div>
-              <span className="text-xs font-bold opacity-60 text-[var(--text)] truncate">{translations.home.voiceTime}</span>
+              <span className="text-xs font-bold opacity-60 text-[var(--text)] truncate">{translations.nav.voiceTimeShort}</span>
             </div>
             <span className="text-xs font-black text-[var(--text)] whitespace-nowrap shrink-0">{formatVoiceTime(stats.total_voice_minutes || 0)}</span>
           </div>
