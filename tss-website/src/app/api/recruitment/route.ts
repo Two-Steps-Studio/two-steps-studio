@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBotSetting } from "@/lib/bot-settings";
 
 interface RecruitmentFormData {
   type: "dev" | "discord_admin";
@@ -42,9 +43,11 @@ export async function POST(request: NextRequest) {
 
     const meta = TYPE_META[body.type];
     const discordToken = process.env.DISCORD_TOKEN;
-    // First configured channel env var for this type wins, so a dedicated
-    // channel can be added later without this breaking in the meantime.
-    const channelId = meta.channelEnvVars.map((name) => process.env[name]).find(Boolean);
+    // First configured channel wins - bot_settings (set from /admin/bot's
+    // channel picker) takes precedence over the .env var of the same name,
+    // so a dedicated channel can be picked without a redeploy.
+    const channelIds = await Promise.all(meta.channelEnvVars.map((name) => getBotSetting(name)));
+    const channelId = channelIds.find(Boolean);
 
     if (!discordToken || !channelId) {
       console.error(`DISCORD_TOKEN or one of [${meta.channelEnvVars.join(", ")}] not set`);

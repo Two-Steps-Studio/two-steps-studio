@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBotSetting } from "@/lib/bot-settings";
 
 interface RecruitmentFormData {
   name: string;
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     // incoming webhook — same server, same channel, but the message now
     // comes from the bot's own account instead of a generic webhook persona.
     const discordToken = process.env.DISCORD_TOKEN;
-    const channelId = process.env.DISCORD_RECRUITMENT_CHANNEL_ID;
+    const channelId = await getBotSetting("DISCORD_RECRUITMENT_CHANNEL_ID");
 
     if (!discordToken || !channelId) {
       console.error("DISCORD_TOKEN or DISCORD_RECRUITMENT_CHANNEL_ID environment variable is not set");

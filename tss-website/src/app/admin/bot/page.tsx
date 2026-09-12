@@ -17,6 +17,9 @@ const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "chann
   JOIN_TO_CREATE_CHANNEL_ID: { label: "Kanał głosowy \"stwórz kanał\"", hint: "Kanał głosowy wyzwalający auto-kanały", kind: "channel", channelType: "voice" },
   AUTO_ROLE_ID: { label: "Auto-rola", hint: "Rola nadawana automatycznie nowym członkom", kind: "role" },
   STATS_CHANNEL_ID: { label: "Kanał live-staty", hint: "Kanał głosowy pokazujący liczbę członków w nazwie", kind: "channel", channelType: "voice" },
+  DISCORD_RECRUITMENT_CHANNEL_ID: { label: "Kanał rekrutacji (Dev)", hint: "Gdzie trafiają zgłoszenia z formularza rekrutacji Dev", kind: "channel", channelType: "text" },
+  DISCORD_ADMIN_RECRUITMENT_CHANNEL_ID: { label: "Kanał rekrutacji (Administracja)", hint: "Gdzie trafiają zgłoszenia z formularza rekrutacji administracji Discorda", kind: "channel", channelType: "text" },
+  DISCORD_GENERAL_RECRUITMENT_CHANNEL_ID: { label: "Kanał rekrutacji (ogólny)", hint: "Zapasowy kanał, gdy powyższe nie są ustawione", kind: "channel", channelType: "text" },
 };
 
 interface GuildChannel { id: string; name: string; type: "text" | "voice"; }
