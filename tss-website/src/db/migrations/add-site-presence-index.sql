@@ -15,6 +15,15 @@
 
 CREATE INDEX IF NOT EXISTS idx_site_presence_seen_at ON site_presence(seen_at);
 
+-- Table has no primary key, so Postgres has no default replica identity to
+-- publish DELETEs with (it's presumably in the supabase_realtime
+-- publication like every table by default) - without this, both this
+-- DELETE and the bot's hourly cleanup fail with "cannot delete from table
+-- ... because it does not have a replica identity and publishes deletes".
+-- FULL just means "use the whole row as identity", fine for a table this
+-- size/shape - no schema/column change needed.
+ALTER TABLE site_presence REPLICA IDENTITY FULL;
+
 -- One-time catch-up: nothing ever reads site_presence past the 24h window
 -- (see site-stats-history/route.ts), so everything older than that is
 -- pure dead weight inflating table size and scan cost. Ongoing pruning is
