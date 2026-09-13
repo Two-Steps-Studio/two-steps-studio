@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-translation";
@@ -16,11 +16,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 export default function LoginPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  // Landed here from the confirmation link in the account-creation email
+  // (see registration/actions.ts's redirectTo) - just a friendly toast, the
+  // account itself is already confirmed by the time Supabase redirects here.
+  useEffect(() => {
+    if (searchParams.get("confirmed") === "1") {
+      toast.success(t.auth.emailConfirmedSuccess);
+    }
+  }, [searchParams, t]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

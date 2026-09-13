@@ -175,6 +175,7 @@
     "loginLink": "ANMELDEN",
     "registerSuccess": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.",
     "registerError": "Registrierungsfehler",
+    "emailConfirmedSuccess": "E-Mail bestätigt! Sie können sich jetzt anmelden.",
     "loginTitle": "Willkommen zurück",
     "loginSubtitle": "Melden Sie sich an, um auf das Two Steps Studio-Panel zuzugreifen.",
     "loginButton": "ANMELDEN",

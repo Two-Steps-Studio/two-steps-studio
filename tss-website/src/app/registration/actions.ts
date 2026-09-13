@@ -1,6 +1,7 @@
 'use server';
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { sendAccountConfirmationEmail, isResendConfigured } from "@/lib/resend";
 
 import { z } from "zod";
 
@@ -31,22 +32,34 @@ export default async function registerUser(formData: { email: string; password: 
     if (referrer) referredBy = referrer.id;
   }
 
-  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+  // generateLink(type: 'signup') creates the user (like admin.createUser did)
+  // but leaves email_confirmed_at unset and hands back a real confirmation
+  // link instead of auto-confirming - the account only becomes usable once
+  // that link is visited. We send the link ourselves via Resend rather than
+  // relying on Supabase's own confirmation email, since this project has no
+  // SMTP configured on the Supabase side.
+  const { data: linkData, error: authError } = await supabaseAdmin.auth.admin.generateLink({
+    type: 'signup',
     email,
     password,
-    user_metadata: { full_name: fullName },
-    email_confirm: true // This is the key to bypass confirmation
+    options: {
+      data: { full_name: fullName },
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login?confirmed=1`,
+    },
   });
 
   if (authError) {
     return { error: authError.message };
   }
 
-  if (authData.user) {
+  const authUser = linkData.user;
+  const confirmLink = linkData.properties?.action_link;
+
+  if (authUser) {
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert({
-        id: authData.user.id,
+        id: authUser.id,
         username: fullName,
         xp: 0,
         level: 1,
@@ -62,5 +75,18 @@ export default async function registerUser(formData: { email: string; password: 
     }
   }
 
-  return { success: true, user: authData.user };
+  if (confirmLink) {
+    try {
+      await sendAccountConfirmationEmail(email, fullName, confirmLink);
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+      return {
+        error: isResendConfigured
+          ? 'Konto utworzone, ale nie udało się wysłać maila potwierdzającego. Skontaktuj się z administracją.'
+          : 'Konto utworzone, ale wysyłka maili nie jest jeszcze skonfigurowana na serwerze (brak RESEND_API_KEY). Skontaktuj się z administracją, żeby potwierdzić konto ręcznie.',
+      };
+    }
+  }
+
+  return { success: true, user: authUser, requiresConfirmation: true };
 }

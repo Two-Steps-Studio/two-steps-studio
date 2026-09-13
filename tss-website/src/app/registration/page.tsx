@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/hooks/use-translation";
 import registerUser from "./actions";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,23 +55,11 @@ export default function RegisterPage() {
         return;
       }
 
-      // 2. If successful, sign in the user immediately client-side
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (signInError) {
-        toast.error(t.registrationExtra.autoSignInFailed, {
-          description: signInError.message,
-        });
-        // Redirect to login anyway
-        router.push("/login");
-      } else {
-        toast.success(t.auth.registerSuccess || "Registration successful!");
-        router.push("/profile");
-        router.refresh();
-      }
+      // 2. The account now requires email confirmation before it can log
+      // in (see registration/actions.ts) - no more auto sign-in here, since
+      // Supabase would just reject it with "Email not confirmed" anyway.
+      toast.success(t.auth.registerSuccess || "Registration successful!");
+      router.push("/login");
     } catch (err) {
       toast.error(t.registrationExtra.unexpectedError);
       console.error(err);
