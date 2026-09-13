@@ -39,8 +39,15 @@ function DiscordIdPicker({
   options: { id: string; name: string }[];
   kind: "channel" | "role";
 }) {
-  const [manualMode, setManualMode] = useState(options.length === 0);
+  // null = no explicit user choice yet -> auto-follow whether options are
+  // loaded. Without this, a plain useState(options.length === 0) freezes at
+  // its mount-time value: options arrive async (guild-options fetch), so the
+  // field stayed stuck in manual-ID mode forever even after the list loaded,
+  // defeating the whole picker unless the user noticed the small toggle link.
+  const [userToggled, setUserToggled] = useState<boolean | null>(null);
+  const manualMode = userToggled !== null ? userToggled : options.length === 0;
   const prefix = kind === "channel" ? "#" : "@";
+  const valueMatchesOption = options.some((o) => o.id === value);
 
   return (
     <div className="space-y-1">
@@ -54,7 +61,7 @@ function DiscordIdPicker({
         />
       ) : (
         <select
-          value={options.some((o) => o.id === value) ? value : ""}
+          value={valueMatchesOption ? value : ""}
           onChange={(e) => onChange(e.target.value)}
           className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
         >
@@ -64,10 +71,15 @@ function DiscordIdPicker({
           ))}
         </select>
       )}
+      {!manualMode && value && !valueMatchesOption && (
+        <p className="text-xs text-amber-500">
+          Obecnie ustawione ID: {value} (nie widnieje na liście — kanał/rola mógł zostać usunięty lub zmieniony)
+        </p>
+      )}
       {options.length > 0 && (
         <button
           type="button"
-          onClick={() => setManualMode((m) => !m)}
+          onClick={() => setUserToggled(!manualMode)}
           className="text-xs text-[var(--color-general)] hover:underline"
         >
           {manualMode ? "Wybierz z listy" : "Wpisz ID ręcznie"}
