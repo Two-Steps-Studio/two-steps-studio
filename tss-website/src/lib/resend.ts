@@ -61,7 +61,13 @@ export async function sendAccountConfirmationEmail(email: string, fullName: stri
   return result;
 }
 
-// HTML template for account confirmation
+// HTML template for account confirmation - deliberately plain/transactional
+// rather than the marketing-card look this used to have (gradient
+// background, big centered button). Gmail's Promotions-tab classifier
+// weighs visual style along with sender reputation, and a brand-new sending
+// domain has zero reputation yet - a plain, text-forward layout closer to
+// what GitHub/Stripe send for account emails is one of the few levers that
+// actually helps land in Primary before that reputation builds up.
 function generateAccountConfirmationHtml(fullName: string, confirmLink: string): string {
   return `
 <!DOCTYPE html>
@@ -70,81 +76,20 @@ function generateAccountConfirmationHtml(fullName: string, confirmLink: string):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Two Steps Studio - Potwierdź konto</title>
-  <style>
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 40px;
-      max-width: 500px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      text-align: center;
-    }
-    .logo {
-      margin-bottom: 20px;
-      font-weight: bold;
-      font-size: 24px;
-      color: #333;
-    }
-    h1 {
-      font-size: 18px;
-      color: #555;
-      margin: 0 0 10px 0;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    .description {
-      color: #666;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .button {
-      display: inline-block;
-      margin: 24px 0;
-      padding: 14px 32px;
-      background: #667eea;
-      color: white !important;
-      text-decoration: none;
-      font-weight: bold;
-      border-radius: 8px;
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: #999;
-    }
-    .footer a {
-      color: #667eea;
-      text-decoration: none;
-    }
-  </style>
 </head>
-<body>
-  <div class="card">
-    <div class="logo">Two Steps Studio</div>
-    <h1>Potwierdź swoje konto</h1>
-    <div class="description">
-      Cześć ${fullName}, dziękujemy za rejestrację! Kliknij przycisk poniżej, żeby potwierdzić adres e-mail i aktywować konto.
-    </div>
-    <a class="button" href="${confirmLink}">Potwierdź konto</a>
-    <div class="description">
-      Jeśli to nie Ty zakładałeś to konto, po prostu zignoruj tę wiadomość.
-    </div>
-    <div class="footer">
-      Masz pytania?<br>
-      <a href="mailto:support@twostepsstudio.gg">Skontaktuj się z nami</a>
-    </div>
-  </div>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="padding:32px 20px;max-width:480px;margin:0 auto;">
+        <p style="font-size:14px;color:#666;margin:0 0 24px;">Two Steps Studio</p>
+        <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Cześć ${fullName},</p>
+        <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Dziękujemy za rejestrację. Potwierdź adres e-mail, aby aktywować konto:</p>
+        <p style="margin:0 0 16px;"><a href="${confirmLink}" style="color:#1bbdbd;">Potwierdź konto</a></p>
+        <p style="font-size:13px;color:#888;line-height:1.6;margin:24px 0 0;">Jeśli to nie Ty zakładałeś to konto, zignoruj tę wiadomość.</p>
+        <p style="font-size:12px;color:#aaa;margin:24px 0 0;">Pytania? <a href="mailto:support@twostepsstudio.gg" style="color:#888;">support@twostepsstudio.gg</a></p>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
   `.trim();
