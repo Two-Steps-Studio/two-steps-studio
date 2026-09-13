@@ -11,7 +11,7 @@ import {
   UserX, Ban, VolumeX, LogOut,
 } from "lucide-react";
 
-const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "channel" | "role"; channelType?: "text" | "voice" }> = {
+const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "channel" | "role" | "text"; channelType?: "text" | "voice" }> = {
   MOD_LOG_CHANNEL_ID: { label: "Kanał logów moderacji", hint: "Kanał, gdzie bot wysyła kick/ban/timeout/warn", kind: "channel", channelType: "text" },
   TICKET_STAFF_ROLE_ID: { label: "Rola obsługi zgłoszeń", hint: "Rola, która widzi nowo tworzone tickety", kind: "role" },
   JOIN_TO_CREATE_CHANNEL_ID: { label: "Kanał głosowy \"stwórz kanał\"", hint: "Kanał głosowy wyzwalający auto-kanały", kind: "channel", channelType: "voice" },
@@ -20,6 +20,7 @@ const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "chann
   DISCORD_RECRUITMENT_CHANNEL_ID: { label: "Kanał rekrutacji (Dev)", hint: "Gdzie trafiają zgłoszenia z formularza rekrutacji Dev", kind: "channel", channelType: "text" },
   DISCORD_ADMIN_RECRUITMENT_CHANNEL_ID: { label: "Kanał rekrutacji (Administracja)", hint: "Gdzie trafiają zgłoszenia z formularza rekrutacji administracji Discorda", kind: "channel", channelType: "text" },
   DISCORD_GENERAL_RECRUITMENT_CHANNEL_ID: { label: "Kanał rekrutacji (ogólny)", hint: "Zapasowy kanał, gdy powyższe nie są ustawione", kind: "channel", channelType: "text" },
+  BLOCKED_WORDS: { label: "Zablokowane słowa (automod)", hint: "Słowa oddzielone przecinkami - wiadomość z którymkolwiek zostanie usunięta", kind: "text" },
 };
 
 interface GuildChannel { id: string; name: string; type: "text" | "voice"; }
@@ -197,6 +198,21 @@ export default function AdminBotPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {Object.entries(SETTING_LABELS).map(([key, meta]) => {
+              if (meta.kind === "text") {
+                return (
+                  <div key={key} className="space-y-1">
+                    <label className="text-sm font-medium">{meta.label}</label>
+                    <p className="text-xs text-[var(--text-muted)]">{meta.hint}</p>
+                    <textarea
+                      value={values[key] || ""}
+                      onChange={(e) => setValues((val) => ({ ...val, [key]: e.target.value }))}
+                      rows={2}
+                      placeholder="np. słowo1, słowo2, słowo3"
+                      className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-general)]"
+                    />
+                  </div>
+                );
+              }
               const options =
                 meta.kind === "channel"
                   ? guildChannels.filter((c) => c.type === meta.channelType)

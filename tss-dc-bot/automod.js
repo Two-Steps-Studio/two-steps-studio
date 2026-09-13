@@ -1,5 +1,6 @@
-// automod.js – spam / invite-link / mass-mention filtering
+// automod.js – spam / invite-link / mass-mention / blocked-word filtering
 const { PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { getSetting } = require('./settings');
 
 const SPAM_WINDOW_MS = 5000;
 const SPAM_THRESHOLD = 5;   // messages within the window
@@ -8,6 +9,20 @@ const INVITE_REGEX = /(discord\.gg\/|discord(app)?\.com\/invite\/)/i;
 
 // userId -> recent message timestamps, for the spam-rate check
 const messageTimestamps = new Map();
+
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// BLOCKED_WORDS is admin-editable from /admin/bot (comma-separated), same
+// bot_settings key/value store as every other runtime-configurable knob -
+// no new table needed. Rebuilt from the raw setting string on every message
+// rather than cached separately, since settings.js already caches the
+// underlying value for 60s.
+function getBlockedWordPatterns() {
+    const raw = getSetting('BLOCKED_WORDS');
+    if (!raw) return [];
+    return raw.split(',').map((w) => w.trim()).filter(Boolean)
+        .map((w) => new RegExp(`\\b${escapeRegex(w)}\\b`, 'i'));
+}
 
 async function notifyAndMaybeCleanup(message, reason) {
     try {
@@ -28,7 +43,9 @@ async function checkAutoMod(message, sendModLog) {
 
     let violation = null;
 
-    if (INVITE_REGEX.test(message.content)) {
+    if (getBlockedWordPatterns().some((re) => re.test(message.content))) {
+        violation = 'zablokowane słowo';
+    } else if (INVITE_REGEX.test(message.content)) {
         violation = 'link z zaproszeniem na inny serwer';
     } else if (message.mentions.users.size + message.mentions.roles.size > MENTION_LIMIT) {
         violation = 'zbyt wiele wzmianek w jednej wiadomości';
