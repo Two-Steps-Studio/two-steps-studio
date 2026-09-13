@@ -246,6 +246,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName('event_create')
         .setDescription('Utwórz nowy event e-sportowy')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addStringOption(opt =>
             opt.setName('nazwa')
                 .setDescription('Nazwa eventu')
@@ -296,6 +297,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName('event_delete')
         .setDescription('Usuń event (tylko admin)')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addIntegerOption(opt =>
             opt.setName('id')
                 .setDescription('ID eventu do usunięcia')

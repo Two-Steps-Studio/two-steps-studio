@@ -1,19 +1,15 @@
 // events/events.js – obsługa eventów e-sportowych
 const { EmbedBuilder } = require('discord.js');
 
-const ADMIN_ROLE = 'Admin'; // zmień na nazwę swojej roli admina
-
 // ── /event_create ─────────────────────────────────────────────
+// Permission check used to be a hardcoded role-name string ('Admin') that
+// never matched this server's actual admin role name, silently locking
+// everyone (including real admins) out of event creation. Command
+// registration now gates this with setDefaultMemberPermissions(ManageGuild)
+// (see index.js), same as every other admin command in this bot (giveaway,
+// tag, promo, ticket_panel) - no in-handler check needed.
 
 async function handleEventCreate(interaction, supabase) {
-    const isAdmin = interaction.member?.roles.cache.some(r => r.name === ADMIN_ROLE);
-    if (!isAdmin) {
-        return interaction.reply({
-            content: '❌ Nie masz uprawnień do tworzenia eventów!',
-            flags: 1 << 6,
-        });
-    }
-
     const name            = interaction.options.getString('nazwa');
     const description     = interaction.options.getString('opis') || null;
     const dateStr         = interaction.options.getString('data');
@@ -224,14 +220,6 @@ async function handleEventJoin(interaction, supabase) {
 // ── /event_delete ─────────────────────────────────────────────
 
 async function handleEventDelete(interaction, supabase) {
-    const isAdmin = interaction.member?.roles.cache.some(r => r.name === ADMIN_ROLE);
-    if (!isAdmin) {
-        return interaction.reply({
-            content: '❌ Nie masz uprawnień do usuwania eventów!',
-            flags: 1 << 6,
-        });
-    }
-
     const eventId = interaction.options.getInteger('id');
     await interaction.deferReply();
 
