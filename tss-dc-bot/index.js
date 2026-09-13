@@ -1556,6 +1556,19 @@ async function syncVoiceRewards(userId, minutes, member, username) {
     } catch (e) { console.error('[VC] Reward sync error:', e); }
 }
 
+// The name-substring match can hit a category or other non-text channel
+// (e.g. a category literally named "👋 Welcome") which has no .send() --
+// that used to throw synchronously inside the join listener, a spot
+// neither client.on('error') nor process.on('unhandledRejection') catches,
+// crashing the whole bot process on every subsequent join. Shared by both
+// the join and leave handlers since servers typically use one channel for
+// both.
+function findWelcomeChannel(guild) {
+    return guild.channels.cache.find(c =>
+        c.isTextBased?.() && (c.name.includes('powitania') || c.name.includes('welcome'))
+    );
+}
+
 // ── Welcome ──────────────────────────────────────────────────
 client.on('guildMemberAdd', async member => {
     logActivity(supabase, 'join', member.user.username);
@@ -1565,14 +1578,7 @@ client.on('guildMemberAdd', async member => {
         await member.roles.add(autoRoleId).catch(e => console.error('[AUTOROLE] Błąd nadawania roli:', e.message));
     }
 
-    // The name-substring match can hit a category or other non-text
-    // channel (e.g. a category literally named "👋 Welcome") which has no
-    // .send() -- that used to throw synchronously inside this listener, a
-    // spot neither client.on('error') nor process.on('unhandledRejection')
-    // catches, crashing the whole bot process on every subsequent join.
-    const ch = member.guild.channels.cache.find(c =>
-        c.isTextBased?.() && (c.name.includes('powitania') || c.name.includes('welcome'))
-    );
+    const ch = findWelcomeChannel(member.guild);
     if (!ch) return;
     try {
         const buffer = await createWelcomeCard({
@@ -1584,6 +1590,19 @@ client.on('guildMemberAdd', async member => {
         await ch.send({ content: `Witaj <@${member.id}>! Cieszymy się, że do nas dołączyłeś.`, files: [attachment] });
     } catch (e) {
         console.error('[WELCOME] Błąd wysyłania powitania:', e.message);
+    }
+});
+
+// ── Leave (pożegnanie) ──────────────────────────────────────────
+client.on('guildMemberRemove', async member => {
+    logActivity(supabase, 'leave', member.user.username);
+
+    const ch = findWelcomeChannel(member.guild);
+    if (!ch) return;
+    try {
+        await ch.send(`👋 **${member.user.tag}** opuścił/a serwer. Do zobaczenia! (zostało: ${member.guild.memberCount})`);
+    } catch (e) {
+        console.error('[LEAVE] Błąd wysyłania pożegnania:', e.message);
     }
 });
 

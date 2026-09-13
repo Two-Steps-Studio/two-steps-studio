@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Settings, Users, ScrollText, Gift, ShieldAlert, Loader2, ArrowLeft, Search, Save, Check,
   AlertTriangle, UserPlus, TrendingUp, ShoppingBag, MessageSquare, Ticket, PartyPopper,
-  UserX, Ban, VolumeX,
+  UserX, Ban, VolumeX, LogOut,
 } from "lucide-react";
 
 const SETTING_LABELS: Record<string, { label: string; hint: string; kind: "channel" | "role"; channelType?: "text" | "voice" }> = {
@@ -422,7 +422,7 @@ const MODERATION_ICON: Record<ModerationRow["type"], { icon: ElementType; color:
 };
 interface ActivityLogRow {
   id: number;
-  type: "join" | "level_up" | "purchase" | "message";
+  type: "join" | "leave" | "level_up" | "purchase" | "message";
   username: string;
   detail: string | null;
   created_at: string;
@@ -430,6 +430,7 @@ interface ActivityLogRow {
 
 const ACTIVITY_ICON: Record<ActivityLogRow["type"], { icon: ElementType; color: string }> = {
   join: { icon: UserPlus, color: "#06e402" },
+  leave: { icon: LogOut, color: "#9aa5b1" },
   level_up: { icon: TrendingUp, color: "#ffcb2f" },
   purchase: { icon: ShoppingBag, color: "#1bbdbd" },
   message: { icon: MessageSquare, color: "#9aa5b1" },

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Users, Wifi, Clock, MessageSquare, Trophy, Coins, UserPlus, TrendingUp, ShoppingBag, Bot, Paperclip } from "lucide-react";
+import { Users, Wifi, Clock, MessageSquare, Trophy, Coins, UserPlus, TrendingUp, ShoppingBag, Bot, Paperclip, LogOut } from "lucide-react";
 import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 
 interface Stats {
@@ -13,7 +13,7 @@ interface Stats {
   bot_online?: boolean;
 }
 interface ActivityEvent {
-  type: "join" | "level_up" | "purchase" | "message";
+  type: "join" | "leave" | "level_up" | "purchase" | "message";
   username: string;
   detail?: string | null;
   created_at: string;
@@ -259,6 +259,7 @@ function StatTile({
 // ActivityFeed), so `text` for 'message' stays a plain action verb.
 const ACTIVITY_META: Record<ActivityEvent["type"], { icon: React.ElementType; color: string; text: (e: ActivityEvent) => string }> = {
   join: { icon: UserPlus, color: "#06e402", text: () => "dołączył(a) do serwera" },
+  leave: { icon: LogOut, color: "#9aa5b1", text: () => "opuścił(a) serwer" },
   level_up: { icon: TrendingUp, color: "#ffcb2f", text: (e) => `awansował(a) na ${e.detail || "nowy poziom"}` },
   purchase: { icon: ShoppingBag, color: "#1bbdbd", text: (e) => `kupił(a) ${e.detail || "przedmiot"}` },
   message: { icon: MessageSquare, color: "#9aa5b1", text: () => "napisał(a) na czacie" },
