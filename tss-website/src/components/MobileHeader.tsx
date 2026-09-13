@@ -127,7 +127,7 @@ export function MobileHeader() {
         </div>
 
         {/* Prawa strona: Akcje */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center ">
           {/* Tryb + powiadomienia trzymane razem, ciaśniej niż reszta */}
           <div className="flex items-center gap-0.5">
             <Button
@@ -150,7 +150,7 @@ export function MobileHeader() {
               </AnimatePresence>
             </Button>
 
-            <Link href="/notifications">
+            <Link href="/notifications" className="flex p-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -168,7 +168,7 @@ export function MobileHeader() {
           </div>
 
           {!loading && user ? (
-            <Link href="/profile">
+            <Link href="/profile" className="flex p-0">
               <Button variant="ghost" aria-label={t.nav.profile} className="rounded-xl h-10 pl-2.5 pr-1.5 gap-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 {displayName && (
                   <span className="text-xs font-bold text-[var(--text)] max-w-[84px] truncate">{displayName}</span>
@@ -183,7 +183,7 @@ export function MobileHeader() {
               </Button>
             </Link>
           ) : !loading ? (
-            <Link href="/login">
+            <Link href="/login" className="flex p-0">
               <Button variant="ghost" className="rounded-xl h-10 px-3 gap-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
                 <LogIn size={18} className="text-[var(--text)]" />
                 <span className="text-sm font-bold text-[var(--text)]">{t.nav.login}</span>
