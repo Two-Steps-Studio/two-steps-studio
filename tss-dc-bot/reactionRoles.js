@@ -1,8 +1,13 @@
 // reactionRoles.js – react on a message to self-assign a role
 const { EmbedBuilder } = require('discord.js');
 
+// Custom emoji come back as <:name:id> (static) or <a:name:id> (animated) -
+// dropping the `a:` here for animated ones meant this key never matched what
+// /reactionrole add stored (it saves the admin's pasted code verbatim,
+// `a:` included for animated emoji), so animated-emoji reaction roles
+// silently never granted anything.
 function emojiKey(emoji) {
-    return emoji.id ? `<:${emoji.name}:${emoji.id}>` : emoji.name;
+    return emoji.id ? `<${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}>` : emoji.name;
 }
 
 // ── /reactionrole add ─────────────────────────────────────────
