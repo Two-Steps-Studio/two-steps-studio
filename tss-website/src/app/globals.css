@@ -150,11 +150,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Mobile-first responsive styles */
 @media (max-width: 1023px) {
-  /* Optimalizacja pod touch */
-  button, a {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0.75rem 1rem;
+  /* Optimalizacja pod touch - w @layer base, żeby normalne klasy Tailwinda
+     (np. p-0) mogły to nadpisać tam, gdzie trzeba. Bez warstwy ten
+     "zwykły" CSS bije KAŻDĄ klasę narzędziową niezależnie od specyficzności
+     (tak działają CSS Cascade Layers) - stąd np. p-0 na linkach w
+     MobileHeader.tsx nie robiło nic, mimo że powinno wygrywać. */
+  @layer base {
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0.75rem 1rem;
+    }
   }
 
   /* Hide desktop sidebar on mobile */
