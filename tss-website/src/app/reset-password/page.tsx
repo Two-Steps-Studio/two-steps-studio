@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/hooks/use-translation";
 import { supabase } from "@/lib/supabase";
@@ -15,22 +15,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function ResetPasswordPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"checking" | "valid" | "invalid">("checking");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
-  // /auth/callback already exchanged the recovery link's code for a session
-  // server-side before redirecting here - this just confirms the browser
-  // client sees it too. Supabase also emits a PASSWORD_RECOVERY event once
-  // it picks up the session, which the listener catches in case getSession()
-  // runs a beat before that happens.
+  // Two ways to land here with a usable session:
+  // 1. ?token_hash=...&type=recovery straight from the email link - verified
+  //    directly via verifyOtp(), no cookie/PKCE code_verifier needed, so this
+  //    works even if the link is opened on a different device/browser than
+  //    the one that requested the reset (the common case - people open mail
+  //    on their phone, not wherever they clicked "forgot password").
+  // 2. A session already established by /auth/callback's exchangeCodeForSession
+  //    (kept as a fallback for any link still using the old ConfirmationURL
+  //    format), confirmed here via onAuthStateChange/getSession.
   useEffect(() => {
     if (!supabase) {
       setStatus("invalid");
       return;
     }
+
+    const tokenHash = searchParams.get("token_hash");
+    const type = searchParams.get("type");
+    if (tokenHash && type === "recovery") {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" }).then(({ error }) => {
+        setStatus(error ? "invalid" : "valid");
+      });
+      return;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) setStatus("valid");
     });
@@ -38,7 +53,7 @@ export default function ResetPasswordPage() {
       setStatus(data.session ? "valid" : "invalid");
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
