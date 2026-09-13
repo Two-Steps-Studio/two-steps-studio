@@ -127,7 +127,7 @@ export function MobileHeader() {
         </div>
 
         {/* Prawa strona: Akcje */}
-        <div className="flex items-center ">
+        <div className="flex items-center gap-2">
           {/* Tryb + powiadomienia trzymane razem, ciaśniej niż reszta */}
           <div className="flex items-center gap-0.5">
             <Button
