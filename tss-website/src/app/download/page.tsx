@@ -257,10 +257,10 @@ export default function DownloadPage() {
           <p className="mt-2">
             {t.download.footerContactPrefix}{' '}
             <a
-              href="mailto:support@twostepsstudio.com"
+              href="mailto:support@twostepsstudio.gg"
               className="font-medium text-[var(--color-general)] underline underline-offset-4"
             >
-              support@twostepsstudio.com
+              support@twostepsstudio.gg
             </a>
           </p>
         </footer>

@@ -8,9 +8,12 @@ import { Resend } from 'resend';
 // Initialize Resend client
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Default sender configuration
-export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'no-reply@two-steps-studio.com';
-export const FROM_DOMAIN = process.env.RESEND_FROM_DOMAIN || 'two-steps-studio.com';
+// Default sender configuration - twostepsstudio.gg is the real domain (see
+// metadataBase in app/layout.tsx); two-steps-studio.com was a stale
+// leftover that Resend would reject mail from since only the .gg domain is
+// verified there.
+export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'no-reply@twostepsstudio.gg';
+export const FROM_DOMAIN = process.env.RESEND_FROM_DOMAIN || 'twostepsstudio.gg';
 
 /**
  * Check if Resend is configured
@@ -139,7 +142,7 @@ function generateAccountConfirmationHtml(fullName: string, confirmLink: string):
     </div>
     <div class="footer">
       Masz pytania?<br>
-      <a href="mailto:user@two-steps-studio.com">Skontaktuj się z nami</a>
+      <a href="mailto:support@twostepsstudio.gg">Skontaktuj się z nami</a>
     </div>
   </div>
 </body>
@@ -254,7 +257,7 @@ function generateLoginTokenHtml(token: string): string {
     </div>
     <div class="footer">
       Nie otrzymujesz kodu?<br>
-      <a href="mailto:user@two-steps-studio.com">Skontaktuj się z nami</a>
+      <a href="mailto:support@twostepsstudio.gg">Skontaktuj się z nami</a>
     </div>
   </div>
 </body>
