@@ -712,6 +712,35 @@
     "termsLinkText": "AGB",
     "acceptSuffix": " und die Datenschutzrichtlinie"
   },
+  "forgotPassword": {
+    "title": "Passwort vergessen?",
+    "subtitle": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "du@email.com",
+    "submitButton": "LINK SENDEN",
+    "submitting": "WIRD GESENDET...",
+    "backToLogin": "Zurück zur Anmeldung",
+    "successTitle": "Überprüfe dein Postfach",
+    "successDesc": "Falls ein Konto mit dieser Adresse existiert, haben wir einen Link zum Zurücksetzen des Passworts gesendet.",
+    "errorTitle": "Link konnte nicht gesendet werden"
+  },
+  "resetPassword": {
+    "title": "Neues Passwort festlegen",
+    "subtitle": "Gib ein neues Passwort für dein Konto ein.",
+    "newPasswordLabel": "Neues Passwort",
+    "confirmPasswordLabel": "Neues Passwort bestätigen",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "NEUES PASSWORT SPEICHERN",
+    "submitting": "WIRD GESPEICHERT...",
+    "successTitle": "Passwort geändert!",
+    "successDesc": "Dein Passwort wurde aktualisiert. Du kannst dein Konto jetzt nutzen.",
+    "mismatchError": "Die Passwörter stimmen nicht überein",
+    "tooShortError": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "invalidSessionTitle": "Dieser Link ist abgelaufen oder ungültig",
+    "invalidSessionDesc": "Fordere einen neuen Link zum Zurücksetzen des Passworts an.",
+    "errorTitle": "Passwort konnte nicht geändert werden",
+    "requestNewLink": "Neuen Link anfordern"
+  },
   "privacyPage": {
     "title": "Datenschutzerklärung - Two Steps Studio",
     "lastUpdated": "Zuletzt aktualisiert: 23. Juli 2026",

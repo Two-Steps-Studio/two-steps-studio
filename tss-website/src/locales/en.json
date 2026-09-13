@@ -712,6 +712,35 @@
     "termsLinkText": "terms",
     "acceptSuffix": " and the privacy policy"
   },
+  "forgotPassword": {
+    "title": "Forgot your password?",
+    "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@email.com",
+    "submitButton": "SEND RESET LINK",
+    "submitting": "SENDING...",
+    "backToLogin": "Back to login",
+    "successTitle": "Check your inbox",
+    "successDesc": "If an account with that address exists, we've sent a password reset link to it.",
+    "errorTitle": "Failed to send link"
+  },
+  "resetPassword": {
+    "title": "Set a new password",
+    "subtitle": "Enter a new password for your account.",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm new password",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "SAVE NEW PASSWORD",
+    "submitting": "SAVING...",
+    "successTitle": "Password changed!",
+    "successDesc": "Your password has been updated. You can now use your account.",
+    "mismatchError": "The passwords don't match",
+    "tooShortError": "Password must be at least 8 characters",
+    "invalidSessionTitle": "This link expired or is invalid",
+    "invalidSessionDesc": "Request a new password reset link.",
+    "errorTitle": "Failed to change password",
+    "requestNewLink": "Request a new link"
+  },
   "privacyPage": {
     "title": "Privacy Policy - Two Steps Studio",
     "lastUpdated": "Last updated: July 23, 2026",

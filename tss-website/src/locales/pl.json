@@ -712,6 +712,35 @@
     "termsLinkText": "regulamin",
     "acceptSuffix": " i politykę prywatności"
   },
+  "forgotPassword": {
+    "title": "Nie pamiętasz hasła?",
+    "subtitle": "Podaj swój adres e-mail, a wyślemy Ci link do zresetowania hasła.",
+    "emailLabel": "Adres e-mail",
+    "emailPlaceholder": "twoj@email.com",
+    "submitButton": "WYŚLIJ LINK RESETUJĄCY",
+    "submitting": "WYSYŁANIE...",
+    "backToLogin": "Wróć do logowania",
+    "successTitle": "Sprawdź swoją skrzynkę",
+    "successDesc": "Jeśli konto o podanym adresie istnieje, wysłaliśmy na nie link do zresetowania hasła.",
+    "errorTitle": "Nie udało się wysłać linku"
+  },
+  "resetPassword": {
+    "title": "Ustaw nowe hasło",
+    "subtitle": "Wpisz nowe hasło do swojego konta.",
+    "newPasswordLabel": "Nowe hasło",
+    "confirmPasswordLabel": "Powtórz nowe hasło",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "ZAPISZ NOWE HASŁO",
+    "submitting": "ZAPISYWANIE...",
+    "successTitle": "Hasło zmienione!",
+    "successDesc": "Twoje hasło zostało zaktualizowane. Możesz teraz korzystać z konta.",
+    "mismatchError": "Podane hasła się różnią",
+    "tooShortError": "Hasło musi mieć co najmniej 8 znaków",
+    "invalidSessionTitle": "Link wygasł lub jest nieprawidłowy",
+    "invalidSessionDesc": "Poproś o nowy link do resetowania hasła.",
+    "errorTitle": "Nie udało się zmienić hasła",
+    "requestNewLink": "Poproś o nowy link"
+  },
   "privacyPage": {
     "title": "Polityka Prywatności - Two Steps Studio",
     "lastUpdated": "Ostatnia aktualizacja: 23 lipca 2026",
