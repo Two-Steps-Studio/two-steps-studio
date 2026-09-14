@@ -1,10 +1,12 @@
 -- Lock down public.profiles: currently readable in full by the anon key
 -- (verified live - a plain PostgREST SELECT with the public anon key
 -- returned pln_balance, money, bank, settings, etc. for every user, with
--- no auth required). profiles.id is sometimes the Discord snowflake
--- (user_metadata.provider_id) and sometimes the Supabase Auth UUID
--- (auth.uid()) depending on signup path - see CLAUDE.md / this repo's own
--- history - so the owner predicate below checks both.
+-- no auth required). profiles.id is `uuid`-typed live (confirmed by a
+-- "text = uuid" error on the first version of this migration), but this
+-- repo's own code/history repeatedly treats it as sometimes holding the
+-- Discord snowflake (user_metadata.provider_id) instead of auth.uid() -
+-- so the owner predicate below checks both, comparing as text so it can't
+-- error regardless of which one actually matches for a given row.
 --
 -- Run this whole file once in the Supabase SQL Editor.
 
@@ -24,29 +26,32 @@ END $$;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- profiles.id turned out to be `uuid`-typed live (not text), so the
+-- comparison is normalized to text on both sides here - id::text works
+-- whether id is uuid or text, avoiding a hardcoded assumption either way.
 CREATE POLICY "Own profile - select"
 ON public.profiles FOR SELECT
 USING (
-  auth.uid()::text = id
-  OR (auth.jwt() -> 'user_metadata' ->> 'provider_id') = id
+  id::text = auth.uid()::text
+  OR id::text = (auth.jwt() -> 'user_metadata' ->> 'provider_id')
 );
 
 CREATE POLICY "Own profile - update"
 ON public.profiles FOR UPDATE
 USING (
-  auth.uid()::text = id
-  OR (auth.jwt() -> 'user_metadata' ->> 'provider_id') = id
+  id::text = auth.uid()::text
+  OR id::text = (auth.jwt() -> 'user_metadata' ->> 'provider_id')
 )
 WITH CHECK (
-  auth.uid()::text = id
-  OR (auth.jwt() -> 'user_metadata' ->> 'provider_id') = id
+  id::text = auth.uid()::text
+  OR id::text = (auth.jwt() -> 'user_metadata' ->> 'provider_id')
 );
 
 CREATE POLICY "Own profile - insert"
 ON public.profiles FOR INSERT
 WITH CHECK (
-  auth.uid()::text = id
-  OR (auth.jwt() -> 'user_metadata' ->> 'provider_id') = id
+  id::text = auth.uid()::text
+  OR id::text = (auth.jwt() -> 'user_metadata' ->> 'provider_id')
 );
 
 -- No DELETE policy: nothing in the app deletes a profile client-side, and
