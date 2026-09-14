@@ -64,10 +64,14 @@ WITH CHECK (
 --    owner-only policies above, while still hiding every column not
 --    listed - no pln_balance, vip/svip/mvip flags, settings, inventory,
 --    multiplier, referral data, etc.
+-- No `rank` column exists live (profile/[id]/page.tsx reads profile?.rank
+-- expecting one, and admin/exec's set-role command writes one - both
+-- already reference a column that isn't actually there; pre-existing,
+-- unrelated to this migration, not fixed here).
 CREATE OR REPLACE VIEW public.public_profiles AS
 SELECT
   id, discord_id, username, avatar_url, level, xp, weekly_xp,
-  money, bank, rank, equipped_frame, equipped_nick_color, background,
+  money, bank, equipped_frame, equipped_nick_color, background,
   discord_roles, total_messages, total_voice_minutes, joined_at
 FROM public.profiles;
 
