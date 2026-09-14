@@ -47,8 +47,11 @@ export default function PublicProfilePage() {
                 return;
             }
 
+            // public_profiles (not profiles) - this is someone else's row,
+            // and profiles' RLS is now owner-only. See
+            // db/migrations/lock-down-profiles-rls.sql.
             const { data } = await supabase
-                .from("profiles")
+                .from("public_profiles")
                 .select("*")
                 .eq("id", params.id)
                 .maybeSingle();

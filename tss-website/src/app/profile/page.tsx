@@ -36,8 +36,10 @@ interface RankedUser {
 }
 
 const fetchRankingData = async () => {
-    const { data: levelUsers } = await supabase.from("profiles").select("id, discord_id, username, avatar_url, level, xp").order("level", { ascending: false }).limit(100);
-    const { data: moneyUsers } = await supabase.from("profiles").select("id, discord_id, username, avatar_url, money").order("money", { ascending: false }).limit(100);
+    // public_profiles (not profiles) - leaderboard shows other users' rows,
+    // and profiles' RLS is now owner-only. See db/migrations/lock-down-profiles-rls.sql.
+    const { data: levelUsers } = await supabase.from("public_profiles").select("id, discord_id, username, avatar_url, level, xp").order("level", { ascending: false }).limit(100);
+    const { data: moneyUsers } = await supabase.from("public_profiles").select("id, discord_id, username, avatar_url, money").order("money", { ascending: false }).limit(100);
 
     const usersByLevel: RankedUser[] = (levelUsers || []).map((u, idx: number) => ({
         ...u,

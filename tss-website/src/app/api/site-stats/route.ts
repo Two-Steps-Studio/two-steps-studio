@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createServiceClient } from "@/lib/supabase-server";
 
 export async function GET() {
   let supabase;
   try {
-    supabase = await createClient();
+    // Service role, not the session-bound client: this counts across every
+    // profile/session row for a public aggregate, which the now-owner-only
+    // profiles RLS (db/migrations/lock-down-profiles-rls.sql) would
+    // otherwise cut down to just the caller's own row in the fallback path
+    // below (the primary get_site_stats() RPC is SECURITY DEFINER and
+    // already unaffected, but this keeps the fallback correct too).
+    supabase = createServiceClient();
   } catch {
     return NextResponse.json(
       { error: "Statistics unavailable - contact administrator" },
