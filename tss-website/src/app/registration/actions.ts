@@ -1,7 +1,9 @@
 'use server';
 
+import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendAccountConfirmationEmail, isResendConfigured } from "@/lib/resend";
+import { checkRateLimit } from "@/lib/api-rate-limit";
 
 import { z } from "zod";
 
@@ -14,6 +16,17 @@ const registerSchema = z.object({
 });
 
 export default async function registerUser(formData: { email: string; password: string; fullName: string; language?: string; ref?: string }) {
+  // Each successful signup sends a real email via Resend - without a limit
+  // here, the only thing standing between a script and either a Resend
+  // quota burn or a flood of unconfirmed accounts is the site-wide 600
+  // req/min limiter in proxy.ts, which is far too loose for this endpoint.
+  const forwardedFor = (await headers()).get("x-forwarded-for");
+  const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
+  const rateLimit = checkRateLimit(`register:${ip}`, "register");
+  if (!rateLimit.allowed) {
+    return { error: "Zbyt wiele prób rejestracji. Spróbuj ponownie za chwilę." };
+  }
+
   const validated = registerSchema.safeParse(formData);
 
   if (!validated.success) {

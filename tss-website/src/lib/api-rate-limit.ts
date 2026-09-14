@@ -15,6 +15,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
   live: { requests: 100, windowMs: 60000 },    // Same as default
   test: { requests: 200, windowMs: 60000 },    // Higher limit for test keys
   admin: { requests: 5, windowMs: 60000 },     // Admin console login/exec: tight, brute-force-resistant
+  register: { requests: 5, windowMs: 600000 }, // 5 signups per 10 min per IP: each one sends a real Resend email
 };
 
 // ============================================
