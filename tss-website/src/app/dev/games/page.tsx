@@ -377,6 +377,9 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
     thumbnail_url: game?.thumbnail_url || "",
     banner_url: game?.banner_url || "",
     download_url: game?.download_url || "",
+    steam_url: game?.steam_url || "",
+    itch_url: game?.itch_url || "",
+    epic_url: game?.epic_url || "",
     changelog: game?.changelog || "",
     status: game?.status || "published" as GameStatus,
     visibility: game?.visibility || "public" as "public" | "private" | "unlisted",
@@ -579,6 +582,36 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                 value={formData.download_url}
                 onChange={(e) => setFormData({ ...formData, download_url: e.target.value })}
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.steamLink}</label>
+                <Input
+                  type="url"
+                  placeholder="https://store.steampowered.com/app/..."
+                  value={formData.steam_url}
+                  onChange={(e) => setFormData({ ...formData, steam_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.itchLink}</label>
+                <Input
+                  type="url"
+                  placeholder="https://....itch.io/..."
+                  value={formData.itch_url}
+                  onChange={(e) => setFormData({ ...formData, itch_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t.devGamesAdmin.fields.epicLink}</label>
+                <Input
+                  type="url"
+                  placeholder="https://store.epicgames.com/..."
+                  value={formData.epic_url}
+                  onChange={(e) => setFormData({ ...formData, epic_url: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="space-y-4">

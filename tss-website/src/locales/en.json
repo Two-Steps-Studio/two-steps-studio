@@ -1130,6 +1130,9 @@
       "publisher": "Publisher",
       "category": "Category",
       "downloadLink": "Download link",
+      "steamLink": "Steam link",
+      "itchLink": "itch.io link",
+      "epicLink": "Epic Games link",
       "banner": "Banner",
       "changelog": "Changelog"
     },

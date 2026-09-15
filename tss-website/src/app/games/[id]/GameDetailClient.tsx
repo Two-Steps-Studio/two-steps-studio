@@ -3,7 +3,8 @@
 import { useEffect, useState, use } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Download, Eye, Gamepad2, Monitor, Cpu, HardDrive, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Calendar, Download, Eye, Gamepad2, Monitor, Cpu, HardDrive, Tag, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { GameInstallControls } from "@/components/Games/GameInstallControls";
 import type { GameWithDetails } from "@/types/games-records";
@@ -242,6 +243,47 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
               {game.id !== undefined && <GameInstallControls gameId={game.id} title={game.title} />}
             </CardContent>
           </Card>
+
+          {/* External Links */}
+          {(game.steam_url || game.itch_url || game.epic_url) && (
+            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-white">Linki zewnętrzne</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {game.steam_url && (
+                  <Button
+                    variant="outline"
+                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    onClick={() => window.open(game.steam_url, '_blank')}
+                  >
+                    <ExternalLink size={18} className="mr-2" />
+                    Steam
+                  </Button>
+                )}
+                {game.itch_url && (
+                  <Button
+                    variant="outline"
+                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    onClick={() => window.open(game.itch_url, '_blank')}
+                  >
+                    <ExternalLink size={18} className="mr-2" />
+                    itch.io
+                  </Button>
+                )}
+                {game.epic_url && (
+                  <Button
+                    variant="outline"
+                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    onClick={() => window.open(game.epic_url, '_blank')}
+                  >
+                    <ExternalLink size={18} className="mr-2" />
+                    Epic Games
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Info */}
           <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">

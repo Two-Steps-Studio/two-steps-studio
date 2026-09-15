@@ -23,6 +23,9 @@ export interface Game {
   thumbnail_url?: string;
   banner_url?: string;
   download_url?: string;
+  steam_url?: string;
+  itch_url?: string;
+  epic_url?: string;
   changelog?: string;
   status: GameStatus;
   visibility: Visibility;
