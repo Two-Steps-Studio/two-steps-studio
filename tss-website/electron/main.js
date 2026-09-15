@@ -563,6 +563,12 @@ registerProtocols();
 
 app.whenReady().then(() => {
   log('INFO', 'App starting...');
+  // Removes Electron's default File/Edit/View/Window/Help menu bar - the
+  // app has its own in-page navigation (Sidebar/MobileHeader), so the
+  // native menu was just dead chrome nobody uses. Keeps the normal window
+  // frame (title bar, minimize/maximize/close) since frame/titleBarStyle
+  // below are unrelated to the menu bar.
+  Menu.setApplicationMenu(null);
   applySettings();
   createWindow();
   createTray();
