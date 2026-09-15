@@ -1,16 +1,26 @@
 // utility.js – /serverinfo, /userinfo, /lock, /unlock, /slowmode
 const { EmbedBuilder } = require('discord.js');
 
-async function handleServerInfo(interaction) {
+async function handleServerInfo(interaction, supabase) {
     const guild = interaction.guild;
     const owner = await guild.fetchOwner().catch(() => null);
+
+    // Same "Członkowie" total the website shows (Discord members + site
+    // accounts, see tss-website's get_unified_stats()) - not Discord alone.
+    let totalMembers = guild.memberCount;
+    if (supabase) {
+        const { count: siteAccounts } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+        totalMembers = guild.memberCount + (siteAccounts || 0);
+    }
 
     const embed = new EmbedBuilder()
         .setColor('#1bbdbd')
         .setTitle(`📊 ${guild.name}`)
         .setThumbnail(guild.iconURL())
         .addFields(
-            { name: '👥 Członkowie', value: `${guild.memberCount}`, inline: true },
+            { name: '👥 Członkowie', value: `${totalMembers}`, inline: true },
             { name: '📁 Kanały', value: `${guild.channels.cache.size}`, inline: true },
             { name: '🎭 Role', value: `${guild.roles.cache.size}`, inline: true },
             { name: '👑 Właściciel', value: owner ? `${owner.user.tag}` : 'Nieznany', inline: true },

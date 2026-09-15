@@ -804,7 +804,9 @@ async function updateDiscordStats() {
             }
         }
 
-        await updateStatsChannelName(guild, humans);
+        // Match the website's "Total Members" stat (src/app/api/stats/route.ts,
+        // get_unified_stats()): Discord members + site accounts, not Discord alone.
+        await updateStatsChannelName(guild, humans + (siteAccounts || 0));
     } catch (e) {
         console.error('[STATS] Błąd:', e.message);
     }
@@ -1375,7 +1377,7 @@ client.on('interactionCreate', async interaction => {
             break;
 
         case 'serverinfo':
-            await handleServerInfo(interaction);
+            await handleServerInfo(interaction, supabase);
             break;
 
         case 'userinfo':
