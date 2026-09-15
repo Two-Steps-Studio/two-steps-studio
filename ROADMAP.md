@@ -1,393 +1,72 @@
 # Roadmap
 
-This document outlines the future development plans and priorities for Two Steps Studio.
+This document outlines realistic, near-term development priorities for Two Steps Studio (TSS), based on the actual state of the codebase (commit history, migrations, open technical debt) rather than an aspirational wishlist.
+
+> **Note (2026-09-15):** This roadmap replaces an earlier version that was largely a generic template (MFA/WAF/blockchain/mobile-app items with no grounding in current velocity). Ambitious platform-growth items from that draft were kept in the [Someday / Needs Team Sign-off](#someday--needs-team-sign-off) section rather than deleted, since they may still be worth pursuing — they just aren't the current priority.
+>
+> `TODO.md` in this repo currently contains unrelated pasted content (a Supabase auth-provider screenshot description and a Guidon competitive-landscape report), not a TSS task list — it should be cleaned up or repurposed separately from this roadmap.
 
 ## Table of Contents
 
 - [Current Status](#current-status)
-- [Phase 1: Security Hardening (Q2 2026)](#phase-1-security-hardening-q2-2026)
-- [Phase 2: Feature Expansion (Q3 2026)](#phase-2-feature-expansion-q3-2026)
-- [Phase 3: Platform Growth (Q4 2026)](#phase-3-platform-growth-q4-2026)
-- [Phase 4: Advanced Features (2027)](#phase-4-advanced-features-2027)
-- [Backlog](#backlog)
-- [Vision](#vision)
+- [Now](#now)
+- [Next](#next)
+- [Later](#later)
+- [Someday / Needs Team Sign-off](#someday--needs-team-sign-off)
+- [Context: Why This Roadmap Looks Different](#context-why-this-roadmap-looks-different)
 
 ## Current Status
 
-**Version**: 1.0.0  
-**Release Date**: 2026-03-13  
-**Status**: Production ready, security fixes in progress
+**Status**: Production, active community platform (tss-website + tss-dc-bot on a shared Supabase instance).
 
-### Completed Features
+### What's already working
 
-- ✅ Web application with Next.js 15
-- ✅ Discord bot with core features
-- ✅ Supabase authentication
-- ✅ Profile system with levels
-- ✅ Economy system
-- ✅ Basic shop
-- ✅ Fishing game
-- ✅ Events management
+- Web application (Next.js 15 + Electron desktop wrapper)
+- Discord bot: XP/leveling, economy, AFK fishing, events, moderation, tickets, giveaways, reaction roles (~93 slash commands)
+- Supabase auth with email verification
+- Profile system with levels, PLN balance, VIP/SVIP/MVIP tiers
+- Shop, fishing gear economy
+- Admin panel for the bot (giveaways, tickets, channels, roles) — a real control surface, not a mockup
 
-## Phase 1: Security Hardening (Q2 2026)
+## Now
 
-**Timeline**: April - June 2026  
-**Priority**: Critical
-### Security Improvements
+Security and cleanup — directly continuing the most recent commit activity.
 
-#### Authentication
-- [ ] Implement persistent rate limiting with Redis
-- [ ] Add account lockout after failed login attempts
-- [ ] Implement multi-factor authentication (MFA)
-- [ ] Add email verification with code confirmation
-- [ ] Implement session rotation
-- [ ] Add captcha protection
-- [ ] Implement brute force protection
+- [ ] Finish the RLS hardening sweep. The last 3 commits patched a real leak on `profiles` (anon key could read other users' `pln_balance`/`money`/`bank`). Audit the remaining tables for the same class of issue before considering this closed.
+- [ ] Add `.env` template for `tss-dc-bot` — currently blocks local testing/CI.
+- [ ] Remove or explain dead weight left over from the `/dev` module split (now spun out as Guidon):
+  - Unused dependencies in `tss-website/package.json`: `@react-three/fiber`, `@react-three/drei`, `@dnd-kit/*` (zero usages in `src/`)
+  - Orphaned `dev-app/` directory (no `package.json`, not wired into any build)
 
-#### API Security
-- [ ] Add JWT verification to admin endpoints
-- [ ] Implement API key rotation
-- [ ] Add request signing
-- [ ] Implement OAuth 2.0 flow
-- [ ] Add API audit logging
-- [ ] Implement API versioning
-- [ ] Add deprecation warnings
+## Next
 
-#### Data Protection
-- [ ] Implement end-to-end encryption for sensitive data
-- [ ] Add data encryption at rest
-- [ ] Implement PII masking
-- [ ] Add automated data deletion
-- [ ] Implement backup encryption
-- [ ] Add security audit logging
+Continuing active, in-progress work areas rather than starting new ones.
 
-#### Infrastructure
-- [ ] Implement WAF (Web Application Firewall)
-- [ ] Configure CSP (Content Security Policy) headers
-- [ ] Enable HSTS (HTTP Strict Transport Security)
-- [ ] Implement DDoS protection
-- [ ] Add bot detection
-- [ ] Implement CDN security
+- [ ] Move rate limiting from in-memory to persistent (Redis) — resets on every restart today
+- [ ] Account lockout after repeated failed logins, session expiry
+- [ ] Continue the economy/shop/fishing rebalance track (VIP/SVIP/MVIP multipliers, gear tiers) — active area, most recent commits are "Economy rebalance 1-5/5"
+- [ ] Round out the bot admin panel — moderation/ticket/giveaway management surfaces that are partially built
 
-### Timeline
+## Later
 
-| Month | Tasks |
-|-------|------|
-| April | Rate limiting, lockout, email verification |
-| May   | API security, data protection |
-| June  | Infrastructure, testing |
+Real gaps, but not urgent given current priorities.
 
-## Phase 2: Feature Expansion (Q3 2026)
-
-**Timeline**: July - September 2026  
-**Priority**: High
-
-### Web Application
-
-#### New Features
-- [ ] Mobile-responsive improvements
-- [ ] Dark mode toggle
-- [ ] Real-time notifications
-- [ ] User notifications center
-- [ ] Chat system
-- [ ] Guild management
-- [ ] Achievement system
+- [ ] Achievement/badge system (no `achievements` table exists yet)
 - [ ] Leaderboards
+- [ ] Dark mode, mobile responsiveness pass, WCAG 2.1 AA improvements
+- [ ] Real-time notifications center
 
-#### Enhancements
-- [ ] Improve accessibility (WCAG 2.1 AA)
-- [ ] Add keyboard shortcuts
-- [ ] Implement dark mode
-- [ ] Improve mobile experience
-- [ ] Add offline support
-- [ ] Implement PWA features
+## Someday / Needs Team Sign-off
 
-### Discord Bot
+Carried over from the previous roadmap draft. Not discarded, but not grounded in current commit velocity or team size — needs explicit prioritization before engineering time goes into these.
 
-#### New Features
-- [ ] Additional game modes
-- [ ] Mini-games collection
-- [ ] Custom role creation
-- [ ] Voice moderation tools
-- [ ] Reaction roles
-- [ ] Moderation commands
-- [ ] Ticket system
-- [ ] Level badges
+- Native desktop app store distribution (Windows Store / macOS App Store / Flatpak)
+- Mobile app (iOS/Android, React Native)
+- MFA, WAF, dedicated DDoS/bot-detection infrastructure
+- Forum/wiki/creator program, community platform features beyond Discord
+- Blockchain/NFT integration
+- Enterprise features (multi-tenant, SSO, SLAs) — not applicable to TSS's current product shape
 
-#### Enhancements
-- [ ] More voice events
-- [ ] Improved profile cards
-- [ ] Better gear system
-- [ ] More events
-- [ ] Auto-warmup for voice
-- [ ] Better error handling
+## Context: Why This Roadmap Looks Different
 
-### Shop
-
-#### New Items
-- [ ] Custom server banners
-- [ ] Special event items
-- [ ] Limited-time offers
-- [ ] Exclusive decorations
-- [ ] Special badges
-- [ ] Animated avatars
-
-### Database
-
-#### New Tables
-- [ ] achievements table
-- [ ] notifications table
-- [ ] tickets table
-- [ ] messages table
-- [ ] logs table
-
-## Phase 3: Platform Growth (Q4 2026)
-
-**Timeline**: October - December 2026  
-**Priority**: Medium
-
-### Desktop Application
-
-#### Features
-- [ ] Native desktop app (Electron)
-- [ ] Windows Store publish
-- [ ] macOS App Store publish
-- [ ] Linux Flatpak
-- [ ] Offline mode
-- [ ] Sync with cloud
-- [ ] Multi-account support
-
-### Mobile Application
-
-#### Features
-- [ ] iOS app (React Native)
-- [ ] Android app (React Native)
-- [ ] Push notifications
-- [ ] Offline support
-- [ ] Biometric authentication
-- [ ] Cloud sync
-
-### Community
-
-#### Features
-- [ ] Forum system
-- [ ] Wiki/documentation
-- [ ] Community Discord channel
-- [ ] User showcase
-- [ ] Creator program
-- [ ] Affiliate program
-
-#### Content
-- [ ] Video tutorials
-- [ ] Blog posts
-- [ ] Live streams
-- [ ] Community events
-- [ ] Webinars
-
-### Partnerships
-
-- [ ] Discord partnerships
-- [ ] Gaming platform integrations
-- [ ] Payment gateway expansions
-- [ ] Brand collaborations
-
-## Phase 4: Advanced Features (2027)
-
-**Timeline**: 2027  
-**Priority**: Medium
-
-### AI Features
-
-- [ ] AI chatbot assistant
-- [ ] Smart recommendations
-- [ ] Content moderation
-- [ ] Automated support
-- [ ] Personalized suggestions
-- [ ] Image generation for avatars
-
-### Blockchain Integration
-
-- [ ] NFT support
-- [ ] Token economy
-- [ ] Marketplace
-- [ ] Cross-chain compatibility
-- [ ] Minting capabilities
-
-### Advanced Analytics
-
-- [ ] User behavior analytics
-- [ ] A/B testing
-- [ ] Conversion tracking
-- [ ] Funnel analysis
-- [ ] Heatmaps
-- [ ] User segmentation
-
-### Enterprise Features
-
-- [ ] Multi-tenant support
-- [ ] Custom branding
-- [ ] API access
-- [ ] SLA guarantees
-- [ ] Enterprise SSO
-- [ ] Custom integrations
-
-## Backlog
-
-### Ideas to Consider
-
-- [ ] Social features (friends, guilds)
-- [ ] Tournament system
-- [ ] Guild wars
-- [ ] Custom server templates
-- [ ] White-label option
-- [ ] API marketplace
-- [ ] Plugin system
-- [ ] Webhook integrations
-- [ ] Third-party apps
-- [ ] Open beta program
-
-### Deferred Features
-
-- [ ] Dark mode (moved to Phase 2)
-- [ ] Mobile app (moved to Phase 3)
-- [ ] Desktop app (moved to Phase 3)
-- [ ] AI features (moved to Phase 4)
-- [ ] Blockchain (moved to Phase 4)
-
-### Future Projects
-
-- [ ] Open-source version
-- [ ] SaaS product
-- [ ] Mobile companion app
-- [ ] Community platform
-- [ ] Content management system
-- [ ] Analytics dashboard
-- [ ] Mobile SDK
-- [ ] Desktop SDK
-
-## Dependencies
-
-### External Services
-
-- **Supabase**: Database, auth, storage
-- **Discord API**: Bot commands
-- **Stripe**: Payments
-- **Vercel**: Hosting (optional)
-- **GitHub**: Version control
-- **npm**: Package management
-
-### Third-party Integrations
-
-- Google Analytics
-- Google Tag Manager
-- Mailchimp (newsletter)
-- Discord widget
-- Discord OAuth
-- Stripe Checkout
-
-## Metrics & Goals
-
-### 2026 Goals
-
-- **Users**: 1,000+ registered users
-- **Daily Active Users**: 100+ DAU
-- **Bot Servers**: 1+ Discord server
-- **Monthly Transactions**: 500+
-
-### 2027 Goals
-
-- **Users**: 5,000+ registered users
-- **Daily Active Users**: 500+ DAU
-- **Monthly Transactions**: 5,000+
-- **Community**: 5,000+ members
-
-### Technical Goals
-
-- **Uptime**: 99.9% uptime
-- **Performance**: <2s page load
-- **Security**: Zero critical vulnerabilities
-- **Accessibility**: WCAG 2.1 AA compliant
-
-## Resource Requirements
-
-### Development
-
-- **Developers**: 3-5 (full-time)
-- **Designers**: 1-2 (part-time)
-- **QA**: 1-2 (part-time)
-
-### Infrastructure
-
-- **VPS/Cloud**: 1-2 VPS instances
-- **Database**: Supabase (paid tier)
-- **Storage**: Supabase Storage
-- **CDN**: Vercel CDN
-
-### Budget
-
-- **Initial**: $500-1,000/month
-- **Growth**: $1,000-2,000/month
-- **Expansion**: $2,000-5,000/month
-
-## Success Criteria
-
-### Phase 1 Success
-- Zero critical vulnerabilities
-- Rate limiting with Redis
-- Email verification implemented
-- 99% security audit pass rate
-
-### Phase 2 Success
-- Mobile-responsive design
-- Improved accessibility score
-- 10+ new bot features
-- 50+ shop items
-
-### Phase 3 Success
-- Desktop app released
-- Mobile app on stores
-- 1,000+ active users
-- Positive community feedback
-
-### Phase 4 Success
-- 5,000+ users
-- 99.9% uptime
-- Zero critical bugs
-- Strong community engagement
-
-## Feedback Loop
-
-We gather feedback through:
-- GitHub Issues
-- Discord discussions
-- User surveys
-- Community forums
-- Beta testing
-
-## Contact
-
-For feedback, questions, or contributions:
-- GitHub: https://github.com/tss/tss
-- Discord: Join our community
-- Email: support@twostepsstudio.com
-
----
-
-## Revision History
-
-| Version | Date | Author | Changes |
-|---------|------|----------|---------|
-| 1.0 | 2026-03-13 | Team | Initial roadmap |
-
-## Contributing
-
-Interested in helping with roadmap items?
-- Check [CONTRIBUTING.md](./CONTRIBUTING.md)
-- Create feature requests
-- Join development discussions
-
----
-
-**Last Updated**: 2026-03-13  
-**Next Review**: 2026-06-13  
-**Status**: Active Development  
+Two Steps Studio's `/dev` project-management module was recently dropped from this codebase (see `git log` — `drop-project-management` and related cleanup commits). That module became the seed for **Guidon**, which is now developed as a fully separate product (`two-steps-studio/guidon`) with its own roadmap. TSS's roadmap is scoped to the community platform (website + Discord bot) only; Guidon-related planning lives in that repository.
