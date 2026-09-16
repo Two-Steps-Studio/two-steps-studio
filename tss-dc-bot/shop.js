@@ -7,6 +7,12 @@ const {
 } = require('discord.js');
 const { logActivity } = require('./activityLog');
 
+// Reserved synchronously (before any await) for the duration of a purchase -
+// closes the window where two quick clicks on the same shop button could
+// both pass the "already owns this role" / balance checks before either
+// finished writing the result, double-charging for a role granted once.
+const purchaseLocks = new Set();
+
 // ── Definicja przedmiotów sklepu ─────────────────────────────
 const SHOP_ITEMS = [
     {
@@ -206,6 +212,20 @@ async function handleShopInteraction(interaction, supabase) {
 
     // Zakup
     if (id.startsWith('shop_buy_')) {
+        const userId = interaction.user.id;
+        if (purchaseLocks.has(userId)) {
+            return interaction.reply({ content: '⏳ Poprzedni zakup jeszcze się przetwarza, poczekaj chwilę.', flags: 1 << 6 });
+        }
+        purchaseLocks.add(userId);
+        try {
+            return await processShopPurchase(interaction, supabase, userId);
+        } finally {
+            purchaseLocks.delete(userId);
+        }
+    }
+}
+
+async function processShopPurchase(interaction, supabase, userId) {
         const itemName = interaction.values?.[0];
         if (!itemName) return;
 
@@ -213,7 +233,6 @@ async function handleShopInteraction(interaction, supabase) {
         const item = allItems.find(i => i.name === itemName);
         if (!item) return interaction.reply({ content: '❌ Nie znaleziono przedmiotu.', flags: 1 << 6 });
 
-        const userId = interaction.user.id;
         const profile = await findProfileByDiscordId(supabase, userId);
 
         if (!profile) return interaction.reply({ content: '❌ Nie masz profilu.', flags: 1 << 6 });
@@ -264,13 +283,20 @@ async function handleShopInteraction(interaction, supabase) {
         // member.roles.add() on a role the member already has is a silent
         // Discord no-op, so re-buying VIP/SVIP/MVIP/etc. charged the full
         // price again for literally nothing.
+        //
+        // X2/X3 are excluded from this guard: they're temporary multiplier
+        // boosts meant to be re-bought to extend/upgrade (see the stacking
+        // logic below), but nothing ever removes the Discord role when
+        // multiplier_expires_at passes - the role guard alone would
+        // permanently block repurchase after the very first X2/X3 buy, even
+        // once the boost had long since expired.
         let member = null;
         if (item.type === 'role' && item.roleId) {
             member = await interaction.guild.members.fetch(userId).catch(() => null);
             if (!member) {
                 return interaction.reply({ content: '❌ Nie udało się pobrać Twoich danych na serwerze. Spróbuj ponownie.', flags: 1 << 6 });
             }
-            if (member.roles.cache.has(item.roleId)) {
+            if (item.effect?.type !== 'multiplier' && member.roles.cache.has(item.roleId)) {
                 return interaction.reply({ content: `❌ Masz już **${item.label}**.`, flags: 1 << 6 });
             }
         }
@@ -340,7 +366,6 @@ async function handleShopInteraction(interaction, supabase) {
             content: `✅ Kupiłeś **${item.label}** za **${item.price.toLocaleString('pl-PL')} ${COIN}**! Pozostało: **${newMoney} ${COIN}**.`,
             flags: 1 << 6,
         });
-    }
 }
 
 module.exports = { handleShop, handleShopInteraction, SHOP_ITEMS };
