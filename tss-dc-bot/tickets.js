@@ -84,7 +84,17 @@ async function handleTicketOpen(interaction, supabase) {
         user_id: interaction.user.id,
         status: 'open',
     });
-    if (error) console.error('[TICKET] DB insert error:', error.message);
+    if (error) {
+        console.error('[TICKET] DB insert error:', error.message);
+        if (error.code === '23505') {
+            // Lost a race against another concurrent "open ticket" click for
+            // the same user (unique index on (guild_id, user_id) WHERE
+            // status='open') - this channel is redundant, clean it up
+            // instead of leaving an orphaned duplicate.
+            await channel.delete().catch(() => {});
+            return interaction.editReply('❌ Masz już otwarte zgłoszenie.');
+        }
+    }
 
     const closeRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId('ticket_close').setLabel('Zamknij zgłoszenie').setStyle(ButtonStyle.Danger).setEmoji('🔒')
