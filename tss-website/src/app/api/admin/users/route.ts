@@ -83,13 +83,37 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
 
+  // Straight from the request body with no type/range check before this -
+  // an admin-only route, but still worth guarding against a stray string,
+  // negative, or absurd value landing directly in a real-money-adjacent
+  // column via a typo'd request.
+  const isNonNegativeInt = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && Number.isInteger(v) && v >= 0;
+
   const updateData: any = {};
-  if (money !== undefined) updateData.money = money;
-  if (bank !== undefined) updateData.bank = bank;
-  if (level !== undefined) updateData.level = level;
-  if (vip_status !== undefined) updateData.vip_status = vip_status;
-  if (svip_status !== undefined) updateData.svip_status = svip_status;
-  if (mvip_status !== undefined) updateData.mvip_status = mvip_status;
+  if (money !== undefined) {
+    if (!isNonNegativeInt(money)) return NextResponse.json({ error: "money must be a non-negative integer" }, { status: 400 });
+    updateData.money = money;
+  }
+  if (bank !== undefined) {
+    if (!isNonNegativeInt(bank)) return NextResponse.json({ error: "bank must be a non-negative integer" }, { status: 400 });
+    updateData.bank = bank;
+  }
+  if (level !== undefined) {
+    if (!isNonNegativeInt(level) || level < 1 || level > 100) return NextResponse.json({ error: "level must be an integer from 1 to 100" }, { status: 400 });
+    updateData.level = level;
+  }
+  if (vip_status !== undefined) {
+    if (typeof vip_status !== "boolean") return NextResponse.json({ error: "vip_status must be a boolean" }, { status: 400 });
+    updateData.vip_status = vip_status;
+  }
+  if (svip_status !== undefined) {
+    if (typeof svip_status !== "boolean") return NextResponse.json({ error: "svip_status must be a boolean" }, { status: 400 });
+    updateData.svip_status = svip_status;
+  }
+  if (mvip_status !== undefined) {
+    if (typeof mvip_status !== "boolean") return NextResponse.json({ error: "mvip_status must be a boolean" }, { status: 400 });
+    updateData.mvip_status = mvip_status;
+  }
 
   const { data, error } = await serviceClient
     .from("profiles")
