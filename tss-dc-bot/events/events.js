@@ -191,6 +191,14 @@ async function handleEventJoin(interaction, supabase) {
         });
 
     if (joinError) {
+        if (joinError.code === '23505') {
+            // Lost a race against another concurrent /event_join call for the
+            // same user (unique constraint on (event_id, user_id)) - the
+            // "already joined" check above already told them this, this is
+            // just the case where two calls both passed it before either
+            // insert landed.
+            return interaction.editReply(`✅ Już jesteś zapisany na event **${event.name}**!`);
+        }
         console.error('[EVENT] Join error:', joinError.message);
         return interaction.editReply('❌ Błąd podczas zapisywania. Spróbuj ponownie.');
     }
