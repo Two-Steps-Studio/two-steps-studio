@@ -67,18 +67,8 @@ export async function POST(req: Request) {
     const cmd = parts[0];
     let result = "";
 
-    // Validate role names
-    const VALID_ROLES = ["OWNER", "ADMIN", "MOD", "VIP", "DEV", "PROD", "MKT", "LD"];
-    if (cmd === "set-role" && parts.length >= 3) {
-      if (!VALID_ROLES.includes(parts[1].toUpperCase())) {
-        return NextResponse.json({ error: "Nieprawidlowa nazwa roli" }, { status: 400 });
-      }
-      const { error } = await supabaseAdmin.from("profiles").update({ rank: parts[1] }).eq("id", parts[2]);
-      if (error) throw new Error(error.message);
-      result = `Ustawiono role ${parts[1]} dla ${parts[2]}`;
-    }
     // Validate level range
-    else if (cmd === "set-level" && parts.length >= 3) {
+    if (cmd === "set-level" && parts.length >= 3) {
       const level = parseInt(parts[2], 10);
       if (!Number.isFinite(level) || level < 1 || level > 100) {
         return NextResponse.json({ error: "Poziom musi byc liczbą od 1 do 100" }, { status: 400 });
@@ -101,7 +91,7 @@ export async function POST(req: Request) {
       result = `Dodano ${amount} XP (${next}) dla ${parts[1]}`;
     }
     else {
-      return NextResponse.json({ error: "Nieznana komenda. Uzyj: set-role <id> <role>, set-level <id> <level>, add-xp <id> <xp>" }, { status: 400 });
+      return NextResponse.json({ error: "Nieznana komenda. Uzyj: set-level <id> <level>, add-xp <id> <xp>" }, { status: 400 });
     }
 
     adminSecurityLog(`Success`, ip, req.url);

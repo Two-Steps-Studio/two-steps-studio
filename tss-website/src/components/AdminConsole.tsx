@@ -100,7 +100,6 @@ export default function AdminConsole() {
 
   const examples = useMemo(
     () => [
-      "set-role <userId> <role>",
       "set-level <userId> <level>",
       "add-xp <userId> <amount>",
     ],
