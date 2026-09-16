@@ -29,8 +29,17 @@ async function handleVoiceStateUpdate(oldState, newState) {
                     },
                 ],
             });
+            let moved = true;
+            await newState.member.voice.setChannel(newChannel).catch(() => { moved = false; });
+            if (!moved) {
+                // Member disconnected/changed state between create and move -
+                // nobody will ever be "in" this channel, so the leave-based
+                // cleanup below can never fire for it. Without this it's
+                // orphaned permanently, not just until the next restart.
+                await newChannel.delete().catch(() => {});
+                return;
+            }
             tempChannels.add(newChannel.id);
-            await newState.member.voice.setChannel(newChannel).catch(() => {});
         } catch (e) {
             console.error('[VOICE] Błąd tworzenia kanału:', e.message);
         }
@@ -40,8 +49,16 @@ async function handleVoiceStateUpdate(oldState, newState) {
     if (oldState.channelId && tempChannels.has(oldState.channelId)) {
         const channel = oldState.channel;
         if (channel && channel.members.size === 0) {
-            tempChannels.delete(oldState.channelId);
-            await channel.delete().catch(e => console.error('[VOICE] Błąd usuwania kanału:', e.message));
+            // Only untrack after a confirmed delete - untracking first and
+            // then failing the delete (permissions, API hiccup) left the
+            // channel alive on Discord but dropped from tempChannels, so
+            // nothing would ever retry cleaning it up.
+            try {
+                await channel.delete();
+                tempChannels.delete(oldState.channelId);
+            } catch (e) {
+                console.error('[VOICE] Błąd usuwania kanału:', e.message);
+            }
         }
     }
 }
