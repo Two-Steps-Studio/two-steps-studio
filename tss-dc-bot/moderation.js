@@ -2,6 +2,18 @@
 const { EmbedBuilder } = require('discord.js');
 const { getSetting } = require('./settings');
 
+// member.kickable/bannable/moderatable are computed against the BOT's own
+// highest role, not the invoking moderator's - they say nothing about
+// whether the moderator outranks the target. Without this, anyone holding
+// the Kick/Ban/Timeout Members permission (e.g. a junior mod role) could
+// take action against another moderator or admin whose role merely sits
+// below the bot's, a classic privilege-escalation gap.
+function canModerate(interaction, target) {
+    if (target.id === interaction.guild.ownerId) return false;
+    if (interaction.user.id === interaction.guild.ownerId) return true;
+    return interaction.member.roles.highest.position > target.roles.highest.position;
+}
+
 // ── Mod-log: posts to MOD_LOG_CHANNEL_ID if set, otherwise falls back to
 //    a channel matched by name (same convention as the welcome channel in
 //    index.js) ───────────────────────────────────────────────────────────
@@ -47,6 +59,9 @@ async function handleKick(interaction, supabase) {
     if (!member) {
         return interaction.editReply('❌ Nie znaleziono tego użytkownika na serwerze.');
     }
+    if (!canModerate(interaction, member)) {
+        return interaction.editReply('❌ Nie możesz wyrzucić tego użytkownika (ma rangę równą lub wyższą od Twojej).');
+    }
     if (!member.kickable) {
         return interaction.editReply('❌ Nie mogę wyrzucić tego użytkownika (zbyt wysoka ranga lub brak uprawnień bota).');
     }
@@ -80,6 +95,9 @@ async function handleBan(interaction, supabase) {
     const deleteDays = Math.min(Math.max(interaction.options.getInteger('usun_wiadomosci_dni') ?? 0, 0), 7);
 
     const member = await interaction.guild.members.fetch(target.id).catch(() => null);
+    if (member && !canModerate(interaction, member)) {
+        return interaction.editReply('❌ Nie możesz zbanować tego użytkownika (ma rangę równą lub wyższą od Twojej).');
+    }
     if (member && !member.bannable) {
         return interaction.editReply('❌ Nie mogę zbanować tego użytkownika (zbyt wysoka ranga lub brak uprawnień bota).');
     }
@@ -115,6 +133,9 @@ async function handleTimeout(interaction, supabase) {
     const member = await interaction.guild.members.fetch(target.id).catch(() => null);
     if (!member) {
         return interaction.editReply('❌ Nie znaleziono tego użytkownika na serwerze.');
+    }
+    if (!canModerate(interaction, member)) {
+        return interaction.editReply('❌ Nie możesz wyciszyć tego użytkownika (ma rangę równą lub wyższą od Twojej).');
     }
     if (!member.moderatable) {
         return interaction.editReply('❌ Nie mogę wyciszyć tego użytkownika (zbyt wysoka ranga lub brak uprawnień bota).');
