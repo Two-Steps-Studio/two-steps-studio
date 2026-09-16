@@ -243,6 +243,17 @@ async function assertEnoughDiskSpace(installDir, bytesNeeded) {
 async function syncEngine(loadSessionFn, sendEvent, payload) {
   const { gameId, releaseId, version, platform, mode, installDir, executablePath, files } = payload;
 
+  // Two concurrent game-sync-start calls for the same gameId (a retry
+  // racing the original, a double-click) would otherwise both write into
+  // the same destPath + '.tmp' files, and the second .set() below would
+  // silently discard the first AbortController, making game-cancel-sync
+  // unable to cancel the still-running first sync.
+  if (activeSyncControllers.has(gameId)) {
+    const error = new Error('Synchronizacja tej gry już trwa');
+    sendEvent('game-sync-error', { gameId, error: error.message });
+    throw error;
+  }
+
   if (!isSafeRelativePath(executablePath)) {
     throw new Error(`Nieprawidłowa ścieżka pliku wykonywalnego: ${executablePath}`);
   }
@@ -372,6 +383,12 @@ function launchGame(loadSessionFn, sendEvent, gameId) {
   if (runningProcesses.has(gameId)) {
     return { success: false, error: 'Gra jest już uruchomiona' };
   }
+  // An in-place update sync overwrites files in this same installDir - if
+  // it's still running, the exe on disk right now could be a partially
+  // written file, not the version launchGame is about to spawn.
+  if (activeSyncControllers.has(gameId)) {
+    return { success: false, error: 'Trwa aktualizacja gry - poczekaj aż się zakończy' };
+  }
 
   let exePath;
   try {
@@ -420,6 +437,13 @@ function uninstallGame(loadSessionFn, sendEvent, gameId) {
   }
   if (runningProcesses.has(gameId)) {
     return { success: false, error: 'Zamknij grę przed odinstalowaniem' };
+  }
+  // A sync (install/update) still writing into installDir would otherwise
+  // race this rmSync - files reappearing mid-delete, or delete winning and
+  // the sync loop hitting ENOENT partway through, either way a corrupted
+  // half-deleted install.
+  if (activeSyncControllers.has(gameId)) {
+    return { success: false, error: 'Poczekaj aż zakończy się instalacja/aktualizacja gry' };
   }
 
   try {

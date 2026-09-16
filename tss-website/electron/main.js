@@ -38,6 +38,7 @@ const DEFAULT_SETTINGS = {
 let appSettings = { ...DEFAULT_SETTINGS };
 // Set while quitting so the minimize-to-tray close handler lets the app exit.
 let isQuitting = false;
+let memoryLogInterval = null;
 
 function readSettings() {
   try {
@@ -437,6 +438,10 @@ function createWindow() {
   });
 
   mainWindow.on('minimize', (event) => {
+    // Was unconditional - a user with "minimize to tray" turned OFF still
+    // got force-hidden to tray on minimize, contradicting both the setting
+    // and the close handler above (which already checks it).
+    if (appSettings.minimizeToTray === false) return;
     event.preventDefault();
     mainWindow.hide();
     if (tray) {
@@ -497,15 +502,19 @@ function createWindow() {
     });
   }
   
-  // Performance: Monitor memory usage
-  setInterval(() => {
-    const memoryUsage = process.memoryUsage();
-    log('INFO', 'Memory usage', {
-      heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB',
-      heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',
-      rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',
-    });
-  }, 60000); // Every minute
+  // Performance: Monitor memory usage. createWindow() can run again after
+  // all windows close (app.on('activate') on macOS) - without this guard
+  // each cycle stacked another never-cleared interval logging forever.
+  if (!memoryLogInterval) {
+    memoryLogInterval = setInterval(() => {
+      const memoryUsage = process.memoryUsage();
+      log('INFO', 'Memory usage', {
+        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB',
+        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',
+        rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',
+      });
+    }, 60000); // Every minute
+  }
 }
 
 function showNotification(title, body, icon = null) {
@@ -1044,7 +1053,11 @@ ipcMain.handle('restart-app', () => {
 // ---------------------------------------------------------------------------
 
 function sendGameEvent(channel, payload) {
-  if (mainWindow) {
+  // A game sync runs detached in the background (game-sync-start's
+  // fire-and-forget .catch) and can still be emitting progress events
+  // after the window closes but before the 'closed' handler nulls
+  // mainWindow out - sendUpdate() above already guards this same window.
+  if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, payload);
   }
 }
