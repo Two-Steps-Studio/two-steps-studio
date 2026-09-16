@@ -99,12 +99,39 @@ async function handleGiveawayEnd(interaction, supabase, client) {
         return interaction.editReply('❌ Nie znaleziono aktywnego rozdania o tym ID wiadomości.');
     }
 
-    await endGiveaway(giveaway, client, supabase);
-    await interaction.editReply('✅ Rozdanie zakończone.');
+    const claimed = await endGiveaway(giveaway, client, supabase);
+    await interaction.editReply(claimed
+        ? '✅ Rozdanie zakończone.'
+        : '⚠️ To rozdanie właśnie zostało zakończone (np. przez harmonogram) - nic nie robię.');
 }
 
 // ── Shared ending logic (manual /giveaway end or the scheduler) ────────
+// The `ended=false` claim below runs FIRST and is the only thing standing
+// between a moderator's /giveaway end and the scheduler tick both grabbing
+// the same giveaway at once - both handleGiveawayEnd and the scheduler
+// fetch with .eq('ended', false), and there's a real window (Discord
+// round-trips, reaction fetching) between that read and the old
+// "update ended=true in a finally block" for two concurrent calls to both
+// pass the read and both post a winner announcement. Claiming atomically
+// here means only the caller whose UPDATE actually matched a still-false
+// row proceeds; the loser returns immediately having posted nothing.
 async function endGiveaway(giveaway, client, supabase) {
+    const { data: claimed, error: claimError } = await supabase
+        .from('giveaways')
+        .update({ ended: true })
+        .eq('id', giveaway.id)
+        .eq('ended', false)
+        .select()
+        .maybeSingle();
+    if (claimError) {
+        console.error('[GIVEAWAY] Claim error:', claimError.message);
+        return false;
+    }
+    if (!claimed) {
+        // Someone else's call already flipped ended=true first.
+        return false;
+    }
+
     try {
         const channel = await client.channels.fetch(giveaway.channel_id).catch(() => null);
         const message = channel ? await channel.messages.fetch(giveaway.message_id).catch(() => null) : null;
@@ -129,9 +156,8 @@ async function endGiveaway(giveaway, client, supabase) {
         }
     } catch (e) {
         console.error('[GIVEAWAY] End error:', e.message);
-    } finally {
-        await supabase.from('giveaways').update({ ended: true }).eq('id', giveaway.id);
     }
+    return true;
 }
 
 // ── Scheduler: call once at startup ────────────────────────────
