@@ -602,6 +602,7 @@ client.once('clientReady', async () => {
     setInterval(updateDiscordStats, 60 * 1000);
     startGiveawayScheduler(client, supabase);
     await loadTags(supabase);
+    await reconcileVoiceSessions();
 });
 
 // site_presence gets one INSERT every 30s per open page (see
@@ -1505,10 +1506,25 @@ client.on('messageCreate', async (message) => {
 client.on('voiceStateUpdate', (oldState, newState) => handleVoiceStateUpdate(oldState, newState));
 
 // ── Voice Leveling ───────────────────────────────────────────
+// voiceSessions is in-memory only - a bot restart while someone is
+// connected used to lose their entire session's XP/coins silently (the
+// leave handler below finds nothing in the Map and just does nothing).
+// Persisting the join time to voice_sessions (schema already existed,
+// unused until now) lets reconcileVoiceSessions() on startup credit the
+// elapsed time instead of dropping it. Best-effort: a failed write here
+// only risks the same pre-existing "lost on restart" behavior, not a
+// new failure mode.
 client.on('voiceStateUpdate', (oldState, newState) => {
     const userId = newState.id;
     if (!oldState.channelId && newState.channelId && !newState.member.user.bot) {
         voiceSessions.set(userId, Date.now());
+        supabase.from('voice_sessions').upsert({
+            user_id: userId,
+            guild_id: newState.guild.id,
+            joined_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' }).then(({ error }) => {
+            if (error) console.error('[VOICE] session persist error:', error.message);
+        }).catch(e => console.error('[VOICE] session persist error:', e.message));
     }
     if (oldState.channelId && !newState.channelId) {
         const startTime = voiceSessions.get(userId);
@@ -1517,6 +1533,9 @@ client.on('voiceStateUpdate', (oldState, newState) => {
             voiceSessions.delete(userId);
             if (minutes > 0) syncVoiceRewards(userId, minutes, newState.member, newState.member?.user.username || 'Unknown');
         }
+        supabase.from('voice_sessions').delete().eq('user_id', userId).then(({ error }) => {
+            if (error) console.error('[VOICE] session cleanup error:', error.message);
+        }).catch(e => console.error('[VOICE] session cleanup error:', e.message));
     }
 });
 
@@ -1556,6 +1575,45 @@ async function syncVoiceRewards(userId, minutes, member, username) {
             logActivity(supabase, 'level_up', username, `poziom ${newLevel}`);
         }
     } catch (e) { console.error('[VC] Reward sync error:', e); }
+}
+
+// Runs once on startup - credits whatever voice_sessions rows survived the
+// restart (see the voiceStateUpdate handler above for why they exist) so a
+// deploy/crash/restart mid-session no longer drops that time entirely.
+// Still-connected members get their elapsed time credited and their
+// session re-armed (both in-memory and in the DB) so tracking continues
+// seamlessly; members who left while the bot was down get credited once
+// and the row is cleared.
+async function reconcileVoiceSessions() {
+    try {
+        const { data: sessions, error } = await supabase.from('voice_sessions').select('*');
+        if (error) {
+            if (error.code !== 'PGRST205') console.error('[VOICE] reconcile fetch error:', error.message);
+            return;
+        }
+        for (const session of sessions || []) {
+            const minutes = Math.floor((Date.now() - new Date(session.joined_at).getTime()) / 60000);
+            let member = null;
+            try {
+                const guild = await client.guilds.fetch(session.guild_id);
+                member = await guild.members.fetch(session.user_id);
+            } catch { /* guild/member no longer reachable - credit what we can, then drop the row */ }
+
+            if (minutes > 0) {
+                await syncVoiceRewards(session.user_id, minutes, member, member?.user.username || 'Unknown');
+            }
+
+            if (member?.voice.channelId) {
+                voiceSessions.set(session.user_id, Date.now());
+                await supabase.from('voice_sessions').update({ joined_at: new Date().toISOString() }).eq('user_id', session.user_id);
+            } else {
+                await supabase.from('voice_sessions').delete().eq('user_id', session.user_id);
+            }
+        }
+        if (sessions?.length) console.log(`[VOICE] Reconciled ${sessions.length} session(s) from before restart`);
+    } catch (e) {
+        console.error('[VOICE] reconcile error:', e.message);
+    }
 }
 
 // The name-substring match can hit a category or other non-text channel
