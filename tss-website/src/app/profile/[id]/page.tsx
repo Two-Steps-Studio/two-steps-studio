@@ -21,7 +21,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { BACKGROUND_OPTIONS } from "../profile-form";
 import AvatarFrame from "@/components/AvatarFrame";
 import { Achievement, RARITY_COLOR, statForRequirement } from "@/lib/achievements";
-import { DiscordRolesPanel, ROLE_MAP_BADGE } from "@/components/DiscordRolesPanel";
+import { DiscordRolesPanel, findRole } from "@/components/DiscordRolesPanel";
 
 export default function PublicProfilePage() {
     const params = useParams<{ id: string }>();
@@ -107,7 +107,17 @@ export default function PublicProfilePage() {
     // See profile/page.tsx for why this is derived from xp instead of
     // trusting the stored profiles.level column (can drift stale/ahead).
     const level = xp < 100 ? 0 : Math.floor(0.1 * Math.sqrt(xp));
-    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: "var(--color-general)", label: `LEVEL ${level}` };
+    // profiles.rank doesn't actually exist as a column (confirmed live -
+    // ROLE_MAP_BADGE[profile?.rank] always missed and fell through to the
+    // LEVEL badge below). Deriving the avatar badge from the same
+    // discord_roles data DiscordRolesPanel already displays gives every
+    // user a real badge instead of just LEVEL X, with no schema change.
+    const discordRoles: string[] = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
+    const topRole = discordRoles
+        .map((r: string) => findRole(r))
+        .filter((r): r is NonNullable<ReturnType<typeof findRole>> => r !== null)
+        .sort((a, b) => a.priority - b.priority)[0];
+    const roleInfo = topRole || { color: "var(--color-general)", label: `LEVEL ${level}` };
     const currentLevelStartXP = Math.pow(level / 0.1, 2);
     const nextLevelStartXP = Math.pow((level + 1) / 0.1, 2);
     const neededXP = nextLevelStartXP - currentLevelStartXP;
@@ -119,7 +129,6 @@ export default function PublicProfilePage() {
     const progressDenominator = xp >= currentLevelStartXP ? neededXP : nextLevelStartXP;
     const progress = Math.min(Math.max((currentProgressXP / progressDenominator) * 100, 0), 100);
     const nextLevelXp = Math.round(nextLevelStartXP);
-    const discordRoles = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
     const profileBackground = profile?.background && BACKGROUND_OPTIONS.includes(profile.background)
         ? profile.background
         : "Two Steps Studio";

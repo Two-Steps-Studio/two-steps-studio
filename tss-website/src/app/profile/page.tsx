@@ -21,7 +21,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { BACKGROUND_OPTIONS } from "./profile-form";
 import AvatarFrame from "@/components/AvatarFrame";
 import { Achievement, RARITY_COLOR, statForRequirement } from "@/lib/achievements";
-import { DiscordRolesPanel, ROLE_MAP_BADGE } from "@/components/DiscordRolesPanel";
+import { DiscordRolesPanel, findRole } from "@/components/DiscordRolesPanel";
 
 interface RankedUser {
     id: string;
@@ -278,7 +278,17 @@ export default function ProfilePage() {
     // member saw "LEVEL 1" here while the bot correctly showed "LEVEL 0"
     // for the same account.
     const level = xp < 100 ? 0 : Math.floor(0.1 * Math.sqrt(xp));
-    const roleInfo = ROLE_MAP_BADGE[profile?.rank] || { color: nickColorValue || "var(--color-general)", label: `LEVEL ${level}` };
+    // profiles.rank doesn't actually exist as a column (confirmed live -
+    // ROLE_MAP_BADGE[profile?.rank] always missed and fell through to the
+    // LEVEL badge below). Deriving the avatar badge from the same
+    // discord_roles data DiscordRolesPanel already displays gives every
+    // user a real badge instead of just LEVEL X, with no schema change.
+    const discordRoles: string[] = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
+    const topRole = discordRoles
+        .map((r: string) => findRole(r))
+        .filter((r): r is NonNullable<ReturnType<typeof findRole>> => r !== null)
+        .sort((a, b) => a.priority - b.priority)[0];
+    const roleInfo = topRole || { color: nickColorValue || "var(--color-general)", label: `LEVEL ${level}` };
     // Real effects the shop's VIP/SVIP/MVIP/X2/X3 items grant (see
     // tss-dc-bot/economyBonus.js) had nowhere on the site showing they're
     // active - a purchase that visibly does nothing until your next /work
@@ -299,7 +309,6 @@ export default function ProfilePage() {
     const progressDenominator = xp >= currentLevelStartXP ? neededXP : nextLevelStartXP;
     const progress = Math.min(Math.max((currentProgressXP / progressDenominator) * 100, 0), 100);
     const nextLevelXp = Math.round(nextLevelStartXP);
-    const discordRoles = Array.isArray(profile?.discord_roles) ? profile.discord_roles : [];
     const topList = topTab === "level" ? rankingData.usersByLevel : rankingData.usersByMoney;
     // Same 19 backgrounds the Discord bot's profile card draws onto its
     // 1000x500 canvas (tss-dc-bot/assets/discord/backgrounds) - copied into
