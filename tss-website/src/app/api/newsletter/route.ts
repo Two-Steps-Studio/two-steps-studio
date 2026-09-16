@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { checkRateLimit } from '@/lib/api-rate-limit';
 import { z } from 'zod';
 
 const requestSchema = z.object({
@@ -17,6 +18,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       error: 'Newsletter subscription is disabled - contact administrator'
     }, { status: 503 });
+  }
+
+  // Unsubscribe takes just an email with no token proving the requester
+  // owns it (nothing sends newsletters yet to embed one in, so there's no
+  // link to attach a token to) - rate limit per IP as a cheap mitigation
+  // against someone mass-unsubscribing addresses they don't own.
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
+  const rateLimit = checkRateLimit(`newsletter:${ip}`, 'newsletter');
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Zbyt wiele żądań. Spróbuj ponownie później.' }, { status: 429 });
   }
 
   try {
