@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Loader2, Shield, Users, Send } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useIsElectron } from "@/hooks/useElectron";
 
 export default function RekrutacjaPage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -38,6 +39,7 @@ export default function RekrutacjaPage() {
 
   const { t } = useLanguage();
   const router = useRouter();
+  const isElectron = useIsElectron();
   const [discordLoading, setDiscordLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -86,7 +88,11 @@ export default function RekrutacjaPage() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/registration` },
+        options: {
+          redirectTo: isElectron
+            ? "tss://auth/callback?next=/registration"
+            : `${window.location.origin}/auth/callback?next=/registration`,
+        },
       });
       if (error) {
         toast.error(t.rekrutacja.loginErrorTitle, { description: error.message });

@@ -397,6 +397,12 @@ function createWindow() {
     mainWindow.webContents.once('did-finish-load', () => {
       const loadTime = Date.now() - startTime;
       log('INFO', `Application loaded in ${loadTime}ms`);
+      rendererReady = true;
+      if (pendingDeepLink) {
+        const url = pendingDeepLink;
+        pendingDeepLink = null;
+        handleProtocol(url);
+      }
     });
   };
 
@@ -556,19 +562,51 @@ function registerProtocols() {
   }
 }
 
-// Handle deep links
+// Handle deep links. Queued rather than sent immediately when the renderer
+// hasn't finished its first load yet (e.g. a cold start via protocol click,
+// or a link arriving before did-finish-load) - webContents.send() into a
+// page with no 'deep-link' listener mounted yet just drops the message.
+let pendingDeepLink = null;
+let rendererReady = false;
+
 function handleProtocol(url) {
+  if (!url || !url.startsWith('tss://')) return;
   log('INFO', 'Deep link received', url);
-  if (mainWindow) {
+  if (mainWindow && rendererReady) {
     mainWindow.show();
     mainWindow.focus();
     mainWindow.webContents.send('deep-link', url);
+  } else {
+    pendingDeepLink = url;
   }
+}
+
+// Registers this app as the OS-level handler for tss:// links so a redirect
+// landing in the user's regular browser (e.g. after finishing Discord/Google
+// OAuth there - see will-navigate above, which intentionally bounces
+// cross-origin navigation out of the app window) relaunches/refocuses this
+// app instead of just opening in that browser. process.defaultApp is only
+// true for an unpackaged `electron .` run, where Windows also needs the exe
+// + script path to know what to relaunch - see Electron's own deep-link docs.
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('tss', process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient('tss');
 }
 
 // Must run before the app is ready — Electron rejects
 // registerSchemesAsPrivileged once the 'ready' event has already fired.
 registerProtocols();
+
+// macOS delivers protocol activation as this event rather than argv/
+// second-instance. Registered at top level since it can fire before
+// app.whenReady() resolves.
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  handleProtocol(url);
+});
 
 app.whenReady().then(() => {
   log('INFO', 'App starting...');
@@ -588,9 +626,23 @@ app.whenReady().then(() => {
     return new Response('OK');
   });
 
-  // Handle second instance (Windows)
+  // Cold start via protocol click (app wasn't already running) - the tss://
+  // URL arrives as a plain argv entry rather than through second-instance.
+  const initialDeepLink = process.argv.find((arg) => arg.startsWith('tss://'));
+  if (initialDeepLink) {
+    handleProtocol(initialDeepLink);
+  }
+
+  // Handle second instance (Windows) - a tss:// link opened while the app is
+  // already running relaunches it, which requestSingleInstanceLock() turns
+  // into this event on the original instance instead of a real new process.
   app.on('second-instance', (event, commandLine, workingDirectory) => {
     log('INFO', 'Second instance detected');
+    const deepLinkUrl = commandLine.find((arg) => arg.startsWith('tss://'));
+    if (deepLinkUrl) {
+      handleProtocol(deepLinkUrl);
+      return;
+    }
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.show();

@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { useIsElectron } from "@/hooks/useElectron";
+import { useIsElectron, useDeepLinks } from "@/hooks/useElectron";
 
 interface AuthContextType {
   user: User | null;
@@ -124,6 +124,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Cleanup on unmount
     return cleanup;
   }, [isElectron]);
+
+  // Discord/Google OAuth in Electron finishes in the user's regular browser
+  // (see login.tsx / electron/main.js's will-navigate) and comes back via the
+  // app's own tss:// protocol rather than a normal page navigation, so there's
+  // no /auth/callback route running here to exchange the code - do it
+  // ourselves from the deep link. Wrapped in useCallback so this identity
+  // stays stable across re-renders: useDeepLinks re-subscribes on every
+  // identity change, and Electron's ipcRenderer.on has no matching "remove
+  // the old one first" here, so an unstable callback would pile up duplicate
+  // listeners and exchange the same one-time code more than once.
+  const handleAuthDeepLink = useCallback(
+    async (url: string) => {
+      if (!url.startsWith("tss://auth/callback")) return;
+      try {
+        const parsed = new URL(url);
+        const code = parsed.searchParams.get("code");
+        if (!code || !supabase) return;
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error("[useAuth] Deep-link code exchange failed:", error.message);
+          return;
+        }
+        router.push(parsed.searchParams.get("next") || "/profile");
+      } catch (err) {
+        console.error("[useAuth] Failed to handle auth deep link:", err);
+      }
+    },
+    [router]
+  );
+  useDeepLinks(handleAuthDeepLink);
 
   const signOut = async () => {
     await supabase.auth.signOut();

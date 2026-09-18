@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-translation";
+import { useIsElectron } from "@/hooks/useElectron";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isElectron = useIsElectron();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -86,7 +88,16 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
+            // In Electron, will-navigate bounces this whole OAuth flow out to
+            // the user's regular browser (can't safely embed a Google/Discord
+            // login form in-app) - redirecting back to a plain http://localhost
+            // origin then just finishes the login in that external browser
+            // instead of the app. tss:// is registered as this app's own
+            // protocol (electron/main.js) so the OS hands the final redirect
+            // back to the running app instead.
+            redirectTo: isElectron
+              ? "tss://auth/callback?next=/profile"
+              : `${window.location.origin}/auth/callback?next=/profile`,
           },
         });
         // signInWithOAuth returns {data, error} and doesn't throw - a
@@ -209,7 +220,11 @@ export default function LoginPage() {
                   setLoading(true);
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: "discord",
-                    options: { redirectTo: `${window.location.origin}/auth/callback?next=/profile` }
+                    options: {
+                      redirectTo: isElectron
+                        ? "tss://auth/callback?next=/profile"
+                        : `${window.location.origin}/auth/callback?next=/profile`,
+                    },
                   });
                   // This didn't even read the returned error before - a
                   // provider-side failure looked identical to nothing
