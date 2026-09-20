@@ -45,16 +45,12 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const beatId = session.metadata?.beat_id;
     const tier = session.metadata?.tier;
+    const serviceId = session.metadata?.serviceId;
+    const userId = session.metadata?.userId;
     const amount = session.amount_total ? session.amount_total / 100 : 0;
 
     if (beatId && tier) {
-      // Stripe calls this endpoint server-to-server - there's no browser
-      // session/cookies on the request, so the anon createClient() used
-      // here previously ran as a fully unauthenticated client. Same
-      // "anon client blocked by RLS" bug already fixed this session for
-      // games/music/podcasts/admin-users: it would silently fail to mark
-      // the beat sold or record the sale, despite Stripe having actually
-      // charged the customer. Needs the service-role client.
+      // Beat purchase logic
       let supabase;
       try {
         supabase = createServiceClient();
@@ -64,9 +60,6 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        // Stripe retries webhook deliveries on timeout/non-2xx, which would
-        // otherwise insert a duplicate beat_sales row per retry - skip if
-        // this session was already recorded.
         const { data: existing } = await supabase
           .from("beat_sales")
           .select("id")
@@ -74,7 +67,6 @@ export async function POST(req: NextRequest) {
           .maybeSingle();
 
         if (!existing) {
-          // Zaktualizuj status beatu
           await supabase
             .from("beats")
             .update({
@@ -84,7 +76,6 @@ export async function POST(req: NextRequest) {
             })
             .eq("id", beatId);
 
-          // Zapisz transakcję
           await supabase.from("beat_sales").insert({
             beat_id: beatId,
             stripe_session_id: session.id,
@@ -94,9 +85,31 @@ export async function POST(req: NextRequest) {
         }
       } catch (err) {
         console.error('[Webhook] Supabase error:', err);
-        // Continue - webhook received
+      }
+    } else if (serviceId && userId) {
+      // Studio Service purchase logic
+      let supabase;
+      try {
+        supabase = createServiceClient();
+      } catch {
+        console.log('[Webhook] Supabase not configured - skipping order processing');
+        return NextResponse.json({ received: true });
+      }
+
+      try {
+        const { error: updateError } = await supabase
+          .from("service_orders")
+          .update({ status: "paid", updated_at: new Date().toISOString() })
+          .eq("stripe_session_id", session.id);
+
+        if (updateError) {
+          console.error('[Webhook] Error updating service order status:', updateError);
+        }
+      } catch (err) {
+        console.error('[Webhook] Supabase error:', err);
       }
     }
+  }
   }
 
   return NextResponse.json({ received: true });
