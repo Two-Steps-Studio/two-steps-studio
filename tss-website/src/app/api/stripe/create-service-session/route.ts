@@ -72,7 +72,7 @@ export async function POST(req: Request) {
 
     if (orderError) {
       console.error("Error recording pending order:", orderError);
-      // We don't necessarily block the checkout, but we log it.
+      return NextResponse.json({ error: "Failed to initialize order. Please try again." }, { status: 500 });
     }
 
     return NextResponse.json({ url: session.url });

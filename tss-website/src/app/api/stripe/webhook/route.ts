@@ -91,22 +91,32 @@ export async function POST(req: NextRequest) {
       let supabase;
       try {
         supabase = createServiceClient();
-      } catch {
-        console.log('[Webhook] Supabase not configured - skipping order processing');
-        return NextResponse.json({ received: true });
+      } catch (err) {
+        console.error('[Webhook] Supabase client error:', err);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
       }
 
       try {
-        const { error: updateError } = await supabase
+        // Idempotency check: only update if it's still 'pending'
+        const { data: order, error: fetchError } = await supabase
           .from("service_orders")
-          .update({ status: "paid", updated_at: new Date().toISOString() })
-          .eq("stripe_session_id", session.id);
+          .select("status")
+          .eq("stripe_session_id", session.id)
+          .maybeSingle();
 
-        if (updateError) {
-          console.error('[Webhook] Error updating service order status:', updateError);
+        if (fetchError) throw fetchError;
+
+        if (order && order.status === "pending") {
+          const { error: updateError } = await supabase
+            .from("service_orders")
+            .update({ status: "paid", updated_at: new Date().toISOString() })
+            .eq("stripe_session_id", session.id);
+
+          if (updateError) throw updateError;
         }
       } catch (err) {
-        console.error('[Webhook] Supabase error:', err);
+        console.error('[Webhook] Service fulfillment error:', err);
+        return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });
       }
     }
   }
