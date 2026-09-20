@@ -263,7 +263,27 @@ export default function ProfilePage() {
     }, []);
 
     if (!authChecked || (loading && !user)) {
-        return <div className="p-20 text-center italic">{t.profile.loading}</div>;
+        return (
+            <div className="container mx-auto p-6 mt-20 max-w-6xl space-y-8">
+                <div className="relative w-full min-h-[480px] md:min-h-0 md:aspect-[2/1] overflow-hidden rounded-[2.5rem] border-2 border-[var(--border-color)]">
+                    <Skeleton className="h-full w-full" />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] p-6 space-y-4">
+                        <Skeleton className="h-6 w-1/3" />
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                    </div>
+                    <div className="rounded-[2.5rem] border-2 border-[var(--border-color)] bg-[var(--card-bg)] p-6 space-y-4">
+                        <Skeleton className="h-6 w-1/3" />
+                        {[...Array(5)].map((_, i) => (
+                            <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     const discordId = user?.user_metadata?.provider_id || user?.id;

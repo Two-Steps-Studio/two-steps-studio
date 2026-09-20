@@ -10,6 +10,7 @@ import { useIsElectron, useGameLibrary } from "@/hooks/useElectron";
 import { GameInstallControls } from "@/components/Games/GameInstallControls";
 import type { Game } from "@/types/games-records";
 import { useLanguage } from "@/hooks/use-translation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function GameLibraryPage() {
   const { t } = useLanguage();
@@ -64,9 +65,34 @@ export default function GameLibraryPage() {
         <p className="text-zinc-400 mt-2">{t.gamesLibrary.librarySubtitle}</p>
       </div>
 
+  return (
+    <div className="container mx-auto p-6 mt-20 max-w-5xl">
+      <Link href="/games" className="inline-flex items-center gap-2 text-[var(--color-games)] hover:text-[var(--color-games)]/80 mb-6">
+        <ArrowLeft size={18} /> <span>{t.gamesLibrary.backToGames}</span>
+      </Link>
+
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-[var(--text)] flex items-center gap-3">
+          <Library className="w-8 h-8 text-[var(--color-games)]" />
+          {t.gamesLibrary.libraryTitle}
+        </h1>
+        <p className="text-zinc-400 mt-2">{t.gamesLibrary.librarySubtitle}</p>
+      </div>
+
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-games)]"></div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <Card key={i} className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/40">
+              <Skeleton className="aspect-[2/3] w-full" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 flex-1 rounded-xl" />
+                  <Skeleton className="h-8 w-20 rounded-xl" />
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       ) : gameIds.length === 0 ? (
         <Card className="bg-black/40 border-white/10 rounded-[2.5rem]">

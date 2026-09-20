@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Newspaper, Clock, User } from "lucide-react";
 import { useLanguage } from "@/hooks/use-translation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface NewsItem {
   id: string;
@@ -38,10 +39,26 @@ export default function NewsPage() {
     fetchNews();
   }, []);
 
-  if (loading) {
+if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-general)]" />
+      <div className="container mx-auto p-6 mt-20 max-w-7xl">
+        <div className="mb-12">
+          <Skeleton className="h-12 w-64 mb-4" />
+          <Skeleton className="h-6 w-96" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="glass rounded-[2rem] border border-white/10 p-6 space-y-4">
+              <div className="flex justify-between items-start">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-10 w-full rounded-2xl mt-4" />
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
