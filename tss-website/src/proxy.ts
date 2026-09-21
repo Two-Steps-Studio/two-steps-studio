@@ -177,8 +177,14 @@ export async function proxy(request: NextRequest) {
   // in the route itself is the real gate for this namespace.
   const isExternalApiRoute = request.nextUrl.pathname.startsWith("/api/v1/");
 
+  // Stripe's webhook delivery sends "Accept: */*" with a non-browser
+  // User-Agent, which the "suspicious-accept" heuristic below treats as a
+  // bot (403) - so no payment ever got marked paid. The route verifies the
+  // stripe-signature header itself, which is the real gate.
+  const isStripeWebhook = request.nextUrl.pathname === "/api/stripe/webhook";
+
   // Detect bots before rate limiting
-  if (!isExternalApiRoute) {
+  if (!isExternalApiRoute && !isStripeWebhook) {
     const botDetection = await detectBot(request);
     if (botDetection.isBot) {
       return handleBotRequest(request, botDetection.botType || '');

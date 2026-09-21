@@ -26,6 +26,8 @@ const envConfigs: EnvVarConfig[] = [
   { name: 'STRIPE_SECRET_KEY', required: false },
   { name: 'STRIPE_WEBHOOK_SECRET', required: false },
   { name: 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', required: false },
+  // Public base URL for Stripe success/cancel redirects (falls back to the request origin)
+  { name: 'NEXT_PUBLIC_APP_URL', required: false },
 ];
 
 const validationErrors: string[] = [];

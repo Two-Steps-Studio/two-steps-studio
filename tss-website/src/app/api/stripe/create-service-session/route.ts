@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient, createServiceClient } from "@/lib/supabase-server";
+import { getSiteUrl } from "@/lib/site-url";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+    const siteUrl = getSiteUrl(req);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "blik"],

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase-server";
+import { getSiteUrl } from "@/lib/site-url";
 
 // Stripe requires a configured instance
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     const price = parseFloat(pkg.price);
+    const siteUrl = getSiteUrl(req);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "blik"],
@@ -74,8 +76,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/beats?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/beats?canceled=true`,
+      success_url: `${siteUrl}/records/beats?success=true`,
+      cancel_url: `${siteUrl}/records/beats?canceled=true`,
       metadata: {
         beat_id: beatId,
         tier: tier,
