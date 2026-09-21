@@ -554,7 +554,7 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                   </Button>
                 </div>
                 {formData.thumbnail_url && (
-                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-[var(--border-color)]">
                     <img src={formData.thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
                     <Button
                       type="button"
@@ -595,9 +595,9 @@ function PodcastFormModal({ podcast, onClose, onSave }: { podcast: Podcast | nul
                   </Button>
                 </div>
                 {formData.audio_file_url && (
-                  <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-2 p-2 bg-[var(--surface)] rounded-lg">
                     <Mic2 size={16} className="text-[var(--color-records)]" />
-                    <span className="text-sm text-zinc-300 truncate flex-1">{t.devCrudCommon.audioFileLoaded}</span>
+                    <span className="text-sm text-[var(--text-muted)] truncate flex-1">{t.devCrudCommon.audioFileLoaded}</span>
                     <Button
                       type="button"
                       variant="ghost"

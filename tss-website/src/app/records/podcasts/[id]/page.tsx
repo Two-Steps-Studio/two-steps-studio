@@ -118,7 +118,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           {/* Header with Thumbnail */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem] overflow-hidden">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem] overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
               {podcast.thumbnail_url && (
                 <div className="aspect-square md:aspect-auto md:h-full">
@@ -138,24 +138,24 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
                       </Badge>
                     )}
                     {podcast.season && (
-                      <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
+                      <Badge variant="secondary" className="bg-[var(--surface-hover)] text-[var(--text)] border-[var(--border-color)]">
                         {t.recordsPodcasts.seasonPrefix}{podcast.season}
                       </Badge>
                     )}
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)]">
+                  <h1 className="text-3xl md:text-4xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">
                     {podcast.title}
                   </h1>
                   {podcast.host && (
-                    <div className="flex items-center gap-2 text-zinc-300">
+                    <div className="flex items-center gap-2 text-[var(--text-muted)]">
                       <User size={18} />
                       <span>{podcast.host}</span>
                     </div>
                   )}
                   {podcast.podcast_series && (
-                    <p className="text-zinc-400">{podcast.podcast_series.title}</p>
+                    <p className="text-[var(--text-muted)]">{podcast.podcast_series.title}</p>
                   )}
-                  <div className="flex items-center gap-4 text-sm text-zinc-400">
+                  <div className="flex items-center gap-4 text-sm text-[var(--text-muted)]">
                     <div className="flex items-center gap-2">
                       <Clock size={16} />
                       <span>{formatDuration(podcast.duration_seconds)}</span>
@@ -173,7 +173,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
           </Card>
 
           {/* Audio Player */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
             <CardContent className="p-6">
               {podcast.audio_file_url && (
                 <audio
@@ -196,7 +196,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
                     onValueChange={handleSeek}
                     className="cursor-pointer"
                   />
-                  <div className="flex justify-between text-xs text-zinc-400">
+                  <div className="flex justify-between text-xs text-[var(--text-muted)]">
                     <span>{formatTime(currentTime)}</span>
                     <span>{formatDuration(podcast.duration_seconds)}</span>
                   </div>
@@ -204,7 +204,7 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
 
                 {/* Controls */}
                 <div className="flex items-center justify-center gap-4">
-                  <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-[var(--text-muted)] hover:text-white">
                     <SkipBack size={24} />
                   </Button>
                   <Button
@@ -215,14 +215,14 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
                   >
                     {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-[var(--text-muted)] hover:text-white">
                     <SkipForward size={24} />
                   </Button>
                 </div>
 
                 {/* Volume */}
                 <div className="flex items-center gap-3 justify-center">
-                  <Volume2 size={18} className="text-zinc-400" />
+                  <Volume2 size={18} className="text-[var(--text-muted)]" />
                   <Slider
                     value={[volume]}
                     max={100}
@@ -237,12 +237,12 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Description */}
           {podcast.description && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">{t.recordsPodcasts.descriptionLabel}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">{t.recordsPodcasts.descriptionLabel}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
+                <div className="text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
                   {podcast.description}
                 </div>
               </CardContent>
@@ -251,14 +251,14 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Guests */}
           {podcast.guests && podcast.guests.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">{t.recordsPodcasts.guestsLabel}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">{t.recordsPodcasts.guestsLabel}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {podcast.guests.map((guest) => (
-                    <Badge key={guest} variant="secondary" className="bg-white/10 text-white border-white/20">
+                    <Badge key={guest} variant="secondary" className="bg-[var(--surface-hover)] text-[var(--text)] border-[var(--border-color)]">
                       {guest}
                     </Badge>
                   ))}
@@ -270,40 +270,40 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
 
         <div className="space-y-8">
           {/* Info */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">{t.recordsPodcasts.infoLabel}</CardTitle>
+              <CardTitle className="text-2xl font-bold text-[var(--text)]">{t.recordsPodcasts.infoLabel}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {podcast.host && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">{t.recordsPodcasts.hostLabel}</span>
-                  <span className="text-white">{podcast.host}</span>
+                  <span className="text-[var(--text-muted)]">{t.recordsPodcasts.hostLabel}</span>
+                  <span className="text-[var(--text)]">{podcast.host}</span>
                 </div>
               )}
               {podcast.episode_number && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">{t.recordsPodcasts.episodeNumberLabel}</span>
-                  <span className="text-white">{podcast.episode_number}</span>
+                  <span className="text-[var(--text-muted)]">{t.recordsPodcasts.episodeNumberLabel}</span>
+                  <span className="text-[var(--text)]">{podcast.episode_number}</span>
                 </div>
               )}
               {podcast.season && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">{t.recordsPodcasts.seasonLabel}</span>
-                  <span className="text-white">{podcast.season}</span>
+                  <span className="text-[var(--text-muted)]">{t.recordsPodcasts.seasonLabel}</span>
+                  <span className="text-[var(--text)]">{podcast.season}</span>
                 </div>
               )}
               {podcast.published_date && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">{t.recordsPodcasts.publishDateLabel}</span>
-                  <span className="text-white">{new Date(podcast.published_date).toLocaleDateString('pl-PL')}</span>
+                  <span className="text-[var(--text-muted)]">{t.recordsPodcasts.publishDateLabel}</span>
+                  <span className="text-[var(--text)]">{new Date(podcast.published_date).toLocaleDateString('pl-PL')}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">{t.recordsPodcasts.playsLabel}</span>
+                <span className="text-[var(--text-muted)]">{t.recordsPodcasts.playsLabel}</span>
                 <div className="flex items-center gap-1">
                   <Mic2 size={14} className="text-[var(--color-records)]" />
-                  <span className="text-white">{podcast.plays || 0}</span>
+                  <span className="text-[var(--text)]">{podcast.plays || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -311,14 +311,14 @@ export default function PodcastDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Tags */}
           {podcast.tags && podcast.tags.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">{t.recordsPodcasts.tagsLabel}</CardTitle>
+                <CardTitle className="text-xl font-bold text-[var(--text)]">{t.recordsPodcasts.tagsLabel}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {podcast.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-white/10 text-white border-white/20">
+                    <Badge key={tag} variant="secondary" className="bg-[var(--surface-hover)] text-[var(--text)] border-[var(--border-color)]">
                       {tag}
                     </Badge>
                   ))}

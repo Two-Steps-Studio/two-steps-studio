@@ -140,11 +140,11 @@ export function OnlineChart() {
   }, [data]);
 
   if (loading || !data) {
-    return <div className="h-60 rounded-[2.5rem] bg-white/5 animate-pulse" />;
+    return <div className="h-60 rounded-[2.5rem] bg-[var(--surface)] animate-pulse" />;
   }
 
   if (!chart) {
-    return <div className="h-60 rounded-[2.5rem] bg-white/5 flex items-center justify-center text-white/50">
+    return <div className="h-60 rounded-[2.5rem] bg-[var(--surface)] flex items-center justify-center text-white/50">
       No data available
     </div>;
   }
@@ -152,7 +152,7 @@ export function OnlineChart() {
   const gridColor = "rgba(255,255,255,0.06)"; // Używa globalnego CSS dla trybu jasnego
 
   return (
-    <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/40 p-4">
+    <div className="overflow-hidden rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--card-bg)] p-4">
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[260px]">
         <rect x={0} y={0} width={width} height={height} fill="transparent" />
         {Array.from({ length: 5 }).map((_, i) => {
@@ -166,7 +166,7 @@ export function OnlineChart() {
           24h / {data?.bucket_minutes ?? 15}m
         </text>
       </svg>
-      <div className="flex gap-6 px-2 py-2 text-xs text-zinc-400">
+      <div className="flex gap-6 px-2 py-2 text-xs text-[var(--text-muted)]">
         <div className="flex items-center gap-2">
           <span className="inline-block w-3 h-3 rounded-full" style={{ background: "var(--color-general)" }} />
           <span>{t.compOnlineChart.total}</span>

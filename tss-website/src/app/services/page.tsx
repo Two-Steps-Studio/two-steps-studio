@@ -89,10 +89,10 @@ export default function ServicesPage() {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-6xl pb-20">
       <div className="mb-12 text-center">
-        <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
+        <h1 className="text-5xl font-black tracking-tight text-[var(--text)] font-[family-name:var(--font-space)] mb-4">
           {t.servicesPage.title}
         </h1>
-        <p className="text-xl font-medium text-zinc-400 font-[family-name:var(--font-outfit)] max-w-2xl mx-auto">
+        <p className="text-xl font-medium text-[var(--text-muted)] font-[family-name:var(--font-outfit)] max-w-2xl mx-auto">
           {t.servicesPage.subtitle}
         </p>
       </div>
@@ -101,25 +101,25 @@ export default function ServicesPage() {
         {services.map((service) => (
           <Card
             key={service.id}
-            className="glass rounded-[2rem] border border-white/10 shadow-xl transition-all duration-300 hover:border-[var(--color-general)]/50 hover:shadow-[var(--color-general)]/10 group"
+            className="glass rounded-[2rem] border border-[var(--border-color)] shadow-xl transition-all duration-300 hover:border-[var(--color-general)]/50 hover:shadow-[var(--color-general)]/10 group"
           >
             <CardHeader className="p-6 pb-4">
               <div className="flex items-center justify-between mb-2">
-                <div className="p-2 rounded-xl bg-white/5 border border-white/10 group-hover:border-[var(--color-general)]/30 transition-colors">
+                <div className="p-2 rounded-xl bg-[var(--surface)] border border-[var(--border-color)] group-hover:border-[var(--color-general)]/30 transition-colors">
                   {getCategoryIcon(service.category)}
                 </div>
-                <Badge variant="outline" className="border-white/10 bg-white/5 text-zinc-400">
+                <Badge variant="outline" className="border-[var(--border-color)] bg-[var(--surface)] text-[var(--text-muted)]">
                   {service.category}
                 </Badge>
               </div>
-              <CardTitle className="text-2xl font-bold text-white mb-2">{service.name}</CardTitle>
-              <CardDescription className="text-zinc-400 leading-relaxed">
+              <CardTitle className="text-2xl font-bold text-[var(--text)] mb-2">{service.name}</CardTitle>
+              <CardDescription className="text-[var(--text-muted)] leading-relaxed">
                 {service.description}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0 flex items-center justify-between">
-              <div className="text-2xl font-black text-white">
-                {service.price.toFixed(2)} <span className="text-sm font-medium text-zinc-500">PLN</span>
+              <div className="text-2xl font-black text-[var(--text)]">
+                {service.price.toFixed(2)} <span className="text-sm font-medium text-[var(--text-muted)]">PLN</span>
               </div>
               <Button
                 onClick={() => handleOrder(service.id)}

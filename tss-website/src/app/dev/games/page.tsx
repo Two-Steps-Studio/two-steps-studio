@@ -26,7 +26,7 @@ import type { Game, GameCategory, GameStatus } from "@/types/games-records";
 const CATEGORIES: GameCategory[] = ['action', 'adventure', 'rpg', 'strategy', 'simulation', 'sports', 'racing', 'puzzle', 'horror', 'indie', 'other'];
 
 const STATUS_COLORS: Record<GameStatus, string> = {
-  draft: 'bg-gray-500/20 text-gray-400',
+  draft: 'bg-gray-500/20 text-[var(--text-muted)]',
   published: 'bg-green-500/20 text-green-400',
   archived: 'bg-red-500/20 text-red-400',
   coming_soon: 'bg-yellow-500/20 text-yellow-400',
@@ -645,7 +645,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                   </Button>
                 </div>
                 {formData.thumbnail_url && (
-                  <div className="relative w-20 aspect-[2/3] rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative w-20 aspect-[2/3] rounded-lg overflow-hidden border border-[var(--border-color)]">
                     <img src={formData.thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
                     <Button
                       type="button"
@@ -686,7 +686,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
                   </Button>
                 </div>
                 {formData.banner_url && (
-                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-[var(--border-color)]">
                     <img src={formData.banner_url} alt="Banner" className="w-full h-full object-cover" />
                     <Button
                       type="button"

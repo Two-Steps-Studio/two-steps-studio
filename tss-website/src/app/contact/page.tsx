@@ -65,21 +65,21 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight text-[var(--text)] font-[family-name:var(--font-space)] mb-4">
               {t.contact.title}
             </h1>
-            <p className="text-xl text-zinc-400 font-[family-name:var(--font-outfit)]">
+            <p className="text-xl text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
               {t.contact.subtitle}
             </p>
           </div>
 
-          <Card className="glass rounded-[2rem] p-6 border border-white/5">
+          <Card className="glass rounded-[2rem] p-6 border border-[var(--border-color)]">
             <div className="space-y-4">
               <div className="flex items-start gap-4">
                 <Mail className="w-6 h-6 text-[var(--color-general)] flex-shrink-0" />
                 <div>
                   <h3 className="font-bold text-[var(--text)] mb-1">{t.contact.emailLabel}</h3>
-                  <p className="text-zinc-400 font-[family-name:var(--font-outfit)]">
+                  <p className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
                     two.steps.studio.contact@gmail.com
                   </p>
                 </div>
@@ -120,7 +120,7 @@ export default function ContactPage() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder={t.contact.subjectPlaceholder}
-                  className="bg-white/5 border-white/10"
+                  className="bg-[var(--surface)] border-[var(--border-color)]"
                   required
                 />
               </div>
@@ -131,7 +131,7 @@ export default function ContactPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t.contact.messagePlaceholder}
-                  className="bg-white/5 border-white/10 min-h-[150px] resize-none"
+                  className="bg-[var(--surface)] border-[var(--border-color)] min-h-[150px] resize-none"
                   required
                 />
               </div>

@@ -8,7 +8,7 @@ export default function DevPage() {
   return (
       <div className="container mx-auto p-6 mt-20 max-w-7xl">
         {/* Hero Section */}
-        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
           <img
               src="/assets/HeroSection/dev.avif"
               alt=""
@@ -18,10 +18,10 @@ export default function DevPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-dev)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
               <span className="text-[var(--color-dev)]">{t.devPage.title}</span>
             </h1>
-            <p className="text-white max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
+            <p className="text-[var(--text)] max-w-2xl mx-auto font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
               {t.devPage.subtitle}
             </p>
           </div>

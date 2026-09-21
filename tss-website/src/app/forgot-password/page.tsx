@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
           <CardTitle className="text-3xl font-bold tracking-tight text-[var(--text)] font-[family-name:var(--font-space)]">
             {t.forgotPassword.title}
           </CardTitle>
-          <CardDescription className="text-zinc-400 font-[family-name:var(--font-outfit)]">
+          <CardDescription className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
             {t.forgotPassword.subtitle}
           </CardDescription>
         </CardHeader>
@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
             <div className="text-center space-y-4 py-4">
               <MailCheck className="w-12 h-12 mx-auto text-[var(--color-general)]" />
               <p className="text-[var(--text)] font-bold">{t.forgotPassword.successTitle}</p>
-              <p className="text-sm text-zinc-400">{t.forgotPassword.successDesc}</p>
+              <p className="text-sm text-[var(--text-muted)]">{t.forgotPassword.successDesc}</p>
               <Link href="/login" className="inline-block text-[var(--color-general)] hover:underline font-medium text-sm">
                 {t.forgotPassword.backToLogin}
               </Link>
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
                   t.forgotPassword.submitButton
                 )}
               </Button>
-              <div className="text-center text-sm text-zinc-400 mt-4 font-[family-name:var(--font-outfit)]">
+              <div className="text-center text-sm text-[var(--text-muted)] mt-4 font-[family-name:var(--font-outfit)]">
                 <Link href="/login" className="text-[var(--color-general)] hover:underline font-medium">
                   {t.forgotPassword.backToLogin}
                 </Link>

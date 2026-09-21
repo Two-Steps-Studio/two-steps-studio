@@ -108,11 +108,11 @@ export default function AdminConsole() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-2xl rounded-[2.5rem] bg-black/40 border border-white/10 backdrop-blur-2xl">
+      <DialogContent className="max-w-2xl rounded-[2.5rem] bg-black/40 border border-[var(--border-color)] backdrop-blur-2xl">
         {!authed ? (
-          <Card className="rounded-2xl bg-white/5 border border-white/10">
+          <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
             <CardHeader>
-              <CardTitle className="text-white font-[family-name:var(--font-space)]">Konsola Admin</CardTitle>
+              <CardTitle className="text-[var(--text)] font-[family-name:var(--font-space)]">Konsola Admin</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
              <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">Użyj nazwy: TwoStepsStudioAdmin</div>
@@ -120,14 +120,14 @@ export default function AdminConsole() {
                 placeholder="Nazwa"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="rounded-2xl border-white/10 bg-white/5 text-white"
+                className="rounded-2xl border-[var(--border-color)] bg-[var(--surface)] text-[var(--text)]"
               />
               <Input
                 placeholder="Hasło"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-2xl border-white/10 bg-white/5 text-white"
+                className="rounded-2xl border-[var(--border-color)] bg-[var(--surface)] text-[var(--text)]"
               />
               <Button
                 onClick={handleAuth}
@@ -140,14 +140,14 @@ export default function AdminConsole() {
           </Card>
         ) : (
           <div className="space-y-4">
-            <Card className="rounded-2xl bg-white/5 border border-white/10">
+            <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
               <CardHeader>
-                <CardTitle className="text-white font-[family-name:var(--font-space)]">Polecenia</CardTitle>
+                <CardTitle className="text-[var(--text)] font-[family-name:var(--font-space)]">Polecenia</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   {examples.map((e) => (
-                    <span key={e} className="text-[10px] uppercase tracking-[0.2em] bg-black/30 text-white/70 px-2 py-1 rounded-full border border-white/10">
+                    <span key={e} className="text-[10px] uppercase tracking-[0.2em] bg-[var(--card-bg)] text-white/70 px-2 py-1 rounded-full border border-[var(--border-color)]">
                       {e}
                     </span>
                   ))}
@@ -163,7 +163,7 @@ export default function AdminConsole() {
                         runCommand();
                       }
                     }}
-                    className="flex-1 rounded-2xl border-white/10 bg-white/5 text-white"
+                    className="flex-1 rounded-2xl border-[var(--border-color)] bg-[var(--surface)] text-[var(--text)]"
                   />
                   <Button onClick={runCommand} disabled={busy} className="rounded-2xl bg-[var(--color-general)] text-white font-bold">
                     Wyślij
@@ -172,16 +172,16 @@ export default function AdminConsole() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl bg-white/5 border border-white/10">
+            <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
               <CardHeader>
-                <CardTitle className="text-white font-[family-name:var(--font-space)]">Historia</CardTitle>
+                <CardTitle className="text-[var(--text)] font-[family-name:var(--font-space)]">Historia</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {history.length === 0 && <div className="text-zinc-400">Brak wpisów</div>}
+                {history.length === 0 && <div className="text-[var(--text-muted)]">Brak wpisów</div>}
                {history.map((h, i) => (
-                 <div key={i} className={cn("p-3 rounded-xl border", h.ok ? "border-[var(--color-general)]/20 bg-white/10" : "border-red-500/30 bg-red-500/10")}>
-                   <div className="text-xs text-zinc-400">{">"}{h.input}</div>
-                   <div className="text-white">{h.output}</div>
+                 <div key={i} className={cn("p-3 rounded-xl border", h.ok ? "border-[var(--color-general)]/20 bg-[var(--surface-hover)]" : "border-red-500/30 bg-red-500/10")}>
+                   <div className="text-xs text-[var(--text-muted)]">{">"}{h.input}</div>
+                   <div className="text-[var(--text)]">{h.output}</div>
                  </div>
                ))}
               </CardContent>

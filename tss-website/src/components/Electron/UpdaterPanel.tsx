@@ -51,7 +51,7 @@ export function UpdaterPanel() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h3 className="text-[var(--text)] font-black text-xl">Aktualizacje aplikacji</h3>
-          <p className="text-sm text-zinc-400 mt-1">
+          <p className="text-sm text-[var(--text-muted)] mt-1">
             Sprawdź najnowszą wersję Two Steps Studio.
           </p>
         </div>
@@ -77,11 +77,11 @@ export function UpdaterPanel() {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg)]/50 px-4 py-3">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Current version</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Current version</div>
           <div className="text-lg font-mono text-[var(--text)] mt-1">v{currentVersion}</div>
         </div>
         <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg)]/50 px-4 py-3">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Latest version</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Latest version</div>
           <div className="text-lg font-mono text-[var(--text)] mt-1">
             {remoteVersion ? `v${remoteVersion}` : '—'}
           </div>

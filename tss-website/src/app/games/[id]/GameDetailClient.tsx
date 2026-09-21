@@ -95,28 +95,28 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
       )}
 
       {/* Header */}
-      <div className="relative mb-12 p-8 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl">
+      <div className="relative mb-12 p-8 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-games)]/20 via-transparent to-transparent opacity-50" />
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-games)]/20 blur-3xl animate-pulse" />
 
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
             {game.category && (
-              <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
+              <Badge variant="secondary" className="bg-[var(--surface-hover)] text-[var(--text)] border-[var(--border-color)]">
                 {CATEGORY_LABELS[game.category]}
               </Badge>
             )}
             {game.status && game.status !== 'published' && (
-              <Badge variant="secondary" className="bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
+              <Badge variant="secondary" className="bg-zinc-500/20 text-[var(--text-muted)] border-zinc-500/30">
                 {STATUS_LABELS[game.status]}
               </Badge>
             )}
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
             <span className="text-[var(--color-games)]">{game.title}</span>
           </h1>
           {game.short_description && (
-            <p className="text-zinc-400 max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
+            <p className="text-[var(--text-muted)] max-w-2xl font-[family-name:var(--font-outfit)] text-lg md:text-xl leading-relaxed">
               {game.short_description}
             </p>
           )}
@@ -127,12 +127,12 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
         <div className="lg:col-span-2 space-y-8">
           {/* Description */}
           {game.full_description && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Opis gry</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Opis gry</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
+                <div className="text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
                   {game.full_description}
                 </div>
               </CardContent>
@@ -141,9 +141,9 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
           {/* Screenshots */}
           {game.game_screenshots && game.game_screenshots.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Zrzuty ekranu</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Zrzuty ekranu</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -158,7 +158,7 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
                         />
                         {screenshot.caption && (
                           <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/60 backdrop-blur-sm">
-                            <p className="text-white text-sm">{screenshot.caption}</p>
+                            <p className="text-[var(--text)] text-sm">{screenshot.caption}</p>
                           </div>
                         )}
                       </div>
@@ -170,9 +170,9 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
           {/* System Requirements */}
           {game.game_requirements && game.game_requirements.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Wymagania systemowe</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Wymagania systemowe</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {game.game_requirements.map((req) => (
@@ -184,31 +184,31 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
                       {req.os && (
                         <div className="flex items-center gap-3">
                           <Monitor className="text-[var(--color-games)]" size={18} />
-                          <span className="text-zinc-300">OS: {req.os}</span>
+                          <span className="text-[var(--text-muted)]">OS: {req.os}</span>
                         </div>
                       )}
                       {req.processor && (
                         <div className="flex items-center gap-3">
                           <Cpu className="text-[var(--color-games)]" size={18} />
-                          <span className="text-zinc-300">Procesor: {req.processor}</span>
+                          <span className="text-[var(--text-muted)]">Procesor: {req.processor}</span>
                         </div>
                       )}
                       {req.memory && (
                         <div className="flex items-center gap-3">
                           <HardDrive className="text-[var(--color-games)]" size={18} />
-                          <span className="text-zinc-300">RAM: {req.memory}</span>
+                          <span className="text-[var(--text-muted)]">RAM: {req.memory}</span>
                         </div>
                       )}
                       {req.graphics && (
                         <div className="flex items-center gap-3">
                           <Gamepad2 className="text-[var(--color-games)]" size={18} />
-                          <span className="text-zinc-300">Karta graficzna: {req.graphics}</span>
+                          <span className="text-[var(--text-muted)]">Karta graficzna: {req.graphics}</span>
                         </div>
                       )}
                       {req.storage && (
                         <div className="flex items-center gap-3">
                           <HardDrive className="text-[var(--color-games)]" size={18} />
-                          <span className="text-zinc-300">Miejsce: {req.storage}</span>
+                          <span className="text-[var(--text-muted)]">Miejsce: {req.storage}</span>
                         </div>
                       )}
                     </div>
@@ -220,12 +220,12 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
           {/* Changelog */}
           {game.changelog && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Historia zmian</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Historia zmian</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
+                <div className="text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
                   {game.changelog}
                 </div>
               </CardContent>
@@ -235,9 +235,9 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
         <div className="space-y-8">
           {/* Actions */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Akcje</CardTitle>
+              <CardTitle className="text-2xl font-bold text-[var(--text)]">Akcje</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {game.id !== undefined && <GameInstallControls gameId={game.id} title={game.title} />}
@@ -246,15 +246,15 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
           {/* External Links */}
           {(game.steam_url || game.itch_url || game.epic_url) && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Linki zewnętrzne</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Linki zewnętrzne</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {game.steam_url && (
                   <Button
                     variant="outline"
-                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    className="w-full border-[var(--border-color)] text-[var(--text)] hover:bg-white/10 rounded-full justify-start"
                     onClick={() => window.open(game.steam_url, '_blank')}
                   >
                     <ExternalLink size={18} className="mr-2" />
@@ -264,7 +264,7 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
                 {game.itch_url && (
                   <Button
                     variant="outline"
-                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    className="w-full border-[var(--border-color)] text-[var(--text)] hover:bg-white/10 rounded-full justify-start"
                     onClick={() => window.open(game.itch_url, '_blank')}
                   >
                     <ExternalLink size={18} className="mr-2" />
@@ -274,7 +274,7 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
                 {game.epic_url && (
                   <Button
                     variant="outline"
-                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    className="w-full border-[var(--border-color)] text-[var(--text)] hover:bg-white/10 rounded-full justify-start"
                     onClick={() => window.open(game.epic_url, '_blank')}
                   >
                     <ExternalLink size={18} className="mr-2" />
@@ -286,43 +286,43 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
           )}
 
           {/* Info */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Informacje</CardTitle>
+              <CardTitle className="text-2xl font-bold text-[var(--text)]">Informacje</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Wersja:</span>
-                <span className="text-white font-mono">{game.version || "N/D"}</span>
+                <span className="text-[var(--text-muted)]">Wersja:</span>
+                <span className="text-[var(--text)] font-mono">{game.version || "N/D"}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Deweloper:</span>
-                <span className="text-white">{game.developer || "N/D"}</span>
+                <span className="text-[var(--text-muted)]">Deweloper:</span>
+                <span className="text-[var(--text)]">{game.developer || "N/D"}</span>
               </div>
               {game.publisher && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Wydawca:</span>
-                  <span className="text-white">{game.publisher}</span>
+                  <span className="text-[var(--text-muted)]">Wydawca:</span>
+                  <span className="text-[var(--text)]">{game.publisher}</span>
                 </div>
               )}
               {game.release_date && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Data wydania:</span>
-                  <span className="text-white">{new Date(game.release_date).toLocaleDateString('pl-PL')}</span>
+                  <span className="text-[var(--text-muted)]">Data wydania:</span>
+                  <span className="text-[var(--text)]">{new Date(game.release_date).toLocaleDateString('pl-PL')}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Wyświetlenia:</span>
+                <span className="text-[var(--text-muted)]">Wyświetlenia:</span>
                 <div className="flex items-center gap-1">
                   <Eye size={14} className="text-[var(--color-games)]" />
-                  <span className="text-white">{game.views || 0}</span>
+                  <span className="text-[var(--text)]">{game.views || 0}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Pobrania:</span>
+                <span className="text-[var(--text-muted)]">Pobrania:</span>
                 <div className="flex items-center gap-1">
                   <Download size={14} className="text-[var(--color-games)]" />
-                  <span className="text-white">{game.downloads || 0}</span>
+                  <span className="text-[var(--text)]">{game.downloads || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -330,9 +330,9 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
           {/* Tags */}
           {game.tags && game.tags.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+                <CardTitle className="text-xl font-bold text-[var(--text)] flex items-center gap-2">
                   <Tag size={18} className="text-[var(--color-games)]" />
                   Tagi
                 </CardTitle>
@@ -340,7 +340,7 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {game.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-white/10 text-white border-white/20">
+                    <Badge key={tag} variant="secondary" className="bg-[var(--surface-hover)] text-[var(--text)] border-[var(--border-color)]">
                       {tag}
                     </Badge>
                   ))}
@@ -351,9 +351,9 @@ export default function GameDetailClient({ params }: { params: Promise<{ id: str
 
           {/* Genres */}
           {game.genres && game.genres.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">Gatunki</CardTitle>
+                <CardTitle className="text-xl font-bold text-[var(--text)]">Gatunki</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">

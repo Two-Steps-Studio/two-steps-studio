@@ -69,7 +69,7 @@ export default function DevGamePage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-dev)]"></div>
         </div>
       ) : buildReady ? (
-        <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-black" style={{ aspectRatio: "16 / 9" }}>
+        <div className="rounded-[2rem] overflow-hidden border border-[var(--border-color)] bg-black" style={{ aspectRatio: "16 / 9" }}>
           <iframe
             src="/unity-game/index.html"
             title="Two Steps Studio — build gry"
@@ -78,14 +78,14 @@ export default function DevGamePage() {
           />
         </div>
       ) : (
-        <Card className="bg-black/40 border-white/10 rounded-[2rem]">
+        <Card className="bg-[var(--card-bg)] border-[var(--border-color)] rounded-[2rem]">
           <CardContent className="p-12 text-center">
-            <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-zinc-600" />
+            <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
             <h2 className="text-2xl font-bold mb-2 text-black dark:text-white">Build jeszcze nie wgrany</h2>
             <p className="text-muted-foreground">
               Wrzuć zawartość folderu wynikowego builda WebGL do{" "}
-              <code className="px-1.5 py-0.5 rounded bg-white/10 text-sm">tss-website/public/unity-game/</code> —
-              szczegóły w tamtejszym <code className="px-1.5 py-0.5 rounded bg-white/10 text-sm">README.md</code>.
+              <code className="px-1.5 py-0.5 rounded bg-[var(--surface-hover)] text-sm">tss-website/public/unity-game/</code> —
+              szczegóły w tamtejszym <code className="px-1.5 py-0.5 rounded bg-[var(--surface-hover)] text-sm">README.md</code>.
             </p>
           </CardContent>
         </Card>

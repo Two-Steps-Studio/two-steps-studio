@@ -41,9 +41,9 @@ export default function GameLibraryPage() {
   if (!isElectron) {
     return (
       <div className="container mx-auto p-6 mt-20 max-w-3xl text-center">
-        <Library className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-        <h1 className="text-2xl font-bold text-white mb-2">{t.gamesLibrary.title}</h1>
-        <p className="text-zinc-400 mb-6">{t.gamesLibrary.desktopOnly}</p>
+        <Library className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+        <h1 className="text-2xl font-bold text-[var(--text)] mb-2">{t.gamesLibrary.title}</h1>
+        <p className="text-[var(--text-muted)] mb-6">{t.gamesLibrary.desktopOnly}</p>
         <Link href="/download" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-white rounded-full font-medium transition-colors">
           {t.gamesLibrary.downloadDesktop}
         </Link>
@@ -62,13 +62,13 @@ export default function GameLibraryPage() {
           <Library className="w-8 h-8 text-[var(--color-games)]" />
           {t.gamesLibrary.libraryTitle}
         </h1>
-        <p className="text-zinc-400 mt-2">{t.gamesLibrary.librarySubtitle}</p>
+        <p className="text-[var(--text-muted)] mt-2">{t.gamesLibrary.librarySubtitle}</p>
       </div>
 
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
-            <Card key={i} className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/40">
+            <Card key={i} className="overflow-hidden rounded-[2rem] border border-[var(--border-color)] bg-[var(--card-bg)]">
               <Skeleton className="aspect-[2/3] w-full" />
               <div className="p-4 space-y-3">
                 <Skeleton className="h-5 w-3/4" />
@@ -81,11 +81,11 @@ export default function GameLibraryPage() {
           ))}
         </div>
       ) : gameIds.length === 0 ? (
-        <Card className="bg-black/40 border-white/10 rounded-[2.5rem]">
+        <Card className="bg-[var(--card-bg)] border-[var(--border-color)] rounded-[2.5rem]">
           <CardContent className="p-12 text-center">
-            <Library className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
+            <Library className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
             <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.gamesLibrary.emptyTitle}</h2>
-            <p className="text-zinc-400 mb-6">{t.gamesLibrary.emptyDesc}</p>
+            <p className="text-[var(--text-muted)] mb-6">{t.gamesLibrary.emptyDesc}</p>
             <Link href="/games" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-games)] hover:bg-[var(--color-games)]/90 text-[var(--text)] rounded-full font-medium transition-colors">
               {t.gamesLibrary.browseGames}
             </Link>
@@ -99,9 +99,9 @@ export default function GameLibraryPage() {
             return (
               <Card
                 key={gameId}
-                className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-[2rem] border border-[var(--border-color)] bg-[var(--card-bg)] hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="aspect-[2/3] w-full overflow-hidden bg-white/5">
+                <div className="aspect-[2/3] w-full overflow-hidden bg-[var(--surface)]">
                   {game?.thumbnail_url ? (
                     <img
                       src={game.thumbnail_url}
@@ -110,7 +110,7 @@ export default function GameLibraryPage() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <Library className="w-10 h-10 text-zinc-600" />
+                      <Library className="w-10 h-10 text-[var(--text-muted)]" />
                     </div>
                   )}
                 </div>
@@ -123,11 +123,11 @@ export default function GameLibraryPage() {
 
                 <CardContent className="pt-0 space-y-3">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-white/5 border-white/10 text-zinc-400 text-xs">
+                    <Badge variant="outline" className="bg-[var(--surface)] border-[var(--border-color)] text-[var(--text-muted)] text-xs">
                       v{entry.version}
                     </Badge>
                   </div>
-                  <p className="text-zinc-500 text-xs truncate">{entry.installDir}</p>
+                  <p className="text-[var(--text-muted)] text-xs truncate">{entry.installDir}</p>
 
                   <div className="flex gap-2">
                     <Link href={`/games/${gameId}`} className="flex-1">

@@ -120,7 +120,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-lg glass rounded-[2.5rem] shadow-2xl overflow-hidden relative border-black/10 dark:border-white/5">
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-general)]/15 via-transparent to-[var(--color-records)]/10 opacity-60 dark:opacity-60" />
         <CardHeader className="space-y-2 relative z-10 text-center pb-8">
-          <div className="w-20 h-20 bg-white/10 rounded-3xl mx-auto flex items-center justify-center mb-6 border border-white/10 shadow-inner group">
+          <div className="w-20 h-20 bg-[var(--surface-hover)] rounded-3xl mx-auto flex items-center justify-center mb-6 border border-[var(--border-color)] shadow-inner group">
              <Image 
                src="/assets/Logo/Glowne/Two Steps Studio Bez Tła.png" 
                alt="TSS" width={50} height={50} 
@@ -130,7 +130,7 @@ export default function LoginPage() {
           <CardTitle className="text-4xl font-black italic tracking-tighter text-[var(--text)] font-[family-name:var(--font-space)]">
             {t.auth.loginTitle}
           </CardTitle>
-          <CardDescription className="text-zinc-400 font-medium text-lg">
+          <CardDescription className="text-[var(--text-muted)] font-medium text-lg">
             {t.auth.loginSubtitle}
           </CardDescription>
         </CardHeader>
@@ -187,10 +187,10 @@ export default function LoginPage() {
           
           <div className="relative my-10">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+              <div className="w-full border-t border-[var(--border-color)]"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent px-2 text-zinc-500 font-bold tracking-[0.3em]">{t.loginExtra.orLoginWith}</span>
+              <span className="bg-transparent px-2 text-[var(--text-muted)] font-bold tracking-[0.3em]">{t.loginExtra.orLoginWith}</span>
             </div>
           </div>
 
@@ -252,7 +252,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="relative z-10 flex flex-col gap-6 pt-6 pb-10">
           <div className="text-center text-sm">
-            <p className="text-zinc-500">
+            <p className="text-[var(--text-muted)]">
               {t.auth.noAccount}{" "}
               <Link href="/registration" className="text-[var(--text)] hover:text-[var(--color-general)] font-black hover:underline transition-colors">
                 {t.auth.registerLink}
@@ -260,7 +260,7 @@ export default function LoginPage() {
             </p>
           </div>
           
-          <div className="flex flex-col gap-2 pt-4 border-t border-white/5 w-full items-center">
+          <div className="flex flex-col gap-2 pt-4 border-t border-[var(--border-color)] w-full items-center">
              <button 
                 onClick={() => {
                    localStorage.clear();

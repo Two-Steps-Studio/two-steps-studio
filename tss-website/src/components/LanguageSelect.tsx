@@ -98,7 +98,7 @@ export function LanguageSelect({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-3 pt-2 border-t border-white/10"
+            className="p-3 pt-2 border-t border-[var(--border-color)]"
           >
             <div className="text-xs font-medium text-muted-foreground mb-2 px-1">
               Import your own translations
@@ -108,7 +108,7 @@ export function LanguageSelect({
                 htmlFor="translation-upload"
                 className={cn(
                   "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all",
-                  "bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20",
+                  "bg-[var(--surface)] hover:bg-white/10 border border-[var(--border-color)] hover:border-white/20",
                   "text-white/80 hover:text-white",
                 )}
               >

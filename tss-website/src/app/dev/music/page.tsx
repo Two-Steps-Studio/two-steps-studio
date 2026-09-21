@@ -549,7 +549,7 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                   </Button>
                 </div>
                 {formData.cover_image_url && (
-                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-[var(--border-color)]">
                     <img src={formData.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
                     <Button
                       type="button"
@@ -590,9 +590,9 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
                   </Button>
                 </div>
                 {formData.audio_file_url && (
-                  <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-2 p-2 bg-[var(--surface)] rounded-lg">
                     <Music size={16} className="text-[var(--color-records)]" />
-                    <span className="text-sm text-zinc-300 truncate flex-1">{t.devCrudCommon.audioFileLoaded}</span>
+                    <span className="text-sm text-[var(--text-muted)] truncate flex-1">{t.devCrudCommon.audioFileLoaded}</span>
                     <Button
                       type="button"
                       variant="ghost"

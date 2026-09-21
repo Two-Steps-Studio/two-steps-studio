@@ -355,7 +355,7 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight text-[var(--text)] font-[family-name:var(--font-space)]">{t.settings.title}</h1>
-            <p className="mt-2 font-[family-name:var(--font-outfit)] text-zinc-400">{t.settings.subtitle}</p>
+            <p className="mt-2 font-[family-name:var(--font-outfit)] text-[var(--text-muted)]">{t.settings.subtitle}</p>
           </div>
           <Badge className="bg-[var(--color-general)]/15 text-[var(--color-general)] px-4 py-2 rounded-xl border-0">{t.settings.yourSession}</Badge>
         </div>
@@ -464,7 +464,7 @@ export default function SettingsPage() {
               <div className="p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg)]/50 space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">D</span>
+                    <span className="text-[var(--text)] font-bold text-xl">D</span>
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-[var(--text)]">Discord</div>
@@ -569,7 +569,7 @@ export default function SettingsPage() {
           <CardContent className="flex items-center justify-between px-8 py-6">
             <div className="flex items-center gap-4">
               <div className="flex flex-col">
-                <span className="text-xs font-mono uppercase tracking-widest text-zinc-500">{t.settings.appVersion}</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-[var(--text-muted)]">{t.settings.appVersion}</span>
                 <span className="text-2xl font-black font-mono text-[var(--text)]">
                     <span className="text-[var(--color-general)]">v{packageJson.version}</span>
           </span>

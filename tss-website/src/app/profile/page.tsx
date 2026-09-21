@@ -424,7 +424,7 @@ export default function ProfilePage() {
                                     <AvatarImage src={toProxiedAvatarUrl(profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture)} />
                                     <AvatarFallback className="text-4xl bg-white text-black font-bold">{discordName?.[0]}</AvatarFallback>
                                 </Avatar>
-                                <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-white font-bold rounded-full shadow-lg" style={{ backgroundColor: roleInfo.color }}>
+                                <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-[var(--text)] font-bold rounded-full shadow-lg" style={{ backgroundColor: roleInfo.color }}>
                                     {roleInfo.label}
                                 </Badge>
                             </div>
@@ -459,9 +459,9 @@ export default function ProfilePage() {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-white">
-                                    <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-sm"><Mail size={13} /> {user?.email}</span>
-                                    <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-sm"><Shield size={13} /> ID: {user?.id.slice(0, 8)}</span>
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-[var(--text)]">
+                                    <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-[var(--border-color)] text-sm"><Mail size={13} /> {user?.email}</span>
+                                    <span className="flex items-center gap-1.5 bg-black/35 backdrop-blur-sm px-3 py-1 rounded-full border border-[var(--border-color)] text-sm"><Shield size={13} /> ID: {user?.id.slice(0, 8)}</span>
                                 </div>
                                 <DiscordRolesPanel discordRoles={discordRoles} />
                             </div>
@@ -471,15 +471,15 @@ export default function ProfilePage() {
                                 user request), not just the name text. Falls back to the site's
                                 Ocean theme color when no nick color is equipped. */}
                             <div
-                                className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-white/15"
+                                className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-[var(--border-color)]"
                                 style={{ "--accent-color": nickColorValue || "var(--color-general)" } as React.CSSProperties}
                             >
                                 <div className="flex items-center justify-between text-sm mb-1">
-                                    <span className="font-bold flex items-center gap-2 text-white text-base"><Trophy size={15} className="text-[var(--accent-color)]" /> {t.profile.levelProgress}</span>
+                                    <span className="font-bold flex items-center gap-2 text-[var(--text)] text-base"><Trophy size={15} className="text-[var(--accent-color)]" /> {t.profile.levelProgress}</span>
                                     <span className="font-black text-[var(--accent-color)] text-base">{Math.round(progress)}%</span>
                                 </div>
-                                <Progress value={progress} className="h-4 rounded-full bg-white/10 border-white/15" indicatorClassName="bg-[var(--accent-color)]" />
-                                <div className="flex justify-between text-xs uppercase font-black opacity-60 text-white">
+                                <Progress value={progress} className="h-4 rounded-full bg-[var(--surface-hover)] border-[var(--border-color)]" indicatorClassName="bg-[var(--accent-color)]" />
+                                <div className="flex justify-between text-xs uppercase font-black opacity-60 text-[var(--text)]">
                                     <span>{xp} XP</span><span>{nextLevelXp} XP</span>
                                 </div>
                             </div>

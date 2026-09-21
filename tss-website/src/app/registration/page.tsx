@@ -76,7 +76,7 @@ export default function RegisterPage() {
           <CardTitle className="text-3xl font-bold tracking-tight text-[var(--text)] font-[family-name:var(--font-space)]">
             {t.auth.registerTitle}
           </CardTitle>
-          <CardDescription className="text-zinc-400 font-[family-name:var(--font-outfit)]">
+          <CardDescription className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
             {t.auth.registerSubtitle}
           </CardDescription>
         </CardHeader>
@@ -133,7 +133,7 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
                 className="mt-1 h-4 w-4 rounded border-zinc-400 text-[var(--color-general)] focus:ring-[var(--color-general)]"
               />
-              <Label htmlFor="terms" className="text-xs text-zinc-400 font-[family-name:var(--font-outfit)] leading-tight cursor-pointer">
+              <Label htmlFor="terms" className="text-xs text-[var(--text-muted)] font-[family-name:var(--font-outfit)] leading-tight cursor-pointer">
                 {t.registrationExtra.acceptPrefix}<a href="/terms" target="_blank" className="text-[var(--color-general)] hover:underline">{t.registrationExtra.termsLinkText}</a>{t.registrationExtra.acceptSuffix}
               </Label>
             </div>
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                 t.auth.registerButton
               )}
             </Button>
-            <div className="text-center text-sm text-zinc-400 mt-4 font-[family-name:var(--font-outfit)]">
+            <div className="text-center text-sm text-[var(--text-muted)] mt-4 font-[family-name:var(--font-outfit)]">
               {t.auth.alreadyHaveAccount}{" "}
               <Link href="/login" className="text-[var(--color-general)] hover:underline font-medium">
                 {t.auth.loginLink}

@@ -44,10 +44,10 @@ export const HomeSiteStats = memo(function HomeSiteStats() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ delay: i * 0.1 }}
-          className="relative overflow-hidden glass rounded-[2.5rem] p-8 flex flex-col items-center md:items-start group border border-white/5 hover:border-white/10 transition-all"
+          className="relative overflow-hidden glass rounded-[2.5rem] p-8 flex flex-col items-center md:items-start group border border-[var(--border-color)] hover:border-white/10 transition-all"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-2xl bg-white/5 group-hover:bg-white/10 transition-colors">
+            <div className="p-3 rounded-2xl bg-[var(--surface)] group-hover:bg-white/10 transition-colors">
               <item.icon size={24} style={{ color: item.color }} />
             </div>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{item.label}</span>

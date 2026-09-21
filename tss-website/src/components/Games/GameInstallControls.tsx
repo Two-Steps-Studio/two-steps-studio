@@ -78,11 +78,11 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
     <div className="space-y-3">
       {isBusy && progress && (
         <div className="space-y-2">
-          <div className="text-zinc-400 text-xs truncate">
+          <div className="text-[var(--text-muted)] text-xs truncate">
             {progress.currentFile} ({progress.fileIndex}/{progress.fileCount})
           </div>
           <Progress value={progress.bytesTotal ? (progress.bytesDone / progress.bytesTotal) * 100 : 0} />
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+          <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
             <span>{formatBytes(progress.bytesDone)} / {formatBytes(progress.bytesTotal)}</span>
             <button onClick={cancel} className="text-red-400 hover:text-red-300">{t.compGameInstall.cancel}</button>
           </div>

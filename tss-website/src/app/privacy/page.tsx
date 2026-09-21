@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
                             {t.privacyPage.title}
                     </h1>
 
-                    <p className="mb-10 text-center text-gray-400">
+                    <p className="mb-10 text-center text-[var(--text-muted)]">
                             {t.privacyPage.lastUpdated}
                     </p>
 

@@ -129,11 +129,11 @@ export default function NotificationsPage() {
               <h1 className="text-4xl font-bold tracking-tight text-[var(--text)] font-[family-name:var(--font-space)]">
                 {t.settings.notifications}
               </h1>
-              <p className="text-zinc-400 mt-2 font-[family-name:var(--font-outfit)]">
+              <p className="text-[var(--text-muted)] mt-2 font-[family-name:var(--font-outfit)]">
                 {t.settings.newsDesc}
               </p>
             </div>
-            <Badge className="bg-[var(--color-general)]/20 text-[var(--color-general)] border-white/10">
+            <Badge className="bg-[var(--color-general)]/20 text-[var(--color-general)] border-[var(--border-color)]">
               <Bell size={14} className="mr-2" /> {unreadCount}
             </Badge>
           </div>
@@ -164,20 +164,20 @@ export default function NotificationsPage() {
             <Button onClick={markAllRead} className="rounded-2xl bg-[var(--color-general)] hover:bg-[var(--color-general)]/90 text-white font-bold">
               <Check size={16} className="mr-2" /> Oznacz wszystko jako przeczytane
             </Button>
-            <Button variant="outline" onClick={addTest} className="rounded-2xl border-white/10 hover:bg-white/5 font-bold">
+            <Button variant="outline" onClick={addTest} className="rounded-2xl border-[var(--border-color)] hover:bg-white/5 font-bold">
               Dodaj testowe
             </Button>
           </div>
 
           <div className="space-y-4">
             {loading && (
-              <Card className="rounded-2xl bg-white/5 border border-white/10">
+              <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
                 <CardContent className="p-6">Ładowanie...</CardContent>
               </Card>
             )}
             {!loading && items.filter((i) => (prefs as any)[i.type]).length === 0 && (
-              <Card className="rounded-2xl bg-white/5 border border-white/10">
-                <CardContent className="p-6 text-zinc-300">Brak powiadomień</CardContent>
+              <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
+                <CardContent className="p-6 text-[var(--text-muted)]">Brak powiadomień</CardContent>
               </Card>
             )}
             {!loading &&
@@ -194,14 +194,14 @@ export default function NotificationsPage() {
                           {i.type === "news" && <Newspaper size={18} className="text-[var(--color-records)]" />}
                           {i.type === "esport" && <Trophy size={18} className="text-[var(--color-e-sport)]" />}
                           {i.type === "dev" && <Code2 size={18} className="text-[var(--color-dev)]" />}
-                          <span className="text-white font-[family-name:var(--font-space)] font-bold">{i.title}</span>
+                          <span className="text-[var(--text)] font-[family-name:var(--font-space)] font-bold">{i.title}</span>
                         </div>
-                        <p className="text-zinc-400 font-[family-name:var(--font-outfit)]">{i.description}</p>
-                        <p className="text-xs text-zinc-500">{new Date(i.date).toLocaleString()}</p>
+                        <p className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">{i.description}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{new Date(i.date).toLocaleString()}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         {i.read ? (
-                          <Button variant="outline" className="rounded-2xl border-white/10" onClick={() => markRead(i.id, false)}>
+                          <Button variant="outline" className="rounded-2xl border-[var(--border-color)]" onClick={() => markRead(i.id, false)}>
                             Przywróć
                           </Button>
                         ) : (

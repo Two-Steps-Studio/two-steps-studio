@@ -147,14 +147,14 @@ export default function NewGameReleasePage({ params }: { params: Promise<{ gameI
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-white">Nowe wydanie</CardTitle>
+            <CardTitle className="text-[var(--text)]">Nowe wydanie</CardTitle>
             <CardDescription>Wybierz jeden plik .zip z buildem gry - pliki zostaną przesłane bezpośrednio do Storage.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {stage === "done" ? (
               <div className="text-center py-8">
                 <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                <p className="text-white font-medium">Wydanie zostało opublikowane</p>
+                <p className="text-[var(--text)] font-medium">Wydanie zostało opublikowane</p>
                 <Link href={`/admin/games/${gameId}/releases`}>
                   <Button className="mt-4">Wróć do historii wydań</Button>
                 </Link>
@@ -172,7 +172,7 @@ export default function NewGameReleasePage({ params }: { params: Promise<{ gameI
                     value={platform}
                     onChange={(e) => setPlatform(e.target.value)}
                     disabled={busy}
-                    className="w-full bg-white/10 border border-white/20 text-white rounded px-3 py-2 text-sm"
+                    className="w-full bg-[var(--surface-hover)] border border-[var(--border-color)] text-[var(--text)] rounded px-3 py-2 text-sm"
                   >
                     <option value="windows">Windows</option>
                   </select>

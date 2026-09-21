@@ -104,7 +104,7 @@ export default function ResetPasswordPage() {
             {t.resetPassword.title}
           </CardTitle>
           {status === "valid" && !done && (
-            <CardDescription className="text-zinc-400 font-[family-name:var(--font-outfit)]">
+            <CardDescription className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
               {t.resetPassword.subtitle}
             </CardDescription>
           )}
@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
           {status === "invalid" && (
             <div className="text-center space-y-4 py-4">
               <p className="text-[var(--text)] font-bold">{t.resetPassword.invalidSessionTitle}</p>
-              <p className="text-sm text-zinc-400">{t.resetPassword.invalidSessionDesc}</p>
+              <p className="text-sm text-[var(--text-muted)]">{t.resetPassword.invalidSessionDesc}</p>
               <Link href="/forgot-password" className="inline-block text-[var(--color-general)] hover:underline font-medium text-sm">
                 {t.resetPassword.requestNewLink}
               </Link>
@@ -130,7 +130,7 @@ export default function ResetPasswordPage() {
             <div className="text-center space-y-4 py-4">
               <CheckCircle2 className="w-12 h-12 mx-auto text-[var(--color-general)]" />
               <p className="text-[var(--text)] font-bold">{t.resetPassword.successTitle}</p>
-              <p className="text-sm text-zinc-400">{t.resetPassword.successDesc}</p>
+              <p className="text-sm text-[var(--text-muted)]">{t.resetPassword.successDesc}</p>
             </div>
           )}
 

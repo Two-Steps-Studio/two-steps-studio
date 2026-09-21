@@ -305,7 +305,7 @@ export default function ProfileForm({
                   />
                   {background === bg && (
                     <span className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Check size={18} className="text-white drop-shadow" />
+                      <Check size={18} className="text-[var(--text)] drop-shadow" />
                     </span>
                   )}
                 </button>
@@ -347,7 +347,7 @@ export default function ProfileForm({
                   >
                     <span className="h-8 w-8 rounded-full bg-[var(--bg)]" />
                     <AvatarFrame frameId={f.id} className="absolute -inset-0.5" />
-                    {equippedFrame === f.id && <Check size={14} className="absolute text-white drop-shadow z-10" />}
+                    {equippedFrame === f.id && <Check size={14} className="absolute text-[var(--text)] drop-shadow z-10" />}
                   </button>
                 ))}
               </div>
@@ -385,7 +385,7 @@ export default function ProfileForm({
                     }`}
                     style={{ backgroundColor: c.value }}
                   >
-                    {equippedNickColor === c.id && <Check size={14} className="text-white drop-shadow" />}
+                    {equippedNickColor === c.id && <Check size={14} className="text-[var(--text)] drop-shadow" />}
                   </button>
                 ))}
               </div>

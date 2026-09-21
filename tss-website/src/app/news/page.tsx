@@ -48,7 +48,7 @@ if (loading) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="glass rounded-[2rem] border border-white/10 p-6 space-y-4">
+            <Card key={i} className="glass rounded-[2rem] border border-[var(--border-color)] p-6 space-y-4">
               <div className="flex justify-between items-start">
                 <Skeleton className="h-8 w-3/4" />
                 <Skeleton className="h-6 w-24 rounded-full" />
@@ -66,20 +66,20 @@ if (loading) {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       <div className="mb-12">
-        <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
+        <h1 className="text-5xl font-black tracking-tight text-[var(--text)] font-[family-name:var(--font-space)] mb-4">
           {t.news.title}
         </h1>
-        <p className="text-xl font-medium text-zinc-400 font-[family-name:var(--font-outfit)]">
+        <p className="text-xl font-medium text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
           {t.news.subtitle}
         </p>
       </div>
 
       {news.length === 0 ? (
-        <Card className="w-full max-w-3xl glass rounded-[2.5rem] shadow-2xl border border-white/5">
+        <Card className="w-full max-w-3xl glass rounded-[2.5rem] shadow-2xl border border-[var(--border-color)]">
           <CardContent className="p-12 text-center">
-            <Newspaper className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">{t.news.emptyTitle}</h2>
-            <p className="text-zinc-400">{t.news.emptyDesc}</p>
+            <Newspaper className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+            <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.news.emptyTitle}</h2>
+            <p className="text-[var(--text-muted)]">{t.news.emptyDesc}</p>
             <Button
               onClick={() => router.push("/")}
               className="mt-6 bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white font-bold"
@@ -103,7 +103,7 @@ if (loading) {
             >
               <div className="absolute top-4 right-4 z-10">
                 {item.published_at ? (
-                  <Badge className="bg-[var(--color-general)]/20 text-[var(--color-general)] border-white/10">
+                  <Badge className="bg-[var(--color-general)]/20 text-[var(--color-general)] border-[var(--border-color)]">
                     <Clock size={14} className="mr-1" />
                     {new Date(item.published_at).toLocaleDateString("pl-PL", {
                       day: "numeric",
@@ -132,18 +132,18 @@ if (loading) {
                 </CardTitle>
                 {item.author && (
                   <CardDescription className="flex items-center gap-2 text-sm mt-2">
-                    <User size={14} className="text-zinc-500" />
+                    <User size={14} className="text-[var(--text-muted)]" />
                     {item.author}
                   </CardDescription>
                 )}
               </CardHeader>
               <CardContent className="p-6 pt-0">
-                <p className="text-zinc-400 leading-relaxed mb-6 font-[family-name:var(--font-outfit)]">
+                <p className="text-[var(--text-muted)] leading-relaxed mb-6 font-[family-name:var(--font-outfit)]">
                   {item.content}
                 </p>
                 <Button
                   variant="outline"
-                  className="rounded-2xl border-white/10 hover:bg-white/5 font-bold w-full"
+                  className="rounded-2xl border-[var(--border-color)] hover:bg-white/5 font-bold w-full"
                   onClick={() => router.push(`/news/${item.id}`)}
                 >
                   {t.news.readMore} <ArrowRight size={16} className="ml-2" />

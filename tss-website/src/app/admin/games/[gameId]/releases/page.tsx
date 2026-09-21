@@ -96,7 +96,7 @@ export default function AdminGameReleasesPage({ params }: { params: Promise<{ ga
         </Link>
 
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">Historia wydań</h1>
+          <h1 className="text-3xl font-bold text-[var(--text)]">Historia wydań</h1>
           <Link href={`/admin/games/${gameId}/releases/new`}>
             <Button className="gap-2">
               <Plus className="w-4 h-4" /> Nowe wydanie
@@ -115,12 +115,12 @@ export default function AdminGameReleasesPage({ params }: { params: Promise<{ ga
                 {releases.map((release) => (
                   <div
                     key={release.id}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
+                    className="flex items-center justify-between p-4 bg-[var(--surface)] rounded-lg border border-[var(--border-color)]"
                   >
                     <div>
-                      <div className="text-white font-medium flex items-center gap-2">
+                      <div className="text-[var(--text)] font-medium flex items-center gap-2">
                         v{release.version}
-                        <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-xs">
+                        <Badge variant="outline" className="bg-[var(--surface-hover)] border-[var(--border-color)] text-[var(--text)] text-xs">
                           {release.platform}
                         </Badge>
                         {release.is_current && (
@@ -141,7 +141,7 @@ export default function AdminGameReleasesPage({ params }: { params: Promise<{ ga
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        className="gap-2 bg-[var(--surface-hover)] border-[var(--border-color)] text-[var(--text)] hover:bg-white/20"
                         onClick={() => archiveRelease(release.id)}
                       >
                         <Archive className="w-4 h-4" /> Archiwizuj

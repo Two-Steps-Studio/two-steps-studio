@@ -39,7 +39,7 @@ export default function GamesPage() {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       {/* Hero Section */}
-      <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+      <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
         <img
             src="/assets/HeroSection/games.avif"
             alt=""
@@ -49,7 +49,7 @@ export default function GamesPage() {
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-games)]/20 blur-3xl animate-pulse" />
 
         <div className="relative z-10 space-y-4 text-center">
-          <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+          <h1 className="text-5xl md:text-8xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
             <span className="text-[var(--color-games)]">{t.gamesPage.title}</span>
           </h1>
         </div>
@@ -82,7 +82,7 @@ function GameCarouselRow({ title, games }: { title: string; games: Game[] }) {
 
   return (
     <div className="mb-12">
-      <h2 className="mb-4 text-2xl font-bold text-white font-[family-name:var(--font-space)]">
+      <h2 className="mb-4 text-2xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">
         {title}
       </h2>
       <Carousel opts={{ loop: true, align: "start" }} className="w-full">
@@ -90,7 +90,7 @@ function GameCarouselRow({ title, games }: { title: string; games: Game[] }) {
           {games.map((game) => (
             <CarouselItem key={game.id} className="basis-1/3">
               <Link href={`/games/${game.id}`} className="group block">
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/5">
+                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] border border-[var(--border-color)] bg-[var(--surface)]">
                   {game.thumbnail_url ? (
                     <img
                       src={game.thumbnail_url}
@@ -99,11 +99,11 @@ function GameCarouselRow({ title, games }: { title: string; games: Game[] }) {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <Gamepad2 className="h-10 w-10 text-zinc-600" />
+                      <Gamepad2 className="h-10 w-10 text-[var(--text-muted)]" />
                     </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3">
-                    <p className="truncate text-sm font-bold text-white">{game.title}</p>
+                    <p className="truncate text-sm font-bold text-[var(--text)]">{game.title}</p>
                   </div>
                 </div>
               </Link>

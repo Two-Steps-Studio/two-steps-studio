@@ -98,14 +98,14 @@ export default function ShopPage() {
     if (product.category === "nick_color") {
       return (
         <div
-          className="h-16 w-16 rounded-full border-2 border-white/20 shrink-0"
+          className="h-16 w-16 rounded-full border-2 border-[var(--border-color)] shrink-0"
           style={{ backgroundColor: product.value }}
         />
       );
     }
     if (product.category === "background") {
       return (
-        <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-white/20 shrink-0">
+        <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-[var(--border-color)] shrink-0">
           <NextImage
             src={`/assets/discord/backgrounds/${encodeURIComponent(product.value)}.png`}
             alt={product.name}
@@ -151,16 +151,16 @@ export default function ShopPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="rounded-[2.5rem] glass animate-pulse bg-white/5 border-white/10 h-40" />
+            <Card key={i} className="rounded-[2.5rem] glass animate-pulse bg-[var(--surface)] border-[var(--border-color)] h-40" />
           ))}
         </div>
       ) : products.length === 0 ? (
         <Card className="w-full max-w-3xl mx-auto glass rounded-[2.5rem] shadow-2xl">
           <CardContent className="p-12 text-center">
-            <ShoppingCart className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
+            <ShoppingCart className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
             <h2 className="text-2xl font-bold mb-2 text-[var(--text)] ">{t.shopPage.emptyTitle}</h2>
-            <p className="text-zinc-400 mb-6">{t.shopPage.emptyDesc1}</p>
-            <p className="text-zinc-400 mb-6">{t.shopPage.emptyDesc2}</p>
+            <p className="text-[var(--text-muted)] mb-6">{t.shopPage.emptyDesc1}</p>
+            <p className="text-[var(--text-muted)] mb-6">{t.shopPage.emptyDesc2}</p>
             <Button
               onClick={() => router.push("/games")}
               className="mt-6 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-[var(--text)]  font-bold"
@@ -195,7 +195,7 @@ export default function ShopPage() {
                         {renderPreview(product)}
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg font-bold text-[var(--text)]  truncate">{product.name}</CardTitle>
-                          <p className="text-sm text-zinc-400 line-clamp-2 font-[family-name:var(--font-outfit)]">
+                          <p className="text-sm text-[var(--text-muted)] line-clamp-2 font-[family-name:var(--font-outfit)]">
                             {product.description}
                           </p>
                         </div>
@@ -239,7 +239,7 @@ export default function ShopPage() {
         })
       )}
 
-      <div className="mt-12 text-center text-sm text-zinc-500">
+      <div className="mt-12 text-center text-sm text-[var(--text-muted)]">
         <Shield size={16} className="inline-block mr-2" />
         {t.shopPage.footerNote}
       </div>

@@ -129,7 +129,7 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           {/* Header with Cover */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem] overflow-hidden">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem] overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
               {track.cover_image_url && (
                 <div className="aspect-square md:aspect-auto md:h-full">
@@ -147,16 +147,16 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
                       {GENRE_LABELS[track.genre]}
                     </Badge>
                   )}
-                  <h1 className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-space)]">
+                  <h1 className="text-3xl md:text-4xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">
                     {track.title}
                   </h1>
-                  <p className="text-2xl text-zinc-300 font-[family-name:var(--font-outfit)]">
+                  <p className="text-2xl text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">
                     {track.artist}
                   </p>
                   {track.album && (
-                    <p className="text-zinc-400">{track.album}</p>
+                    <p className="text-[var(--text-muted)]">{track.album}</p>
                   )}
-                  <div className="flex items-center gap-4 text-sm text-zinc-400">
+                  <div className="flex items-center gap-4 text-sm text-[var(--text-muted)]">
                     <div className="flex items-center gap-2">
                       <Clock size={16} />
                       <span>{formatDuration(track.duration_seconds)}</span>
@@ -174,7 +174,7 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
           </Card>
 
           {/* Audio Player */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
             <CardContent className="p-6">
               {track.audio_file_url && (
                 <audio
@@ -198,7 +198,7 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
                       onValueChange={handleSeek}
                       className="cursor-pointer"
                     />
-                    <div className="flex justify-between text-xs text-zinc-400">
+                    <div className="flex justify-between text-xs text-[var(--text-muted)]">
                       <span>{formatTime(currentTime)}</span>
                       <span>{formatDuration(track.duration_seconds)}</span>
                     </div>
@@ -206,7 +206,7 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
 
                   {/* Controls */}
                   <div className="flex items-center justify-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-zinc-400 hover:text-white">
+                    <Button variant="ghost" size="icon" onClick={() => handleSkip(-10)} className="text-[var(--text-muted)] hover:text-white">
                       <SkipBack size={24} />
                     </Button>
                     <Button
@@ -216,14 +216,14 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
                     >
                       {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-zinc-400 hover:text-white">
+                    <Button variant="ghost" size="icon" onClick={() => handleSkip(10)} className="text-[var(--text-muted)] hover:text-white">
                       <SkipForward size={24} />
                     </Button>
                   </div>
 
                   {/* Volume */}
                   <div className="flex items-center gap-3 justify-center">
-                    <Volume2 size={18} className="text-zinc-400" />
+                    <Volume2 size={18} className="text-[var(--text-muted)]" />
                     <Slider
                       value={[volume]}
                       max={100}
@@ -241,11 +241,11 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
                 // requirement in the admin form), so this needs to look
                 // intentional instead.
                 <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5">
-                    <VolumeX size={26} className="text-zinc-500" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface)]">
+                    <VolumeX size={26} className="text-[var(--text-muted)]" />
                   </div>
-                  <p className="text-sm font-semibold text-zinc-400">Brak pliku audio</p>
-                  <p className="text-xs text-zinc-500">Ten utwór nie ma jeszcze dodanego audio do odsłuchu.</p>
+                  <p className="text-sm font-semibold text-[var(--text-muted)]">Brak pliku audio</p>
+                  <p className="text-xs text-[var(--text-muted)]">Ten utwór nie ma jeszcze dodanego audio do odsłuchu.</p>
                 </div>
               )}
             </CardContent>
@@ -253,12 +253,12 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
 
           {/* Description */}
           {track.description && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Opis</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Opis</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
+                <div className="text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
                   {track.description}
                 </div>
               </CardContent>
@@ -267,12 +267,12 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
 
           {/* Lyrics */}
           {track.lyrics && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Tekst utworu</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Tekst utworu</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-zinc-300 leading-relaxed whitespace-pre-line font-mono text-sm">
+                <div className="text-[var(--text-muted)] leading-relaxed whitespace-pre-line font-mono text-sm">
                   {track.lyrics}
                 </div>
               </CardContent>
@@ -283,15 +283,15 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
         <div className="space-y-8">
           {/* External Links */}
           {(track.spotify_url || track.youtube_url || track.soundcloud_url) && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Linki zewnętrzne</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[var(--text)]">Linki zewnętrzne</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {track.spotify_url && (
                   <Button
                     variant="outline"
-                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    className="w-full border-[var(--border-color)] text-[var(--text)] hover:bg-white/10 rounded-full justify-start"
                     onClick={() => window.open(track.spotify_url, '_blank')}
                   >
                     <ExternalLink size={18} className="mr-2" />
@@ -301,7 +301,7 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
                 {track.youtube_url && (
                   <Button
                     variant="outline"
-                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    className="w-full border-[var(--border-color)] text-[var(--text)] hover:bg-white/10 rounded-full justify-start"
                     onClick={() => window.open(track.youtube_url, '_blank')}
                   >
                     <ExternalLink size={18} className="mr-2" />
@@ -311,7 +311,7 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
                 {track.soundcloud_url && (
                   <Button
                     variant="outline"
-                    className="w-full border-white/10 text-white hover:bg-white/10 rounded-full justify-start"
+                    className="w-full border-[var(--border-color)] text-[var(--text)] hover:bg-white/10 rounded-full justify-start"
                     onClick={() => window.open(track.soundcloud_url, '_blank')}
                   >
                     <ExternalLink size={18} className="mr-2" />
@@ -323,32 +323,32 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
           )}
 
           {/* Info */}
-          <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+          <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Informacje</CardTitle>
+              <CardTitle className="text-2xl font-bold text-[var(--text)]">Informacje</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Wykonawca:</span>
-                <span className="text-white">{track.artist}</span>
+                <span className="text-[var(--text-muted)]">Wykonawca:</span>
+                <span className="text-[var(--text)]">{track.artist}</span>
               </div>
               {track.album && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Album:</span>
-                  <span className="text-white">{track.album}</span>
+                  <span className="text-[var(--text-muted)]">Album:</span>
+                  <span className="text-[var(--text)]">{track.album}</span>
                 </div>
               )}
               {track.release_date && (
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Data wydania:</span>
-                  <span className="text-white">{new Date(track.release_date).toLocaleDateString('pl-PL')}</span>
+                  <span className="text-[var(--text-muted)]">Data wydania:</span>
+                  <span className="text-[var(--text)]">{new Date(track.release_date).toLocaleDateString('pl-PL')}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Odtworzenia:</span>
+                <span className="text-[var(--text-muted)]">Odtworzenia:</span>
                 <div className="flex items-center gap-1">
                   <Music size={14} className="text-[var(--color-records)]" />
-                  <span className="text-white">{track.plays || 0}</span>
+                  <span className="text-[var(--text)]">{track.plays || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -356,14 +356,14 @@ export default function MusicDetailClient({ params }: { params: Promise<{ id: st
 
           {/* Tags */}
           {track.tags && track.tags.length > 0 && (
-            <Card className="bg-white/5 border-white/10 rounded-[2.5rem]">
+            <Card className="bg-[var(--surface)] border-[var(--border-color)] rounded-[2.5rem]">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">Tagi</CardTitle>
+                <CardTitle className="text-xl font-bold text-[var(--text)]">Tagi</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {track.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-white/10 text-white border-white/20">
+                    <Badge key={tag} variant="secondary" className="bg-[var(--surface-hover)] text-[var(--text)] border-[var(--border-color)]">
                       {tag}
                     </Badge>
                   ))}

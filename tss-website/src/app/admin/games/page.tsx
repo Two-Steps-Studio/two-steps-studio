@@ -67,7 +67,7 @@ export default function AdminGamesPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
             <Gamepad2 className="w-8 h-8" />
             {t.adminGames.title}
           </h1>
@@ -89,7 +89,7 @@ export default function AdminGamesPage() {
                   <Link
                     key={game.id}
                     href={`/admin/games/${game.id}/releases`}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                    className="flex items-center justify-between p-4 bg-[var(--surface)] rounded-lg border border-[var(--border-color)] hover:bg-white/10 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       {game.thumbnail_url ? (
@@ -100,12 +100,12 @@ export default function AdminGamesPage() {
                         </div>
                       )}
                       <div>
-                        <div className="text-white font-medium">{game.title}</div>
+                        <div className="text-[var(--text)] font-medium">{game.title}</div>
                         <div className="text-white/50 text-sm">{game.developer || "-"}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="bg-white/10 border-white/20 text-white">
+                      <Badge variant="outline" className="bg-[var(--surface-hover)] border-[var(--border-color)] text-[var(--text)]">
                         {game.status}
                       </Badge>
                       <ChevronRight className="w-4 h-4 text-white/50" />

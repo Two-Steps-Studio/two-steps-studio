@@ -52,7 +52,7 @@ export default function InstallPrompt() {
             >
               <Link
                   href="/download"
-                  className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-white/20 transition-all shadow-lg"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-[var(--border-color)] rounded-full text-[var(--text)] hover:bg-white/20 transition-all shadow-lg"
               >
                 <DownloadIcon size={18} />
                 <span className="text-sm font-medium">{t.home.installApp}</span>

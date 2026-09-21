@@ -44,7 +44,7 @@ export default function BeatyPage() {
   const TIER_CONFIG: Record<BeatTier, { label: string; color: string; bgColor: string; description: string; borderColor: string }> = {
     free: {
       label: "Free",
-      color: "text-zinc-400",
+      color: "text-[var(--text-muted)]",
       bgColor: "bg-zinc-500/10",
       borderColor: "border-zinc-500/30",
       description: t.recordsBeats.tierDescFree,
@@ -189,7 +189,7 @@ export default function BeatyPage() {
       <div className="container mx-auto p-6 mt-20 max-w-7xl">
         <audio ref={audioRef} onEnded={() => setPlayingId(null)} className="hidden" />
         {/* Hero Section */}
-        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
           <img 
               src="/assets/HeroSection/records-beats.avif" 
               alt="" 
@@ -199,7 +199,7 @@ export default function BeatyPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-            <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+            <h1 className="text-5xl md:text-8xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
               {/* TODO: Add translation */}
               <span className="text-[var(--color-records)]">Beats</span>
             </h1>
@@ -227,7 +227,7 @@ export default function BeatyPage() {
 
       {/* Filtry tierów */}
       <div className="mb-8 flex flex-wrap gap-2">
-        <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
+        <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm mr-4">
           <Filter size={16} />
           <span>{t.recordsBeats.filterLabel}</span>
         </div>
@@ -237,7 +237,7 @@ export default function BeatyPage() {
           className={`rounded-full ${
             selectedTier === "all"
               ? "bg-[var(--color-records)] text-white"
-              : "border-white/10 text-zinc-400 hover:text-white"
+              : "border-white/10 text-[var(--text-muted)] hover:text-white"
           }`}
         >
           {t.recordsBeats.allTiers}
@@ -250,7 +250,7 @@ export default function BeatyPage() {
             className={`rounded-full ${
               selectedTier === tier
                 ? `${TIER_CONFIG[tier].bgColor} ${TIER_CONFIG[tier].color} border-0`
-                : "border-white/10 text-zinc-400 hover:text-white"
+                : "border-white/10 text-[var(--text-muted)] hover:text-white"
             }`}
           >
             {TIER_CONFIG[tier].label}
@@ -264,16 +264,16 @@ export default function BeatyPage() {
           {[...Array(6)].map((_, i) => (
             <Card
               key={i}
-              className="rounded-[2.5rem] bg-black/40 border border-white/10 animate-pulse h-80"
+              className="rounded-[2.5rem] bg-[var(--card-bg)] border border-[var(--border-color)] animate-pulse h-80"
             />
           ))}
         </div>
       ) : filteredBeats.length === 0 ? (
         <Card className="w-full glass rounded-[2.5rem] shadow-2xl">
           <CardContent className="p-12 text-center">
-            <Music className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">{t.recordsBeats.emptyTitle}</h2>
-            <p className="text-zinc-400">
+            <Music className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+            <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.recordsBeats.emptyTitle}</h2>
+            <p className="text-[var(--text-muted)]">
               {selectedTier === "all"
                 ? t.recordsBeats.emptyNone
                 : `${t.recordsBeats.emptyCategoryPrefix}${TIER_CONFIG[selectedTier].label}${t.recordsBeats.emptyCategorySuffix}`}
@@ -285,22 +285,22 @@ export default function BeatyPage() {
           {filteredBeats.map((beat) => (
             <Card
               key={beat.id}
-              className={`group relative overflow-hidden rounded-[2.5rem] bg-black/40 border border-white/10 transition-all duration-500 ${
+              className={`group relative overflow-hidden rounded-[2.5rem] bg-[var(--card-bg)] border border-[var(--border-color)] transition-all duration-500 ${
                 beat.status !== "available" ? "opacity-50 grayscale" : "hover:border-[var(--color-records)]"
               }`}
             >
               {/* Header beatu */}
-              <CardHeader className="pb-4 border-b border-white/5">
+              <CardHeader className="pb-4 border-b border-[var(--border-color)]">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     {beat.cover_image ? (
                       <img
                         src={beat.cover_image}
                         alt={beat.title}
-                        className="h-16 w-16 rounded-2xl object-cover border border-white/10"
+                        className="h-16 w-16 rounded-2xl object-cover border border-[var(--border-color)]"
                       />
                     ) : (
-                      <div className="h-16 w-16 rounded-2xl border border-white/10 bg-[var(--color-records)]/10 flex items-center justify-center">
+                      <div className="h-16 w-16 rounded-2xl border border-[var(--border-color)] bg-[var(--color-records)]/10 flex items-center justify-center">
                         <Music className="h-6 w-6 text-[var(--color-records)]" />
                       </div>
                     )}
@@ -325,27 +325,27 @@ export default function BeatyPage() {
                         size="icon"
                         disabled
                         title={t.recordsBeats.noPreviewAvailable}
-                        className="h-12 w-12 rounded-full bg-white/5 text-zinc-500 opacity-60"
+                        className="h-12 w-12 rounded-full bg-[var(--surface)] text-[var(--text-muted)] opacity-60"
                       >
                         <VolumeX size={20} />
                       </Button>
                     )}
                     <div>
-                      <CardTitle className="text-2xl font-bold text-white font-[family-name:var(--font-space)]">
+                      <CardTitle className="text-2xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">
                         {beat.title}
                       </CardTitle>
-                      <CardDescription className="flex items-center gap-2 text-zinc-500 font-[family-name:var(--font-outfit)] text-sm mt-1">
+                      <CardDescription className="flex items-center gap-2 text-[var(--text-muted)] font-[family-name:var(--font-outfit)] text-sm mt-1">
                         <Calendar size={14} />
                         {t.recordsBeats.addedLabel}{beat.upload_date ? new Date(beat.upload_date).toLocaleDateString() : t.recordsBeats.recentlyFallback}
                         {beat.bpm && <span className="mx-2">•</span>}
-                        {beat.bpm && <span className="text-zinc-400">{beat.bpm} {t.recordsBeats.bpmUnit}</span>}
+                        {beat.bpm && <span className="text-[var(--text-muted)]">{beat.bpm} {t.recordsBeats.bpmUnit}</span>}
                         {beat.key && <span className="mx-2">•</span>}
-                        {beat.key && <span className="text-zinc-400">{beat.key}</span>}
+                        {beat.key && <span className="text-[var(--text-muted)]">{beat.key}</span>}
                       </CardDescription>
                     </div>
                   </div>
                   {beat.description && (
-                    <p className="text-zinc-400 text-sm max-w-md font-[family-name:var(--font-outfit)]">
+                    <p className="text-[var(--text-muted)] text-sm max-w-md font-[family-name:var(--font-outfit)]">
                       {beat.description}
                     </p>
                   )}
@@ -366,17 +366,17 @@ export default function BeatyPage() {
                         <div className={`text-sm font-bold ${config.color} mb-1`}>{config.label}</div>
 
                         {/* Cena */}
-                        <div className="text-2xl font-black text-white mb-2">
+                        <div className="text-2xl font-black text-[var(--text)] mb-2">
                           {pkg.price === 0 ? t.recordsBeats.freePriceLabel : `${pkg.price} ${t.recordsBeats.currencySuffix}`}
                         </div>
 
                         {/* Opis */}
-                        <p className="text-xs text-zinc-400 mb-3">{pkg.description}</p>
+                        <p className="text-xs text-[var(--text-muted)] mb-3">{pkg.description}</p>
 
                         {/* Features */}
                         <ul className="space-y-1.5 mb-4">
                           {pkg.features.map((feature, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-xs text-zinc-300">
+                            <li key={idx} className="flex items-start gap-2 text-xs text-[var(--text-muted)]">
                               <Check size={12} className={`shrink-0 mt-0.5 ${config.color}`} />
                               <span>{feature}</span>
                             </li>
@@ -389,8 +389,8 @@ export default function BeatyPage() {
                           disabled={beat.status !== "available"}
                           className={`w-full rounded-xl font-bold ${
                             pkg.tier === "free"
-                              ? "bg-zinc-700 text-white hover:bg-zinc-600"
-                              : "bg-[var(--color-records)] text-white hover:bg-[var(--color-records)]/80"
+                              ? "bg-zinc-700 text-[var(--text)] hover:bg-zinc-600"
+                              : "bg-[var(--color-records)] text-[var(--text)] hover:bg-[var(--color-records)]/80"
                           }`}
                           size="sm"
                         >
@@ -407,8 +407,8 @@ export default function BeatyPage() {
       )}
 
       {/* Info o tierach */}
-      <div className="mt-12 p-8 rounded-[2rem] bg-black/40 border border-white/10">
-        <h3 className="text-2xl font-bold text-white mb-6 font-[family-name:var(--font-space)]">
+      <div className="mt-12 p-8 rounded-[2rem] bg-[var(--card-bg)] border border-[var(--border-color)]">
+        <h3 className="text-2xl font-bold text-[var(--text)] mb-6 font-[family-name:var(--font-space)]">
           {t.recordsBeats.licenseInfoTitle}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -418,15 +418,15 @@ export default function BeatyPage() {
             return (
               <div
                 key={tier}
-                className={`p-4 rounded-xl ${config.bgColor} border border-white/5`}
+                className={`p-4 rounded-xl ${config.bgColor} border border-[var(--border-color)]`}
               >
                 <h4 className={`font-bold mb-2 ${config.color}`}>
                   {config.label}
                 </h4>
-                <p className="text-xs text-zinc-400 mb-3">{config.description}</p>
+                <p className="text-xs text-[var(--text-muted)] mb-3">{config.description}</p>
                 <ul className="space-y-1">
                   {features.map((f, i) => (
-                    <li key={i} className="text-xs text-zinc-300 flex items-start gap-1.5">
+                    <li key={i} className="text-xs text-[var(--text-muted)] flex items-start gap-1.5">
                       <Check size={10} className={`shrink-0 mt-0.5 ${config.color}`} />
                       {f}
                     </li>

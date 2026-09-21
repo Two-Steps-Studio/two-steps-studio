@@ -32,11 +32,11 @@ export function InstallPWA() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-4 p-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl"
+            className="flex items-center gap-4 p-2 rounded-2xl bg-white/5 border border-[var(--border-color)] backdrop-blur-xl"
           >
             <div className="flex -space-x-2 px-2">
               {mounted && [Laptop, Monitor, Gamepad2].filter(Boolean).map((Icon: any, i) => (
-                <div key={i} className="w-8 h-8 rounded-full bg-black border border-white/10 flex items-center justify-center text-[var(--color-general)]">
+                <div key={i} className="w-8 h-8 rounded-full bg-black border border-[var(--border-color)] flex items-center justify-center text-[var(--color-general)]">
                   <Icon size={14} />
                 </div>
               ))}
@@ -55,7 +55,7 @@ export function InstallPWA() {
               onClick={handleInstall}
               size="lg"
               variant="outline"
-              className="h-16 px-12 rounded-2xl border-2 border-[var(--color-general)]/30 hover:border-[var(--color-general)] bg-white/5 hover:bg-[var(--color-general)]/10 text-white transition-all flex items-center gap-3 group/btn shadow-2xl backdrop-blur-md font-black text-xl shadow-[var(--color-general)]/10"
+              className="h-16 px-12 rounded-2xl border-2 border-[var(--color-general)]/30 hover:border-[var(--color-general)] bg-white/5 hover:bg-[var(--color-general)]/10 text-[var(--text)] transition-all flex items-center gap-3 group/btn shadow-2xl backdrop-blur-md font-black text-xl shadow-[var(--color-general)]/10"
             >
               <Gamepad2 className="group-hover/btn:rotate-12 transition-transform text-[var(--color-general)]" />
               <div className="flex flex-col items-start leading-none">

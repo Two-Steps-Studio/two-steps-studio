@@ -53,7 +53,7 @@ export default function PodcastyPage() {
   return (
       <div className="container mx-auto p-6 mt-20 max-w-7xl">
         {/* Hero Section */}
-        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
           <img
               src="/assets/HeroSection/records-podcast.avif"
               alt=""
@@ -63,7 +63,7 @@ export default function PodcastyPage() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
         <div className="relative z-10 space-y-4 text-center">
-          <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+          <h1 className="text-5xl md:text-8xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
            <span className="text-[var(--color-records)]">{t.recordsPodcasts.title}</span>
           </h1>
         </div>
@@ -91,18 +91,18 @@ export default function PodcastyPage() {
       {/* Search and Filters */}
       <div className="mb-8 space-y-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={20} />
           <Input
             placeholder={t.recordsPodcasts.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 rounded-2xl bg-black/40 border-white/10 text-white placeholder:text-zinc-500"
+            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border-color)] text-[var(--text)] placeholder:text-zinc-500"
           />
         </div>
 
         {seasons.length > 0 && (
           <div className="flex flex-wrap gap-2 items-center">
-            <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
+            <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm mr-4">
               <Filter size={16} />
               <span>{t.recordsPodcasts.seasonLabel}</span>
             </div>
@@ -112,7 +112,7 @@ export default function PodcastyPage() {
               className={`rounded-full ${
                 selectedSeason === "all"
                   ? "bg-[var(--color-records)] text-white"
-                  : "border-white/10 text-zinc-400 hover:text-white"
+                  : "border-white/10 text-[var(--text-muted)] hover:text-white"
               }`}
             >
               {t.recordsPodcasts.allSeasons}
@@ -125,7 +125,7 @@ export default function PodcastyPage() {
                 className={`rounded-full ${
                   selectedSeason === season
                     ? "bg-[var(--color-records)] text-white"
-                    : "border-white/10 text-zinc-400 hover:text-white"
+                    : "border-white/10 text-[var(--text-muted)] hover:text-white"
                 }`}
               >
                 {`${t.recordsPodcasts.seasonPrefix}${season}`}
@@ -141,16 +141,16 @@ export default function PodcastyPage() {
           {[...Array(6)].map((_, i) => (
             <Card
               key={i}
-              className="rounded-[2rem] bg-black/40 border border-white/10 animate-pulse h-64"
+              className="rounded-[2rem] bg-[var(--card-bg)] border border-[var(--border-color)] animate-pulse h-64"
             />
           ))}
         </div>
       ) : filteredPodcasts.length === 0 ? (
-        <Card className="w-full rounded-[2.5rem] bg-black/40 border border-white/10">
+        <Card className="w-full rounded-[2.5rem] bg-[var(--card-bg)] border border-[var(--border-color)]">
           <CardContent className="p-12 text-center">
-            <Mic2 className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">{t.recordsPodcasts.emptyTitle}</h2>
-            <p className="text-zinc-400">
+            <Mic2 className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+            <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.recordsPodcasts.emptyTitle}</h2>
+            <p className="text-[var(--text-muted)]">
               {searchQuery || selectedSeason !== "all"
                 ? t.recordsPodcasts.emptyFiltered
                 : t.recordsPodcasts.emptyNone}
@@ -162,10 +162,10 @@ export default function PodcastyPage() {
           {filteredPodcasts.map((podcast) => (
             <Card
               key={podcast.id}
-              className="group relative overflow-hidden rounded-[2rem] bg-black/40 border border-white/10 hover:border-[var(--color-records)] transition-all duration-300 hover:-translate-y-1"
+              className="group relative overflow-hidden rounded-[2rem] bg-[var(--card-bg)] border border-[var(--border-color)] hover:border-[var(--color-records)] transition-all duration-300 hover:-translate-y-1"
             >
               {podcast.thumbnail_url && (
-                <div className="h-48 overflow-hidden bg-white/5">
+                <div className="h-48 overflow-hidden bg-[var(--surface)]">
                   <img
                     src={podcast.thumbnail_url}
                     alt={podcast.title}
@@ -176,7 +176,7 @@ export default function PodcastyPage() {
 
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-xl font-bold text-white font-[family-name:var(--font-space)] line-clamp-2">
+                  <CardTitle className="text-xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] line-clamp-2">
                     {podcast.title}
                   </CardTitle>
                   {podcast.featured && (
@@ -186,7 +186,7 @@ export default function PodcastyPage() {
                   )}
                 </div>
                 {podcast.host && (
-                  <CardDescription className="text-zinc-400 font-[family-name:var(--font-outfit)] text-sm">
+                  <CardDescription className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)] text-sm">
                     {podcast.host}
                   </CardDescription>
                 )}
@@ -194,12 +194,12 @@ export default function PodcastyPage() {
 
               <CardContent className="pt-0 space-y-3">
                 {podcast.description && (
-                  <p className="text-sm text-zinc-400 line-clamp-2 font-[family-name:var(--font-outfit)]">
+                  <p className="text-sm text-[var(--text-muted)] line-clamp-2 font-[family-name:var(--font-outfit)]">
                     {podcast.description}
                   </p>
                 )}
 
-                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                   {podcast.season && (
                     <Badge variant="secondary" className="bg-[var(--color-records)]/10 text-[var(--color-records)] border border-[var(--color-records)]/20 text-xs">
                       {`${t.recordsPodcasts.seasonPrefix}${podcast.season}`}
@@ -210,7 +210,7 @@ export default function PodcastyPage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-zinc-500">
+                <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                   <div className="flex items-center gap-2">
                     <Calendar size={12} />
                     <span>

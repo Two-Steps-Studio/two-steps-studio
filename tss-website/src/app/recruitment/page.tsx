@@ -128,7 +128,7 @@ export default function RekrutacjaPage() {
                     onClick={() => setFormData((prev) => ({ ...prev, type }))}
                     className={`h-11 rounded-xl text-sm font-bold border transition-colors ${
                       formData.type === type
-                        ? "bg-[var(--color-general)] text-white border-[var(--color-general)]"
+                        ? "bg-[var(--color-general)] text-[var(--text)] border-[var(--color-general)]"
                         : `border-[var(--border-color)] text-[var(--text)] ${!darkMode ? "hover:bg-neutral-100" : "hover:bg-white/5"}`
                     }`}
                   >
@@ -189,7 +189,7 @@ export default function RekrutacjaPage() {
 
           <div className="flex items-center gap-3">
             <div className={`h-px flex-1 ${!darkMode ? 'bg-neutral-200' : 'bg-white/10'}`} />
-            <span className="text-xs text-neutral-400 uppercase tracking-widest">{t.rekrutacja.or}</span>
+            <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">{t.rekrutacja.or}</span>
             <div className={`h-px flex-1 ${!darkMode ? 'bg-neutral-200' : 'bg-white/10'}`} />
           </div>
 

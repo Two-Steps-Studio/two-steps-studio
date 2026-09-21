@@ -81,7 +81,7 @@ export function UpdateNotification() {
 
         {isDownloading && downloadProgress && (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm text-[var(--text-muted)]">
               <span>Downloading update...</span>
               <span>{Math.round(downloadProgress.percent)}%</span>
             </div>

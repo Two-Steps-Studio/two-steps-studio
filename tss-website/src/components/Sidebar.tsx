@@ -239,7 +239,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                           className={cn(
                               "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all relative group overflow-hidden",
                               isActive
-                                  ? "text-white"
+                                  ? "text-[var(--text)]"
                                   : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                           )}
                       >
@@ -288,7 +288,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                         className={cn(
                             "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all relative group overflow-hidden w-full text-left",
                             isSectionActive
-                                ? "text-white"
+                                ? "text-[var(--text)]"
                                 : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                         )}
                     >
@@ -332,7 +332,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
                                           href={item.href}
                                           className={cn(
                                               "flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all relative group overflow-hidden",
-                                              isActive ? "text-white" : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+                                              isActive ? "text-[var(--text)]" : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                                           )}
                                       >
                                         {mounted && isActive && (
@@ -399,7 +399,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
               className={cn(
                   "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all group relative overflow-hidden border border-(--border-color)",
                   pathname === "/settings"
-                      ? "text-white bg-(--color-general) shadow-lg shadow-(--color-general)/20 font-black"
+                      ? "text-[var(--text)] bg-(--color-general) shadow-lg shadow-(--color-general)/20 font-black"
                       : "text-[var(--text)]/60 hover:text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
               )}
           >

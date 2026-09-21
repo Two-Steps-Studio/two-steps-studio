@@ -48,7 +48,7 @@ export function NewsletterForm() {
           placeholder={t.home.emailPlaceholder}
           required
           disabled={status === "success"}
-          className="w-full h-16 md:h-20 pl-8 pr-40 rounded-3xl bg-white/5 border border-white/10 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[var(--color-general)] focus:ring-4 focus:ring-[var(--color-general)]/10 transition-all text-lg font-medium backdrop-blur-md"
+          className="w-full h-16 md:h-20 pl-8 pr-40 rounded-3xl bg-white/5 border border-[var(--border-color)] text-[var(--text)] placeholder:text-zinc-500 focus:outline-none focus:border-[var(--color-general)] focus:ring-4 focus:ring-[var(--color-general)]/10 transition-all text-lg font-medium backdrop-blur-md"
         />
         <div className="absolute right-2 top-2 bottom-2">
           <Button

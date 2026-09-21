@@ -159,7 +159,7 @@ export default function PublicProfilePage() {
                                     <AvatarImage src={profile?.avatar_url} />
                                     <AvatarFallback className="text-4xl bg-white text-black font-bold">{displayName?.[0]}</AvatarFallback>
                                 </Avatar>
-                                <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-white font-bold rounded-full shadow-lg" style={{ backgroundColor: roleInfo.color }}>
+                                <Badge className="absolute -bottom-2 -right-2 px-3 py-1 text-[var(--text)] font-bold rounded-full shadow-lg" style={{ backgroundColor: roleInfo.color }}>
                                     {roleInfo.label}
                                 </Badge>
                             </div>
@@ -175,15 +175,15 @@ export default function PublicProfilePage() {
                             </div>
 
                             <div
-                                className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-white/15"
+                                className="w-full md:w-72 space-y-3 bg-black/35 backdrop-blur-md p-5 rounded-2xl border border-[var(--border-color)]"
                                 style={{ "--accent-color": nickColorValue || "var(--color-general)" } as React.CSSProperties}
                             >
                                 <div className="flex items-center justify-between text-sm mb-1">
-                                    <span className="font-bold flex items-center gap-2 text-white text-base"><Trophy size={15} className="text-[var(--accent-color)]" /> {t.profile.levelProgress}</span>
+                                    <span className="font-bold flex items-center gap-2 text-[var(--text)] text-base"><Trophy size={15} className="text-[var(--accent-color)]" /> {t.profile.levelProgress}</span>
                                     <span className="font-black text-[var(--accent-color)] text-base">{Math.round(progress)}%</span>
                                 </div>
-                                <Progress value={progress} className="h-4 rounded-full bg-white/10 border-white/15" indicatorClassName="bg-[var(--accent-color)]" />
-                                <div className="flex justify-between text-xs uppercase font-black opacity-60 text-white">
+                                <Progress value={progress} className="h-4 rounded-full bg-[var(--surface-hover)] border-[var(--border-color)]" indicatorClassName="bg-[var(--accent-color)]" />
+                                <div className="flex justify-between text-xs uppercase font-black opacity-60 text-[var(--text)]">
                                     <span>{xp} XP</span><span>{nextLevelXp} XP</span>
                                 </div>
                             </div>

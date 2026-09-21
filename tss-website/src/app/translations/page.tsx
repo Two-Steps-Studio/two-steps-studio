@@ -203,7 +203,7 @@ export default function TranslationManagementPage() {
                     "px-3 py-1.5 rounded-full text-xs font-bold border",
                     locale === l
                       ? "bg-[var(--color-general)] text-white border-[var(--color-general)]"
-                      : "bg-white/5 text-white/70 border-white/20 hover:border-white/40",
+                      : "bg-[var(--surface)] text-white/70 border-[var(--border-color)] hover:border-white/40",
                   )}
                 >
                   {l.toUpperCase()}

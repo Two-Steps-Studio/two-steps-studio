@@ -76,7 +76,7 @@ export default function MusicPage() {
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
       {/* Hero Section */}
-      <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+      <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
         <img
             src="/assets/HeroSection/records-music.avif"
             alt=""
@@ -86,7 +86,7 @@ export default function MusicPage() {
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-records)]/20 blur-3xl animate-pulse" />
 
         <div className="relative z-10 space-y-4 text-center">
-          <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+          <h1 className="text-5xl md:text-8xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
             <span className="text-[var(--color-records)]">{t.recordsMusic.title}</span>
           </h1>
         </div>
@@ -114,17 +114,17 @@ export default function MusicPage() {
       {/* Search and Filters */}
       <div className="mb-8 space-y-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={20} />
           <Input
             placeholder={t.recordsMusic.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 rounded-2xl bg-black/40 border-white/10 text-white placeholder:text-zinc-500"
+            className="pl-12 h-12 rounded-2xl bg-[var(--card-bg)] border-[var(--border-color)] text-[var(--text)] placeholder:text-zinc-500"
           />
         </div>
 
         <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
+          <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm mr-4">
             <Filter size={16} />
             <span>{t.recordsMusic.genreLabel}</span>
           </div>
@@ -134,7 +134,7 @@ export default function MusicPage() {
             className={`rounded-full ${
               selectedGenre === "all"
                 ? "bg-[var(--color-records)] text-white"
-                : "border-white/10 text-zinc-400 hover:text-white"
+                : "border-white/10 text-[var(--text-muted)] hover:text-white"
             }`}
           >
             {t.recordsMusic.allGenres}
@@ -147,7 +147,7 @@ export default function MusicPage() {
               className={`rounded-full ${
                 selectedGenre === genre
                   ? "bg-[var(--color-records)] text-white"
-                  : "border-white/10 text-zinc-400 hover:text-white"
+                  : "border-white/10 text-[var(--text-muted)] hover:text-white"
               }`}
             >
               {GENRE_LABELS[genre]}
@@ -162,16 +162,16 @@ export default function MusicPage() {
           {[...Array(6)].map((_, i) => (
             <Card
               key={i}
-              className="rounded-[2rem] bg-black/40 border border-white/10 animate-pulse h-64"
+              className="rounded-[2rem] bg-[var(--card-bg)] border border-[var(--border-color)] animate-pulse h-64"
             />
           ))}
         </div>
       ) : filteredTracks.length === 0 ? (
-        <Card className="w-full rounded-[2.5rem] bg-black/40 border border-white/10">
+        <Card className="w-full rounded-[2.5rem] bg-[var(--card-bg)] border border-[var(--border-color)]">
           <CardContent className="p-12 text-center">
-            <Music className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-            <h2 className="text-2xl font-bold mb-2 text-white">{t.recordsMusic.emptyTitle}</h2>
-            <p className="text-zinc-400">
+            <Music className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+            <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.recordsMusic.emptyTitle}</h2>
+            <p className="text-[var(--text-muted)]">
               {searchQuery || selectedGenre !== "all"
                 ? t.recordsMusic.emptyFiltered
                 : t.recordsMusic.emptyNone}
@@ -183,10 +183,10 @@ export default function MusicPage() {
           {filteredTracks.map((track) => (
             <Card
               key={track.id}
-              className="group relative overflow-hidden rounded-[2rem] bg-black/40 border border-white/10 hover:border-[var(--color-records)] transition-all duration-300 hover:-translate-y-1"
+              className="group relative overflow-hidden rounded-[2rem] bg-[var(--card-bg)] border border-[var(--border-color)] hover:border-[var(--color-records)] transition-all duration-300 hover:-translate-y-1"
             >
               {track.cover_image_url && (
-                <div className="h-48 overflow-hidden bg-white/5">
+                <div className="h-48 overflow-hidden bg-[var(--surface)]">
                   <img
                     src={track.cover_image_url}
                     alt={track.title}
@@ -196,10 +196,10 @@ export default function MusicPage() {
               )}
 
               <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-white font-[family-name:var(--font-space)] line-clamp-1">
+                <CardTitle className="text-xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] line-clamp-1">
                   {track.title}
                 </CardTitle>
-                <CardDescription className="text-zinc-400 font-[family-name:var(--font-outfit)] text-sm">
+                <CardDescription className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)] text-sm">
                   {track.artist}
                   {track.album && ` • ${track.album}`}
                 </CardDescription>
@@ -212,7 +212,7 @@ export default function MusicPage() {
                   </Badge>
                 )}
 
-                <div className="flex items-center justify-between text-xs text-zinc-500">
+                <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                   <div className="flex items-center gap-2">
                     <Clock size={12} />
                     <span>{formatDuration(track.duration_seconds)}</span>

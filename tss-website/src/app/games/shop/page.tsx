@@ -83,7 +83,7 @@ export default function Page() {
     <>
       <div className="container mx-auto p-6 mt-20 max-w-7xl">
         {/* Hero Section */}
-        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
+        <div className="relative mb-16 md:aspect-video p-8 md:p-12 rounded-[2.5rem] overflow-hidden bg-black/40 border border-[var(--border-color)] backdrop-blur-md shadow-2xl flex flex-col items-center justify-center">
           <img
               src="/assets/HeroSection/games-shop.avif"
               alt=""
@@ -93,7 +93,7 @@ export default function Page() {
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-[var(--color-games)]/20 blur-3xl animate-pulse" />
 
           <div className="relative z-10 space-y-4 text-center">
-            <h1 className="text-5xl md:text-8xl font-bold text-white font-[family-name:var(--font-space)] tracking-tight">
+            <h1 className="text-5xl md:text-8xl font-bold text-[var(--text)] font-[family-name:var(--font-space)] tracking-tight">
               <span className="text-[var(--color-games)]">{t.gamesShopPage.title}</span>
             </h1>
           </div>
@@ -131,7 +131,7 @@ export default function Page() {
               {featuredGames.map((game) => (
                 <CarouselItem key={game.id} className="basis-1/3">
                   <Link href={`/games/${game.id}`} className="group block">
-                    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/5">
+                    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] border border-[var(--border-color)] bg-[var(--surface)]">
                       {game.thumbnail_url ? (
                         <img
                           src={game.thumbnail_url}
@@ -140,11 +140,11 @@ export default function Page() {
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          <Gamepad2 className="h-10 w-10 text-zinc-600" />
+                          <Gamepad2 className="h-10 w-10 text-[var(--text-muted)]" />
                         </div>
                       )}
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3">
-                        <p className="truncate text-sm font-bold text-white">{game.title}</p>
+                        <p className="truncate text-sm font-bold text-[var(--text)]">{game.title}</p>
                       </div>
                     </div>
                   </Link>
@@ -160,7 +160,7 @@ export default function Page() {
       {/* Search and Filters */}
       <div className="container mx-auto px-6 mb-8 max-w-7xl space-y-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={20} />
           <Input
             placeholder={t.gamesCatalog.searchPlaceholder}
             value={searchQuery}
@@ -170,7 +170,7 @@ export default function Page() {
         </div>
 
         <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
+          <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm mr-4">
             <Filter size={16} />
             <span>{t.gamesCatalog.categoryLabel}</span>
           </div>
@@ -180,7 +180,7 @@ export default function Page() {
             className={`rounded-full ${
               selectedCategory === "all"
                 ? "bg-[var(--color-games)] text-white"
-                : "border-white/10 text-zinc-400 hover:text-white"
+                : "border-white/10 text-[var(--text-muted)] hover:text-white"
             }`}
           >
             {t.gamesCatalog.allCategories}
@@ -193,7 +193,7 @@ export default function Page() {
               className={`rounded-full ${
                 selectedCategory === category
                   ? "bg-[var(--color-games)] text-white"
-                  : "border-white/10 text-zinc-400 hover:text-white"
+                  : "border-white/10 text-[var(--text-muted)] hover:text-white"
               }`}
             >
               {CATEGORY_LABELS[category]}
@@ -202,13 +202,13 @@ export default function Page() {
         </div>
 
         <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center gap-2 text-zinc-400 text-sm mr-4">
+          <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm mr-4">
             {t.gamesCatalog.sortLabel}
           </div>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-black/40 border border-white/10 text-white rounded-xl px-4 py-2 text-sm"
+            className="bg-[var(--card-bg)] border border-[var(--border-color)] text-[var(--text)] rounded-xl px-4 py-2 text-sm"
           >
             <option value="created_at">{t.gamesCatalog.sortAdded}</option>
             <option value="release_date">{t.gamesCatalog.sortReleased}</option>
@@ -219,7 +219,7 @@ export default function Page() {
             variant="outline"
             size="sm"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            className="rounded-xl border-white/10 text-zinc-400 hover:text-white"
+            className="rounded-xl border-[var(--border-color)] text-[var(--text-muted)] hover:text-white"
           >
             {sortOrder === "asc" ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
           </Button>
@@ -233,16 +233,16 @@ export default function Page() {
             {[...Array(10)].map((_, i) => (
               <Card
                 key={i}
-                className="rounded-[2rem] bg-[var(--card-bg)] border border-white/10 animate-pulse h-96"
+                className="rounded-[2rem] bg-[var(--card-bg)] border border-[var(--border-color)] animate-pulse h-96"
               />
             ))}
           </div>
         ) : filteredGames.length === 0 ? (
           <Card className="w-full rounded-[2.5rem] ">
             <CardContent className="p-12 text-center">
-              <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-zinc-400" />
-              <h2 className="text-2xl font-bold mb-2 text-white">{t.gamesCatalog.emptyTitle}</h2>
-              <p className="text-zinc-400">
+              <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+              <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.gamesCatalog.emptyTitle}</h2>
+              <p className="text-[var(--text-muted)]">
                 {searchQuery || selectedCategory !== "all"
                   ? t.gamesCatalog.emptyFiltered
                   : t.gamesCatalog.emptyNone}
@@ -257,7 +257,7 @@ export default function Page() {
                 className="group relative overflow-hidden rounded-[2rem] hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
               >
                 {game.thumbnail_url && (
-                  <div className="aspect-[2/3] w-full overflow-hidden bg-white/5">
+                  <div className="aspect-[2/3] w-full overflow-hidden bg-[var(--surface)]">
                     <img
                       src={game.thumbnail_url}
                       alt={game.title}
@@ -272,13 +272,13 @@ export default function Page() {
                       {game.title}
                     </CardTitle>
                     {game.status && game.status !== 'published' && (
-                      <Badge variant="secondary" className="bg-[var(--card-bg)] text-zinc-400 border border-[var(--border] text-xs shrink-0">
+                      <Badge variant="secondary" className="bg-[var(--card-bg)] text-[var(--text-muted)] border border-[var(--border] text-xs shrink-0">
                         {STATUS_LABELS[game.status]}
                       </Badge>
                     )}
                   </div>
                   {game.developer && (
-                    <CardDescription className="text-zinc-400 font-[family-name:var(--font-outfit)] text-sm">
+                    <CardDescription className="text-[var(--text-muted)] font-[family-name:var(--font-outfit)] text-sm">
                       {game.developer}
                     </CardDescription>
                   )}
@@ -286,7 +286,7 @@ export default function Page() {
 
                 <CardContent className="pt-0 space-y-3">
                   {game.short_description && (
-                    <p className="text-sm text-zinc-400 line-clamp-2 font-[family-name:var(--font-outfit)]">
+                    <p className="text-sm text-[var(--text-muted)] line-clamp-2 font-[family-name:var(--font-outfit)]">
                       {game.short_description}
                     </p>
                   )}
@@ -297,7 +297,7 @@ export default function Page() {
                     </Badge>
                   )}
 
-                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                  <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                     <div className="flex items-center gap-2">
                       <Eye size={12} />
                       <span>{game.views || 0}</span>

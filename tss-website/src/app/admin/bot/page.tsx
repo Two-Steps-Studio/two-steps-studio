@@ -402,7 +402,7 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
             onClick={() => setVip((v) => ({ ...v, [key]: !v[key] }))}
             className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide border transition-colors ${
               vip[key]
-                ? "bg-[var(--color-general)] text-white border-[var(--color-general)]"
+                ? "bg-[var(--color-general)] text-[var(--text)] border-[var(--color-general)]"
                 : "bg-transparent text-[var(--text-muted)] border-[var(--border-color)]"
             }`}
           >

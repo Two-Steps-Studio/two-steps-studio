@@ -171,7 +171,7 @@ export function TopBar({ className }: { className?: string }) {
                     }
                   }}
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/5 dark:bg-white/10 border border-white/5 opacity-50 group-focus-within:opacity-100 transition-opacity">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/5 dark:bg-white/10 border border-[var(--border-color)] opacity-50 group-focus-within:opacity-100 transition-opacity">
                 <Command size={10} className="font-bold" />
               </div>
             </div>
@@ -241,7 +241,7 @@ export function TopBar({ className }: { className?: string }) {
                 </div>
             ) : (
                 <Link href="/login">
-                  <Button variant="outline" className="rounded-2xl h-11 px-4 border-white/10 hover:bg-white/5 font-bold flex items-center gap-2">
+                  <Button variant="outline" className="rounded-2xl h-11 px-4 border-[var(--border-color)] hover:bg-white/5 font-bold flex items-center gap-2">
                     <LogIn size={18} />
                     <span className="hidden sm:inline">{t.nav.login}</span>
                   </Button>
