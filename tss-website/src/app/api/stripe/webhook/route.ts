@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (event.type === "checkout.session.completed") {
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "checkout.session.async_payment_succeeded"
+  ) {
     const session = event.data.object as Stripe.Checkout.Session;
     const beatId = session.metadata?.beat_id;
     const tier = session.metadata?.tier;
@@ -97,23 +100,23 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        // Idempotency check: only update if it's still 'pending'
-        const { data: order, error: fetchError } = await supabase
-          .from("service_orders")
-          .select("status")
-          .eq("stripe_session_id", session.id)
-          .maybeSingle();
-
-        if (fetchError) throw fetchError;
-
-        if (order && order.status === "pending") {
-          const { error: updateError } = await supabase
-            .from("service_orders")
-            .update({ status: "paid", updated_at: new Date().toISOString() })
-            .eq("stripe_session_id", session.id);
-
-          if (updateError) throw updateError;
+        // "completed" also fires for delayed payment methods before the money
+        // has actually arrived - those are marked paid later, by
+        // async_payment_succeeded.
+        if (session.payment_status !== "paid") {
+          console.log('[Webhook] Service session not paid yet, skipping:', session.id);
+          return NextResponse.json({ received: true });
         }
+
+        // Single conditional UPDATE: only a still-pending order flips to paid,
+        // so a retried/duplicated webhook is a no-op without a check-then-write race.
+        const { error: updateError } = await supabase
+          .from("service_orders")
+          .update({ status: "paid", updated_at: new Date().toISOString() })
+          .eq("stripe_session_id", session.id)
+          .eq("status", "pending");
+
+        if (updateError) throw updateError;
       } catch (err) {
         console.error('[Webhook] Service fulfillment error:', err);
         return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });

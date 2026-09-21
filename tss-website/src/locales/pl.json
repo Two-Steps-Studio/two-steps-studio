@@ -319,6 +319,7 @@
     "subtitle": "Tworzymy technologie, narzędzia i doświadczenia, które pomagają zamieniać pomysły w działające projekty. Od pierwszego prototypu po gotowy produkt - budujemy, testujemy i rozwijamy rozwiązania stojące za Two Steps Studio.",
     "navAbout": "O nas",
     "navRecruitment": "Rekrutacja",
+    "navServices": "Usługi",
     "mainTitle": "Od pomysłu do działającego projektu",
     "mainP1": "DEV to przestrzeń Two Steps Studio poświęcona tworzeniu technologii i oprogramowania. Łączymy programowanie, projektowanie systemów i kreatywne podejście do rozwiązywania problemów.",
     "mainP2": "Pracujemy nad własnymi projektami, narzędziami i rozwiązaniami, które pozwalają nam szybciej realizować kolejne pomysły. Nie chodzi tylko o pisanie kodu - zależy nam na tworzeniu rzeczy z konkretnym celem, które można dalej rozwijać.",
@@ -937,6 +938,7 @@
     "subtitle": "Twórz, eksperymentuj, ulepszaj",
     "navAbout": "O nas",
     "navRecruitment": "Rekrutacja",
+    "navServices": "Usługi",
     "mainTitle": "Tworzymy przyszłość",
     "mainP1": "Nasz zespół deweloperski pracuje nad innowacyjnymi projektami, które zmieniają sposób, w jaki ludzie korzystają z technologii.",
     "mainP2": "Od gier po narzędzia produktywności - tworzymy rozwiązania, które mają znaczenie.",
@@ -1237,5 +1239,16 @@
       "titleRequiredForUpload": "Podaj tytuł przed przesłaniem pliku",
       "createDraftFailed": "Nie udało się utworzyć wpisu podcastu"
     }
+  },
+  "servicesPage": {
+    "title": "Nasze Usługi",
+    "subtitle": "Profesjonalne wsparcie w dziedzinie grafiki, kodowania i produkcji muzycznej dla Twojego projektu.",
+    "order": "Zamów",
+    "loadError": "Błąd podczas ładowania usług.",
+    "paymentError": "Wystąpił błąd podczas inicjowania płatności.",
+    "loginRequired": "Zaloguj się, aby zamówić usługę.",
+    "successTitle": "Dziękujemy za zamówienie!",
+    "successMessage": "Płatność została przyjęta. Skontaktujemy się z Tobą wkrótce w sprawie szczegółów realizacji.",
+    "backToServices": "Wróć do usług"
   }
 }

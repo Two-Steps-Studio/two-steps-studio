@@ -319,6 +319,7 @@
     "subtitle": "Wir entwickeln Technologien, Tools und Erlebnisse, die dabei helfen, Ideen in funktionierende Projekte zu verwandeln. Vom ersten Prototyp bis zum fertigen Produkt - wir entwickeln, testen und verbessern die Lösungen hinter Two Steps Studio.",
     "navAbout": "Über uns",
     "navRecruitment": "Rekrutierung",
+    "navServices": "Leistungen",
     "mainTitle": "Von der Idee zum funktionierenden Projekt",
     "mainP1": "DEV ist der Bereich von Two Steps Studio, der sich der Entwicklung von Technologie und Software widmet. Wir verbinden Programmierung, Systemdesign und einen kreativen Ansatz zur Problemlösung.",
     "mainP2": "Wir arbeiten an eigenen Projekten, Tools und Lösungen, die es uns ermöglichen, neue Ideen schneller umzusetzen. Es geht nicht nur ums Programmieren - uns ist wichtig, Dinge mit einem klaren Zweck zu bauen, die sich weiterentwickeln lassen.",
@@ -937,6 +938,7 @@
     "subtitle": "Bauen, experimentieren, verbessern",
     "navAbout": "Über uns",
     "navRecruitment": "Rekrutierung",
+    "navServices": "Leistungen",
     "mainTitle": "Wir bauen die Zukunft",
     "mainP1": "Unser Entwicklungsteam arbeitet an innovativen Projekten, die die Art und Weise ändern, wie Menschen mit Technologie interagieren.",
     "mainP2": "Von Spielen bis zu Produktivitätstools - wir schaffen Lösungen, die zählen.",
@@ -1237,5 +1239,16 @@
       "titleRequiredForUpload": "Gib einen Titel ein, bevor du eine Datei hochlädst",
       "createDraftFailed": "Podcast-Eintrag konnte nicht erstellt werden"
     }
+  },
+  "servicesPage": {
+    "title": "Unsere Leistungen",
+    "subtitle": "Professionelle Unterstützung in Grafik, Programmierung und Musikproduktion für dein Projekt.",
+    "order": "Bestellen",
+    "loadError": "Leistungen konnten nicht geladen werden.",
+    "paymentError": "Beim Starten der Zahlung ist ein Fehler aufgetreten.",
+    "loginRequired": "Melde dich an, um eine Leistung zu bestellen.",
+    "successTitle": "Danke für deine Bestellung!",
+    "successMessage": "Deine Zahlung ist eingegangen. Wir melden uns in Kürze wegen der Details.",
+    "backToServices": "Zurück zu den Leistungen"
   }
 }

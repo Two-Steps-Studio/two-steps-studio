@@ -1,39 +1,52 @@
 import { NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase-server";
 import Stripe from "stripe";
-import { headers } from "next/headers";
+import { createClient, createServiceClient } from "@/lib/supabase-server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-});
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-10-29.clover",
+    })
+  : null;
 
 export async function POST(req: Request) {
+  if (!stripe) {
+    return NextResponse.json(
+      { error: "Płatności Stripe nie są skonfigurowane" },
+      { status: 503 }
+    );
+  }
+
   try {
     const { serviceId } = await req.json();
-    const headerList = await headers();
-    const authHeader = headerList.get("Authorization");
+    if (typeof serviceId !== "string" || !serviceId) {
+      return NextResponse.json({ error: "Brak wymaganych danych" }, { status: 400 });
+    }
 
-    // We need the user ID for the order.
-    // In a real scenario, we'd get this from the authenticated session.
-    // For this implementation, we'll assume the client provides it or we get it from the token.
-    const { data: { user }, error: authError } = await createServiceClient().auth.getUser();
+    // The service-role client has no user session, so getUser() on it can
+    // never succeed - identify the buyer from the request's cookie session.
+    const supabaseAuth = await createClient();
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 1. Fetch service details from DB to prevent price manipulation
-    const { data: service, error: serviceError } = await createServiceClient()
+    const supabase = createServiceClient();
+
+    // Price always comes from the DB, never from the client.
+    const { data: service, error: serviceError } = await supabase
       .from("studio_services")
       .select("*")
       .eq("id", serviceId)
+      .eq("is_active", true)
       .single();
 
     if (serviceError || !service) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }
 
-    // 2. Create Stripe Checkout Session
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "blik"],
       line_items: [
@@ -42,16 +55,16 @@ export async function POST(req: Request) {
             currency: "pln",
             product_data: {
               name: service.name,
-              description: service.description,
+              description: service.description || undefined,
             },
-            unit_amount: Math.round(service.price * 100), // Convert to grosze
+            unit_amount: Math.round(Number(service.price) * 100),
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/services/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/services`,
+      success_url: `${siteUrl}/services/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/services`,
       metadata: {
         userId: user.id,
         serviceId: service.id,
@@ -59,20 +72,20 @@ export async function POST(req: Request) {
       },
     });
 
-    // 3. Record pending order in DB
-    const { error: orderError } = await createServiceClient()
-      .from("service_orders")
-      .insert({
-        user_id: user.id,
-        service_id: service.id,
-        stripe_session_id: session.id,
-        amount: service.price,
-        status: "pending",
-      });
+    const { error: orderError } = await supabase.from("service_orders").insert({
+      user_id: user.id,
+      service_id: service.id,
+      stripe_session_id: session.id,
+      amount: service.price,
+      status: "pending",
+    });
 
     if (orderError) {
       console.error("Error recording pending order:", orderError);
-      return NextResponse.json({ error: "Failed to initialize order. Please try again." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to initialize order. Please try again." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ url: session.url });

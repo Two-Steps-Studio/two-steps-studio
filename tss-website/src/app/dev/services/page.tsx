@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/hooks/use-translation";
 import { Palette, Code, Music, Rocket } from "lucide-react";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ interface Service {
 
 export default function DevServicesPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +32,7 @@ export default function DevServicesPage() {
         setServices(data);
       } catch (error) {
         console.error("Error fetching services:", error);
-        toast.error("Błąd podczas ładowania usług.");
+        toast.error(t.servicesPage.loadError);
       } finally {
         setLoading(false);
       }
@@ -45,6 +47,11 @@ export default function DevServicesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ serviceId }),
       });
+      if (res.status === 401) {
+        toast.error(t.servicesPage.loginRequired);
+        router.push("/login");
+        return;
+      }
       const data = await res.json();
 
       if (data.error) {
@@ -57,7 +64,7 @@ export default function DevServicesPage() {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      toast.error("Wystąpił błąd podczas inicjowania płatności.");
+      toast.error(t.servicesPage.paymentError);
     }
   };
 
@@ -83,10 +90,10 @@ export default function DevServicesPage() {
     <div className="container mx-auto p-6 mt-20 max-w-6xl pb-20">
       <div className="mb-12 text-center">
         <h1 className="text-5xl font-black tracking-tight text-white font-[family-name:var(--font-space)] mb-4">
-          {t.devPage.servicesTitle || "Nasze Usługi"}
+          {t.servicesPage.title}
         </h1>
         <p className="text-xl font-medium text-zinc-400 font-[family-name:var(--font-outfit)] max-w-2xl mx-auto">
-          {t.devPage.servicesSubtitle || "Profesjonalne wsparcie w dziedzinie grafiki, kodowania i produkcji muzycznej dla Twojego projektu."}
+          {t.servicesPage.subtitle}
         </p>
       </div>
 
@@ -118,7 +125,7 @@ export default function DevServicesPage() {
                 onClick={() => handleOrder(service.id)}
                 className="rounded-2xl bg-[var(--color-dev)] hover:bg-[var(--color-dev)]/80 text-black font-bold px-6"
               >
-                Zamów
+                {t.servicesPage.order}
               </Button>
             </CardContent>
           </Card>

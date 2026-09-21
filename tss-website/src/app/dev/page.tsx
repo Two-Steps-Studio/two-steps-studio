@@ -32,7 +32,7 @@ export default function DevPage() {
           {[
             { name: t.devPage.navAbout, href: "/dev/about" },
             { name: t.devPage.navRecruitment, href: "/dev/recruitment" },
-            { name: t.devPage.navServices || "Usługi", href: "/dev/services" },
+            { name: t.devPage.navServices, href: "/dev/services" },
           ].map((item, i) => (
               <a
                   key={i}

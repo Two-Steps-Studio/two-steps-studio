@@ -319,6 +319,7 @@
     "subtitle": "We create technologies, tools, and experiences that help turn ideas into working projects. From the first prototype to the finished product - we build, test, and develop the solutions behind Two Steps Studio.",
     "navAbout": "About Us",
     "navRecruitment": "Recruitment",
+    "navServices": "Services",
     "mainTitle": "From idea to working project",
     "mainP1": "DEV is the space within Two Steps Studio dedicated to building technology and software. We combine programming, systems design, and a creative approach to problem-solving.",
     "mainP2": "We work on our own projects, tools, and solutions that let us realize new ideas faster. It's not just about writing code - we care about building things with a clear purpose that can keep being developed further.",
@@ -937,6 +938,7 @@
     "subtitle": "Build, experiment, improve",
     "navAbout": "About",
     "navRecruitment": "Recruitment",
+    "navServices": "Services",
     "mainTitle": "We build the future",
     "mainP1": "Our development team works on innovative projects that change how people interact with technology.",
     "mainP2": "From games to productivity tools - we create solutions that matter.",
@@ -1237,5 +1239,16 @@
       "titleRequiredForUpload": "Enter a title before uploading a file",
       "createDraftFailed": "Failed to create the podcast entry"
     }
+  },
+  "servicesPage": {
+    "title": "Our Services",
+    "subtitle": "Professional support in graphics, coding and music production for your project.",
+    "order": "Order",
+    "loadError": "Failed to load services.",
+    "paymentError": "Something went wrong while starting the payment.",
+    "loginRequired": "Log in to order a service.",
+    "successTitle": "Thank you for your order!",
+    "successMessage": "Your payment was received. We will contact you shortly about the details.",
+    "backToServices": "Back to services"
   }
 }
