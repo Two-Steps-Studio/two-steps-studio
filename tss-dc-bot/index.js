@@ -23,6 +23,7 @@ const { handleShop, handleShopInteraction } = require('./shop');
 const { handleWedka, handleGearInteraction } = require('./fishing/wedka');
 const { handleAfkFishing, handleAfkStop } = require('./fishing/afk_fishing');
 const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete } = require('./events/events');
+const { handleServices } = require('./services');
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
 const { handleReactionRoleAdd, handleReactionRoleRemove, handleReactionAdd, handleReactionRemove } = require('./reactionRoles');
 const { handleGiveawayStart, handleGiveawayEnd, startGiveawayScheduler, createGiveawayFromQueue } = require('./giveaways');
@@ -283,6 +284,9 @@ const commands = [
                 // always true) - only positive limits make sense anyway.
                 .setMinValue(1)
         ),
+    new SlashCommandBuilder()
+        .setName('uslugi')
+        .setDescription('Cennik usług Two Steps Studio (grafika, kod, boty Discord)'),
     new SlashCommandBuilder()
         .setName('event_list')
         .setDescription('Lista nadchodzących eventów e-sportowych'),
@@ -1312,6 +1316,10 @@ client.on('interactionCreate', async interaction => {
         // ── Eventy ───────────────────────────────────────────
         case 'event_create':
             await handleEventCreate(interaction, supabase);
+            break;
+
+        case 'uslugi':
+            await handleServices(interaction, supabase);
             break;
 
         case 'event_list':
