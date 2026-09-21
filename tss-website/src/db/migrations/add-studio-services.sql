@@ -11,10 +11,12 @@ CREATE TABLE IF NOT EXISTS studio_services (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- profiles.id is uuid, so user_id must be uuid too (TEXT can't reference it).
+-- user_id is TEXT like every other profiles FK in this repo (and like the
+-- table already is if an earlier version of this migration ran); policies
+-- compare via ::text so it works whatever type profiles.id/auth.uid() are.
 CREATE TABLE IF NOT EXISTS service_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
     service_id UUID REFERENCES studio_services(id) ON DELETE SET NULL,
     stripe_session_id TEXT UNIQUE,
     amount DECIMAL(10, 2) NOT NULL,
@@ -38,7 +40,7 @@ CREATE POLICY "Anyone can view active services" ON studio_services
 
 DROP POLICY IF EXISTS "Users can view their own service orders" ON service_orders;
 CREATE POLICY "Users can view their own service orders" ON service_orders
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING (auth.uid()::text = user_id::text);
 
 -- Initial catalogue, only when the table is empty.
 INSERT INTO studio_services (name, description, price, category)
