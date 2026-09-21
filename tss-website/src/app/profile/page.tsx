@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Mail, Shield, Trophy, Star, Bell, Link as LinkIcon, CheckCircle2, Coins, Award, Lock, MessageSquare, Mic, Copy, Check, Gift, ShoppingBag, Crown, Zap } from "lucide-react";

@@ -65,20 +65,6 @@ export default function GameLibraryPage() {
         <p className="text-zinc-400 mt-2">{t.gamesLibrary.librarySubtitle}</p>
       </div>
 
-  return (
-    <div className="container mx-auto p-6 mt-20 max-w-5xl">
-      <Link href="/games" className="inline-flex items-center gap-2 text-[var(--color-games)] hover:text-[var(--color-games)]/80 mb-6">
-        <ArrowLeft size={18} /> <span>{t.gamesLibrary.backToGames}</span>
-      </Link>
-
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-[var(--text)] flex items-center gap-3">
-          <Library className="w-8 h-8 text-[var(--color-games)]" />
-          {t.gamesLibrary.libraryTitle}
-        </h1>
-        <p className="text-zinc-400 mt-2">{t.gamesLibrary.librarySubtitle}</p>
-      </div>
-
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
