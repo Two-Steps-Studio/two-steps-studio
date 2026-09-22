@@ -624,6 +624,45 @@ async function cleanupSitePresence() {
     }
 }
 
+// discord_online_history is append-only - one row inserted every 60s by
+// updateDiscordStats(), forever, with nothing ever pruning it (unlike
+// site_presence above). Only the website's 24h activity chart reads it
+// (see api/site-stats-history/route.ts), so anything past 30 days is dead
+// weight that makes the indexed recorded_at scan cover more rows every
+// day for no benefit. Same throttling pattern as cleanupSitePresence.
+let lastOnlineHistoryCleanup = 0;
+async function cleanupDiscordOnlineHistory() {
+    if (Date.now() - lastOnlineHistoryCleanup < 60 * 60 * 1000) return;
+    lastOnlineHistoryCleanup = Date.now();
+    try {
+        const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { error } = await supabase.from('discord_online_history').delete().lt('recorded_at', cutoff);
+        if (error) console.error('[ONLINE HISTORY CLEANUP] Błąd:', error.message);
+    } catch (e) {
+        console.error('[ONLINE HISTORY CLEANUP] Błąd:', e.message);
+    }
+}
+
+// activity_log is the same shape of problem: every message (rate-limited
+// per user, but across the whole server), join, level-up and purchase
+// inserts a row here, forever, and nothing has ever pruned it. Every
+// reader (dashboard-activity/route.ts, admin/bot-logs/route.ts) only ever
+// selects the latest 15-50 rows ordered by created_at - nothing reads
+// further back than that, so anything past 30 days is dead weight the
+// existing idx_activity_log_created_at index still has to carry.
+let lastActivityLogCleanup = 0;
+async function cleanupActivityLog() {
+    if (Date.now() - lastActivityLogCleanup < 60 * 60 * 1000) return;
+    lastActivityLogCleanup = Date.now();
+    try {
+        const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { error } = await supabase.from('activity_log').delete().lt('created_at', cutoff);
+        if (error) console.error('[ACTIVITY LOG CLEANUP] Błąd:', error.message);
+    } catch (e) {
+        console.error('[ACTIVITY LOG CLEANUP] Błąd:', e.message);
+    }
+}
+
 // Command queue for the website's /admin/bot panel (see
 // db/bot_commands_schema.sql) - the panel writes a pending row for actions
 // only the bot process can actually perform (posting to Discord), this
@@ -706,6 +745,8 @@ async function updateDiscordStats() {
     try {
         await ensureFreshSettings(supabase);
         await cleanupSitePresence();
+        await cleanupDiscordOnlineHistory();
+        await cleanupActivityLog();
         await processBotCommands();
 
         const guild = client.guilds.cache.first();
