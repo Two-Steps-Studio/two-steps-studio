@@ -231,25 +231,22 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1548
 // ── /top_fish ────────────────────────────────────────────────
 
 async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1548220404693213195>') {
-    const { data: rows } = await supabase
-        .from('fishing_catches')
-        .select('user_id, value');
+    // Aggregated in Postgres (get_fishing_leaderboard, db/fishing_leaderboard_function.sql)
+    // instead of pulling every catch ever made into the bot to GROUP BY/sort/slice
+    // in JS - fishing_catches only grows and this query ran on every /fishtop call.
+    const { data: rows, error } = await supabase.rpc('get_fishing_leaderboard', { p_limit: 10 });
+
+    if (error) {
+        console.error('[FISHTOP] Błąd:', error.message);
+        return interaction.reply({ content: '❌ Nie udało się pobrać rankingu.', flags: 1 << 6 });
+    }
 
     if (!rows || rows.length === 0) {
         return interaction.reply({ content: 'Brak danych.', flags: 1 << 6 });
     }
 
-    const grouped = {};
-    for (const row of rows) {
-        if (!grouped[row.user_id]) grouped[row.user_id] = { total: 0, count: 0 };
-        grouped[row.user_id].total += row.value || 0;
-        grouped[row.user_id].count += 1;
-    }
-
-    const list = Object.entries(grouped)
-        .sort((a, b) => b[1].total - a[1].total)
-        .slice(0, 10)
-        .map(([uid, d], i) => `**${i + 1}.** <@${uid}> – ${d.count} ryb, ${d.total} ${COIN}`)
+    const list = rows
+        .map((row, i) => `**${i + 1}.** <@${row.user_id}> – ${row.catch_count} ryb, ${row.total_value} ${COIN}`)
         .join('\n');
 
     const embed = new EmbedBuilder()
