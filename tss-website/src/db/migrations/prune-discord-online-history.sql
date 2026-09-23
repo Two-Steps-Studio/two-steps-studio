@@ -1,0 +1,21 @@
+-- discord_online_history has been append-only since it was added
+-- (updateDiscordStats() in tss-dc-bot/index.js inserts one row every 60s,
+-- forever) with no pruning anywhere - unlike site_presence, which got a
+-- cleanup job the same session this table was introduced. Live check on
+-- 2026-09-22 found 15,786 rows going back to 2026-09-11, growing at
+-- ~1,300 rows/day - a real, measured contributor to Supabase's "Disk IO
+-- Budget" warning, not a hypothetical one. Only the last 24h is ever read
+-- (api/site-stats-history/route.ts), so everything older is dead weight.
+--
+-- The table already has idx_discord_online_history_recorded_at (see
+-- tss-dc-bot/db/discord_online_history_schema.sql) and a real primary key
+-- (id SERIAL), so - unlike site_presence - no REPLICA IDENTITY change is
+-- needed for DELETE to work under the realtime publication.
+--
+-- Ongoing pruning is now handled by the bot every ~hour (see
+-- cleanupDiscordOnlineHistory() in tss-dc-bot/index.js), so this table
+-- stays small going forward instead of needing this run again.
+--
+-- HOW TO APPLY: paste into the Supabase SQL Editor and run once. Idempotent.
+
+DELETE FROM discord_online_history WHERE recorded_at < NOW() - INTERVAL '48 hours';

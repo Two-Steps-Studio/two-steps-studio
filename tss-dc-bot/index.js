@@ -629,6 +629,24 @@ async function cleanupSitePresence() {
     }
 }
 
+// Same problem as site_presence above, just never fixed here too:
+// updateDiscordStats() appends one row every 60s forever and only the last
+// 24h is ever read (site-stats-history), so this table has grown to
+// 15,786+ unpruned rows since it was added - a real, measured contributor
+// to Supabase's "Disk IO Budget" warning, not a hypothetical one.
+let lastOnlineHistoryCleanup = 0;
+async function cleanupDiscordOnlineHistory() {
+    if (Date.now() - lastOnlineHistoryCleanup < 60 * 60 * 1000) return;
+    lastOnlineHistoryCleanup = Date.now();
+    try {
+        const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+        const { error } = await supabase.from('discord_online_history').delete().lt('recorded_at', cutoff);
+        if (error) console.error('[ONLINE HISTORY CLEANUP] Błąd:', error.message);
+    } catch (e) {
+        console.error('[ONLINE HISTORY CLEANUP] Błąd:', e.message);
+    }
+}
+
 // Command queue for the website's /admin/bot panel (see
 // db/bot_commands_schema.sql) - the panel writes a pending row for actions
 // only the bot process can actually perform (posting to Discord), this
@@ -711,6 +729,7 @@ async function updateDiscordStats() {
     try {
         await ensureFreshSettings(supabase);
         await cleanupSitePresence();
+        await cleanupDiscordOnlineHistory();
         await processBotCommands();
 
         const guild = client.guilds.cache.first();
