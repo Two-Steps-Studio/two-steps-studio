@@ -48,11 +48,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error("[useAuth] Error getting session:", error);
           // Don't set loading to false on error - keep loading while user sees error state
-        } else {
-          console.log("[useAuth] Session retrieved:", session ? "authenticated" : "not authenticated");
-          
+          return;
+        }
+
+        console.log("[useAuth] Session retrieved:", session ? "authenticated" : "not authenticated");
+
+        if (session) {
           // Save session to Electron storage if running in Electron
-          if (isElectron && session && window.electron) {
+          if (isElectron && window.electron) {
             try {
               await window.electron.saveSession({
                 access_token: session.access_token,
@@ -63,10 +66,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               console.error("[useAuth] Failed to save session to Electron:", saveError);
             }
           }
+          setSession(session);
+          setUser(session.user);
+          setLoading(false);
+          return;
         }
 
-        setSession(session);
-        setUser(session?.user ?? null);
+        // No live browser session - on Electron, fall back to whatever this
+        // device saved on a previous sign-in (see the SIGNED_IN branch
+        // below) instead of showing the login screen again on every
+        // restart. window.electron.loadSession() already existed as
+        // infrastructure (main.js/preload.js, also used by the game
+        // library's own auth) but nothing ever called it from here to
+        // actually restore a session.
+        if (isElectron && window.electron) {
+          try {
+            const saved = await window.electron.loadSession();
+            if (saved?.access_token && saved?.refresh_token) {
+              const { data: restored, error: restoreError } = await supabase.auth.setSession({
+                access_token: saved.access_token,
+                refresh_token: saved.refresh_token,
+              });
+              if (restoreError) {
+                console.error("[useAuth] Saved Electron session is no longer valid:", restoreError.message);
+                await window.electron.clearSession();
+              } else {
+                console.log("[useAuth] Restored session from Electron storage");
+                setSession(restored.session);
+                setUser(restored.session?.user ?? null);
+                setLoading(false);
+                return;
+              }
+            }
+          } catch (restoreErr) {
+            console.error("[useAuth] Error restoring Electron session:", restoreErr);
+          }
+        }
+
+        setSession(null);
+        setUser(null);
         setLoading(false);
       } catch (err) {
         console.error("[useAuth] Exception in auth initialization:", err);

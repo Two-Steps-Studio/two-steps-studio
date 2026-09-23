@@ -132,15 +132,17 @@ export interface DownloadProgress {
   total: number;
 }
 
+// Field names match what use-auth.tsx actually saves/reads (Supabase's own
+// session shape) - this used to say accessToken/refreshToken/expiresAt,
+// which nothing ever wrote or read (main.js's saveSession/loadSession are
+// opaque JSON passthrough, so it went unnoticed instead of erroring).
 export interface SessionData {
-  accessToken?: string;
-  refreshToken?: string;
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-  };
-  expiresAt?: number;
+  access_token?: string;
+  refresh_token?: string;
+  // Stored/round-tripped as opaque JSON (see main.js saveSession/
+  // loadSession) - typed as unknown rather than importing Supabase's full
+  // User type into this ambient global; nothing reads fields off it here.
+  user?: unknown;
 }
 
 // ============================================
