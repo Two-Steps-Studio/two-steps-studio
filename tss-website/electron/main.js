@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const crypto = require('crypto');
+const { pathToFileURL } = require('url');
 const gameManager = require('./game-manager');
 const updater = require('./updater');
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -16,6 +17,7 @@ if (!gotTheLock) {
 }
 
 let mainWindow;
+let splashWindow = null;
 let nextServer = null;
 let updateAvailable = false;
 let tray = null;
@@ -348,9 +350,54 @@ function createTray() {
   }
 }
 
+// Shown immediately on launch, before createWindow() even exists - a
+// production start has to spawn the bundled Next.js server and wait for it
+// to accept connections (see startNextServer()/waitForServer()) before the
+// main window has anything to paint, which previously left the user with
+// no window and no feedback at all for several seconds after double-
+// clicking the app. This is a tiny static local file, so it shows near-
+// instantly; closeSplashWindow() below tears it down once the real window
+// is ready to show (or once startup fails).
+function createSplashWindow() {
+  try {
+    splashWindow = new BrowserWindow({
+      width: 320,
+      height: 320,
+      frame: false,
+      resizable: false,
+      movable: false,
+      show: false,
+      center: true,
+      skipTaskbar: true,
+      backgroundColor: '#000000',
+      webPreferences: {
+        contextIsolation: true,
+        sandbox: true,
+      },
+    });
+    // pathToFileURL percent-encodes spaces/the Polish "Ł" correctly - a
+    // hand-rolled `'file://' + path.replace(/\\/g, '/')` would pass those
+    // through raw, and Chromium is not guaranteed to accept that as an
+    // <img src>.
+    const logoUrl = pathToFileURL(resolveAppAsset('assets/Logo/Glowne/Two Steps Studio Bez Tła.png')).href;
+    splashWindow.loadFile(path.join(__dirname, 'splash.html'), { query: { logo: logoUrl } });
+    splashWindow.once('ready-to-show', () => splashWindow && splashWindow.show());
+    splashWindow.on('closed', () => { splashWindow = null; });
+  } catch (error) {
+    log('ERROR', 'Failed to create splash window', error.message);
+  }
+}
+
+function closeSplashWindow() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close();
+  }
+  splashWindow = null;
+}
+
 function createWindow() {
   log('INFO', 'Creating main window...');
-  
+
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -414,6 +461,7 @@ function createWindow() {
       .catch((error) => {
         log('ERROR', 'Server startup failed', error.message);
         showNotification('Błąd serwera', 'Nie udało się uruchomić serwera aplikacji');
+        closeSplashWindow();
       });
   } else {
     loadApp();
@@ -421,8 +469,9 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     log('INFO', 'Window ready to show');
+    closeSplashWindow();
     mainWindow.show();
-    
+
     if (isDev) {
       mainWindow.webContents.openDevTools();
     }
@@ -616,6 +665,7 @@ app.whenReady().then(() => {
   // frame (title bar, minimize/maximize/close) since frame/titleBarStyle
   // below are unrelated to the menu bar.
   Menu.setApplicationMenu(null);
+  createSplashWindow();
   applySettings();
   createWindow();
   createTray();
