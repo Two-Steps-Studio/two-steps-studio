@@ -140,33 +140,13 @@ const securityLog = (endpoint: string, action: string, user?: string, ip?: strin
 export async function proxy(request: NextRequest) {
   const ip = getClientIp(request);
 
-  // Add secure headers
-  const headers: HeadersInit = {
-    "X-Frame-Options": "DENY",
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "geolocation=(), camera=(), microphone=()",
-    "Cache-Control": "public, max-age=31536000, stale-while-revalidate=31536000",
-  };
-
-  // Production: add HSTS
-  if (process.env.NODE_ENV === "production") {
-    headers["Strict-Transport-Security"] =
-      "max-age=31536000; includeSubDomains; preload";
-    headers["Content-Security-Policy"] =
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'none'; object-src 'none';";
-  }
-
-  // Apply security headers
-  headers[
-    "X-Download-Options"
-  ] = "noopen";
-  headers[
-    "X-XSS-Protection"
-  ] = "1; mode=block";
-  headers[
-    "X-Permitted-Cross-Domain-Policies"
-  ] = "none";
+  // Security headers (CSP, HSTS, X-Frame-Options, etc.) live in
+  // next.config.ts's headers() instead of here - a HeadersInit object used
+  // to be built in this function but never applied to any response (no
+  // response.headers.set() call, no NextResponse.next({headers}) using it),
+  // so it silently did nothing. Confirmed live: the site's actual CSP is
+  // next.config.ts's, not the stricter one this dead code implied. Removed
+  // rather than left as a misleading no-op.
 
   // The External API (/api/v1/*) exists specifically for non-browser
   // clients authenticated by an API key, not a session - but BOT_PATTERNS

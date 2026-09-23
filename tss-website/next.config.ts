@@ -119,6 +119,18 @@ const nextConfig: NextConfig = {
             key: 'Cache-Control',
             value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
           },
+          // COOP: none of the app's window.open() calls (Steam/itch/Epic/
+          // Spotify/YouTube links) rely on window.opener, so severing that
+          // link for cross-origin popups is safe. CORP: nothing on the site
+          // embeds our own pages/assets from another origin.
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-origin',
+          },
         ],
       },
       {
@@ -132,10 +144,18 @@ const nextConfig: NextConfig = {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: process.env.ALLOWED_ORIGIN || "'self'",
-          },
+          // Was `process.env.ALLOWED_ORIGIN || "'self'"` - 'self' quoted
+          // like that is CSP syntax, not a valid Access-Control-Allow-Origin
+          // value, so with ALLOWED_ORIGIN unset (the common case) every API
+          // response sent that literal 7-character garbage string, which
+          // browsers just discard. Omitting the header entirely in that
+          // case is the correct "same-origin only" behavior - same-origin
+          // requests never consult CORS headers at all, and cross-origin
+          // fetches are blocked exactly as the broken value accidentally,
+          // silently achieved.
+          ...(process.env.ALLOWED_ORIGIN
+            ? [{ key: 'Access-Control-Allow-Origin', value: process.env.ALLOWED_ORIGIN }]
+            : []),
         ],
       },
       // Images matched the catch-all '/(.*)' above too, inheriting its
