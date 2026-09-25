@@ -17,6 +17,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
   admin: { requests: 5, windowMs: 60000 },     // Admin console login/exec: tight, brute-force-resistant
   register: { requests: 5, windowMs: 600000 }, // 5 signups per 10 min per IP: each one sends a real Resend email
   newsletter: { requests: 10, windowMs: 600000 }, // unsubscribe takes only an email, no token yet - see newsletter/route.ts
+  contact: { requests: 5, windowMs: 600000 },  // 5 messages per 10 min per IP: each one sends a real Resend email
 };
 
 // ============================================

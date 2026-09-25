@@ -27,7 +27,8 @@ export async function sendEmail(
   to: string,
   subject: string,
   html: string,
-  text?: string
+  text?: string,
+  replyTo?: string
 ): Promise<{ id: string; error?: Error }> {
   if (!isResendConfigured) {
     throw new Error('Resend is not configured. Set RESEND_API_KEY in .env');
@@ -40,6 +41,7 @@ export async function sendEmail(
       subject,
       html,
       text,
+      ...(replyTo ? { replyTo } : {}),
     });
 
     return result;

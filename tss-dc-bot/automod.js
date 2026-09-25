@@ -10,6 +10,21 @@ const INVITE_REGEX = /(discord\.gg\/|discord(app)?\.com\/invite\/)/i;
 // userId -> recent message timestamps, for the spam-rate check
 const messageTimestamps = new Map();
 
+// checkAutoMod() below only ever adds/updates an entry here, one per
+// distinct message author, and never removes it - on a long-running,
+// high-churn server that's an unbounded leak (one array per unique user
+// forever, even once they go quiet or leave). Sweep out anything with
+// nothing left inside the spam window every few minutes instead of only
+// clearing it on a full process restart.
+setInterval(() => {
+    const now = Date.now();
+    for (const [userId, timestamps] of messageTimestamps) {
+        if (!timestamps.some((t) => now - t < SPAM_WINDOW_MS)) {
+            messageTimestamps.delete(userId);
+        }
+    }
+}, 5 * 60 * 1000);
+
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // BLOCKED_WORDS is admin-editable from /admin/bot (comma-separated), same

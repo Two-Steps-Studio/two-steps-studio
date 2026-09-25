@@ -34,7 +34,17 @@ export default function NotificationsPage() {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const news = await supabase.from("news").select("*").order("published_at", { ascending: false }).limit(10);
+      // Same published_at gate as /api/news?id= - the news table's RLS
+      // allows public read of every row, so an unfiltered query here
+      // exposed unpublished/moderated drafts (no published_at yet, or one
+      // still in the future) in every logged-in user's notification feed.
+      const news = await supabase
+        .from("news")
+        .select("*")
+        .not("published_at", "is", null)
+        .lte("published_at", new Date().toISOString())
+        .order("published_at", { ascending: false })
+        .limit(10);
       const esports = await supabase.from("e_sport_events").select("*").order("event_date", { ascending: true }).limit(10);
       const dev = await supabase.from("dev_tasks").select("*").order("created_at", { ascending: false }).limit(10);
       const data: any[] = [];
