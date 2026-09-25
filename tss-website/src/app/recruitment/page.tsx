@@ -10,9 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Shield, Users, Send } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { useIsElectron } from "@/hooks/useElectron";
+import { Loader2, Users, Send } from "lucide-react";
 
 export default function RekrutacjaPage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -39,8 +37,6 @@ export default function RekrutacjaPage() {
 
   const { t } = useLanguage();
   const router = useRouter();
-  const isElectron = useIsElectron();
-  const [discordLoading, setDiscordLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     type: "dev" as "dev" | "discord_admin",
@@ -75,33 +71,6 @@ export default function RekrutacjaPage() {
       console.error(error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleDiscordLogin = async () => {
-    if (!supabase) {
-      toast.error(t.rekrutacja.loginErrorTitle, { description: "Usługa logowania jest obecnie niedostępna." });
-      return;
-    }
-
-    setDiscordLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "discord",
-        options: {
-          redirectTo: isElectron
-            ? "tss://auth/callback?next=/registration"
-            : `${window.location.origin}/auth/callback?next=/registration`,
-        },
-      });
-      if (error) {
-        toast.error(t.rekrutacja.loginErrorTitle, { description: error.message });
-      }
-    } catch (err) {
-      toast.error(t.rekrutacja.loginErrorTitle, { description: t.rekrutacja.loginErrorRetry });
-      console.error(err);
-    } finally {
-      setDiscordLoading(false);
     }
   };
 
@@ -188,29 +157,7 @@ export default function RekrutacjaPage() {
             </Button>
           </form>
 
-          <div className="flex items-center gap-3">
-            <div className={`h-px flex-1 ${!darkMode ? 'bg-neutral-200' : 'bg-white/10'}`} />
-            <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">{t.rekrutacja.or}</span>
-            <div className={`h-px flex-1 ${!darkMode ? 'bg-neutral-200' : 'bg-white/10'}`} />
-          </div>
-
           <div className="flex flex-col gap-3">
-            <Button
-              onClick={handleDiscordLogin}
-              disabled={discordLoading}
-              variant="outline"
-              className="w-full h-12 rounded-2xl border-[#5865F2]/40 hover:bg-[#5865F2]/10 font-bold gap-2 transition-all"
-            >
-              {discordLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> {t.rekrutacja.connectingDiscord}
-                </>
-              ) : (
-                <>
-                  <Shield className="h-4 w-4" /> {t.rekrutacja.connectDiscord}
-                </>
-              )}
-            </Button>
             <Button
               variant="ghost"
               onClick={() => router.push("/")}

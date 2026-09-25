@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Shield, Bot, Gamepad2 } from "lucide-react";
+import { Shield, Bot, Gamepad2, UserPlus } from "lucide-react";
 import Link from "next/link";
 
 // Used to be a full user-management panel (project_limit/subscription_plan
@@ -72,6 +72,16 @@ export default function AdminPage() {
                   <Gamepad2 className="w-5 h-5" /> Gry
                 </CardTitle>
                 <CardDescription>Zarządzanie wydaniami gier.</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+          <Link href="/admin/recruitment">
+            <Card className="bg-[var(--card-bg)] border-[var(--border-color)] hover:bg-[var(--bg)] transition-colors cursor-pointer h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-[var(--text)]">
+                  <UserPlus className="w-5 h-5" /> Rekrutacja
+                </CardTitle>
+                <CardDescription>Przegląd i statusy zgłoszeń rekrutacyjnych.</CardDescription>
               </CardHeader>
             </Card>
           </Link>

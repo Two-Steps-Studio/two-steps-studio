@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBotSetting } from "@/lib/bot-settings";
+import { createServiceClient } from "@/lib/supabase-server";
 
 interface RecruitmentFormData {
   type: "dev" | "discord_admin";
@@ -24,6 +25,14 @@ const TYPE_META: Record<RecruitmentFormData["type"], { title: string; color: num
   },
 };
 
+// Discord rejects an embed (400) if any field value exceeds 1024 chars,
+// and none of these free-text fields had a length limit anywhere before.
+// Escaped before truncating so an applicant can't use Discord markdown
+// (masked links, bold/strikethrough) to make submitted text render as
+// something other than plain text in the staff-facing embed.
+const escapeMd = (s: string) => s.replace(/([\\`*_~|>\[\]()])/g, '\\$1');
+const clip = (s: string) => escapeMd(s).substring(0, 1024);
+
 // Recruitment with a type selector (Dev / Discord Administration, more may
 // be added later) - separate from /api/dev/recruitment, which is the
 // dev-only form this one's "Dev" option is meant to feed into the same
@@ -41,63 +50,84 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const meta = TYPE_META[body.type];
-    const discordToken = process.env.DISCORD_TOKEN;
-    // First configured channel wins - bot_settings (set from /admin/bot's
-    // channel picker) takes precedence over the .env var of the same name,
-    // so a dedicated channel can be picked without a redeploy.
-    const channelIds = await Promise.all(meta.channelEnvVars.map((name) => getBotSetting(name)));
-    const channelId = channelIds.find(Boolean);
-
-    if (!discordToken || !channelId) {
-      console.error(`DISCORD_TOKEN or one of [${meta.channelEnvVars.join(", ")}] not set`);
+    // Persisted first (source of truth) - the Discord post below is now
+    // just a best-effort notification on top of this, not the only
+    // record of the application. See db/migrations/add-recruitment-applications.sql
+    // for why: neither form had any persistence at all before, so a
+    // failed Discord post meant the application was gone for good.
+    let supabase;
+    try {
+      supabase = createServiceClient();
+    } catch (error) {
+      console.error("[Recruitment] Supabase not configured:", error);
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    // Discord rejects the whole embed (400) if any field value exceeds
-    // 1024 chars - experience/motivation were already capped, but name/
-    // email/discord/position/portfolio (all free text, none length-
-    // limited in the form) weren't, so a long paste into any of those
-    // caused the entire application to be discarded with no way to
-    // recover it (this route has no persistence - see the comment above
-    // POST()).
-    // Escaped before truncating so an applicant can't use Discord
-    // markdown (masked links like [click here](evil.example), bold/
-    // strikethrough) to make submitted text render as something other
-    // than plain text in the staff-facing embed.
-    const escapeMd = (s: string) => s.replace(/([\\`*_~|>\[\]()])/g, '\\$1');
-    const clip = (s: string) => escapeMd(s).substring(0, 1024);
-
-    const embed = {
-      title: meta.title,
-      color: meta.color,
-      fields: [
-        { name: "👤 Imię i nazwisko", value: clip(body.name), inline: true },
-        { name: "📧 Email", value: clip(body.email), inline: true },
-        { name: "💬 Discord", value: clip(body.discord), inline: true },
-        { name: "🎯 Czym chce się zajmować", value: clip(body.position), inline: false },
-        { name: "💼 Doświadczenie", value: clip(body.experience), inline: false },
-        { name: "❤️ Motywacja", value: clip(body.motivation), inline: false },
-      ] as { name: string; value: string; inline: boolean }[],
-      timestamp: new Date().toISOString(),
-    };
-
-    if (body.portfolio) {
-      embed.fields.push({ name: "🔗 Portfolio/Social media", value: clip(body.portfolio), inline: false });
-    }
-
-    const discordResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bot ${discordToken}`,
-      },
-      body: JSON.stringify({ embeds: [embed] }),
+    const { error: insertError } = await supabase.from("recruitment_applications").insert({
+      source: "recruitment",
+      type: body.type,
+      name: body.name.trim(),
+      email: body.email.trim(),
+      discord: body.discord.trim(),
+      position: body.position.trim(),
+      experience: body.experience.trim(),
+      motivation: body.motivation.trim(),
+      portfolio: body.portfolio?.trim() || null,
     });
 
-    if (!discordResponse.ok) {
-      console.error("Discord bot message failed:", await discordResponse.text());
-      return NextResponse.json({ error: "Failed to send notification" }, { status: 500 });
+    if (insertError) {
+      console.error("[Recruitment] Insert failed:", insertError.message);
+      return NextResponse.json({ error: "Failed to save application" }, { status: 500 });
+    }
+
+    // Discord notification - best-effort from here on. The application is
+    // already safely persisted above, so a Discord hiccup no longer means
+    // losing it; staff can still see it via /admin/recruitment.
+    try {
+      const meta = TYPE_META[body.type];
+      const discordToken = process.env.DISCORD_TOKEN;
+      // First configured channel wins - bot_settings (set from /admin/bot's
+      // channel picker) takes precedence over the .env var of the same name,
+      // so a dedicated channel can be picked without a redeploy.
+      const channelIds = await Promise.all(meta.channelEnvVars.map((name) => getBotSetting(name)));
+      const channelId = channelIds.find(Boolean);
+
+      if (!discordToken || !channelId) {
+        console.error(`[Recruitment] DISCORD_TOKEN or one of [${meta.channelEnvVars.join(", ")}] not set - application saved, notification skipped`);
+      } else {
+        const embed = {
+          title: meta.title,
+          color: meta.color,
+          fields: [
+            { name: "👤 Imię i nazwisko", value: clip(body.name), inline: true },
+            { name: "📧 Email", value: clip(body.email), inline: true },
+            { name: "💬 Discord", value: clip(body.discord), inline: true },
+            { name: "🎯 Czym chce się zajmować", value: clip(body.position), inline: false },
+            { name: "💼 Doświadczenie", value: clip(body.experience), inline: false },
+            { name: "❤️ Motywacja", value: clip(body.motivation), inline: false },
+          ] as { name: string; value: string; inline: boolean }[],
+          timestamp: new Date().toISOString(),
+        };
+
+        if (body.portfolio) {
+          embed.fields.push({ name: "🔗 Portfolio/Social media", value: clip(body.portfolio), inline: false });
+        }
+
+        const discordResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bot ${discordToken}`,
+          },
+          body: JSON.stringify({ embeds: [embed] }),
+        });
+
+        if (!discordResponse.ok) {
+          console.error("[Recruitment] Discord notification failed (application saved):", await discordResponse.text());
+        }
+      }
+    } catch (notifyError) {
+      console.error("[Recruitment] Discord notification error (application saved):", notifyError);
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
