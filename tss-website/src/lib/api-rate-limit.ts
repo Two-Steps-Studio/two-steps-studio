@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isIP } from "node:net";
 import { apiRateLimitExceeded } from "@/lib/api-response";
 
 // ============================================
@@ -17,6 +18,8 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
   admin: { requests: 5, windowMs: 60000 },     // Admin console login/exec: tight, brute-force-resistant
   register: { requests: 5, windowMs: 600000 }, // 5 signups per 10 min per IP: each one sends a real Resend email
   newsletter: { requests: 10, windowMs: 600000 }, // unsubscribe takes only an email, no token yet - see newsletter/route.ts
+  contact: { requests: 5, windowMs: 600000 },  // 5 messages per 10 min per IP: each one sends a real Resend email
+  recruitment: { requests: 5, windowMs: 600000 }, // same reasoning as contact - each one is a DB insert + Discord post
 };
 
 // ============================================
@@ -142,4 +145,30 @@ export function getRateLimitStatus(
  */
 export function resetRateLimit(identifier: string): void {
   rateLimitStore.delete(identifier);
+}
+
+/**
+ * Extract and validate the client IP from request headers, for use as a
+ * rate-limit key. Mirrors proxy.ts's getClientIp() - without this, a raw
+ * `x-forwarded-for` value lets a caller pick their own rate-limit bucket by
+ * sending a different (even fake) value on every request.
+ *
+ * Uses Node's built-in net.isIP() (returns 4 or 6, 0 if invalid) rather
+ * than a hand-rolled regex, so IPv6 clients (proxy.ts's own getClientIp()
+ * only ever recognized IPv4/::1/localhost, and this used to copy that gap)
+ * get their own real bucket instead of every IPv6 caller falling through
+ * to a single shared "unknown" bucket.
+ */
+export function getSanitizedClientIp(req: { headers: { get(name: string): string | null } }): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const ip = forwarded.split(",")[0].trim();
+    if (isIP(ip)) return ip;
+  }
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) {
+    const ip = realIp.trim();
+    if (isIP(ip)) return ip;
+  }
+  return "unknown";
 }

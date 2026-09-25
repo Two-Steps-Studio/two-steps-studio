@@ -192,8 +192,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        // The E-Sport section itself was removed from the site (no
+        // /e-sport route exists), so this used to redirect one dead legacy
+        // URL straight into another 404 instead of somewhere real.
         source: '/pages/e-sport.html',
-        destination: '/e-sport',
+        destination: '/',
         permanent: true,
       },
       {
@@ -211,6 +214,16 @@ const nextConfig: NextConfig = {
         // doesn't exist, so this legacy URL 404'd instead of redirecting.
         source: '/pages/ustawienia.html',
         destination: '/settings',
+        permanent: true,
+      },
+      {
+        // /services and /dev/services rendered the same content at two
+        // URLs (same /api/services fetch, same UI) - /dev/services was
+        // kept as the canonical page, so this consolidates the
+        // duplicate-content signal onto one URL instead of leaving both
+        // live.
+        source: '/services',
+        destination: '/dev/services',
         permanent: true,
       },
     ];

@@ -45,8 +45,10 @@ function maxAfkMinutesForGearSlots(gearSlots) {
 const activeSessions = new Map();
 
 // ── Helpers (uproszczone wersje z fishing.js) ─────────────────
-function rollFishAfk(rarityBonus = 0, locationSlots = 0) {
-    if (Math.random() * 100 < TRASH_CHANCE) {
+// See fishing.js's rollFish() for why catchChance reduces TRASH_CHANCE
+// here instead of gating a new "caught nothing" outcome.
+function rollFishAfk(rarityBonus = 0, locationSlots = 0, catchChance = 0) {
+    if (Math.random() * 100 < TRASH_CHANCE * (1 - catchChance)) {
         const trash = Object.values(FISH).filter(f => f.rarity === 'trash');
         return trash[Math.floor(Math.random() * trash.length)];
     }
@@ -90,7 +92,7 @@ async function afkCatch(userId, supabase, gearStats) {
     const session = activeSessions.get(userId);
     if (!session) return;
 
-    const { valueBonus, rarityBonus, baitDiscount, locationSlots } = gearStats;
+    const { valueBonus, rarityBonus, baitDiscount, locationSlots, catchChance } = gearStats;
     const baitCost = Math.max(0, AFK_BAIT_COST - baitDiscount);
 
     // Pobierz aktualny profil
@@ -105,7 +107,7 @@ async function afkCatch(userId, supabase, gearStats) {
     // Czy stać na przynętę?
     if (baitCost > 0 && (profile.money || 0) < baitCost) {
         session.stoppedReason = 'brak_kasy';
-        stopSession(userId);
+        stopSession(userId, supabase);
         // Nothing called sendAfkSummary() for this path before - the
         // 'brak_kasy' branch existed in the reason text below but was
         // unreachable, so a user who ran out of bait mid-session never
@@ -114,7 +116,7 @@ async function afkCatch(userId, supabase, gearStats) {
         return;
     }
 
-    const fish    = rollFishAfk(rarityBonus, locationSlots);
+    const fish    = rollFishAfk(rarityBonus, locationSlots, catchChance);
     const isTrash = fish.rarity === 'trash';
     const weight  = rollWeight(fish);
     const value   = isTrash ? 0 : calcValueAfk(fish, weight, valueBonus);
@@ -145,15 +147,29 @@ async function afkCatch(userId, supabase, gearStats) {
     session.totalEarned += netGain;
     session.totalXp     += xpGain;
     session.totalSpent  += baitCost;
+
+    // Best-effort, same pattern as voice_sessions in index.js: marks how
+    // far this session has actually been credited, so
+    // reconcileAfkFishingSessions() only replays catches since this point
+    // instead of redoing the whole session from start_time on every
+    // restart (which would double-pay every catch already applied above).
+    supabase.from('afk_fishing_sessions').update({ last_catch_at: new Date().toISOString() }).eq('user_id', userId)
+        .then(({ error }) => { if (error) console.error('[AFK] last_catch_at update error:', error.message); })
+        .catch(e => console.error('[AFK] last_catch_at update error:', e.message));
 }
 
 // ── Zatrzymanie sesji ─────────────────────────────────────────
-function stopSession(userId) {
+function stopSession(userId, supabase) {
     const session = activeSessions.get(userId);
     if (!session) return;
     clearInterval(session.interval);
     clearTimeout(session.endTimeout);
     activeSessions.delete(userId);
+    if (supabase) {
+        supabase.from('afk_fishing_sessions').delete().eq('user_id', userId)
+            .then(({ error }) => { if (error) console.error('[AFK] session cleanup error:', error.message); })
+            .catch(e => console.error('[AFK] session cleanup error:', e.message));
+    }
 }
 
 // ── /afk start – start ───────────────────────────────────
@@ -251,6 +267,7 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
         startTime:    Date.now(),
         endTime,
         interaction,   // zapisujemy żeby wysłać followUp po zakończeniu
+        channel:      interaction.channel, // used by sendAfkSummary when interaction has expired (>15min) or this session was resumed by reconcileAfkFishingSessions() after a restart, where there's no live interaction at all
         COIN,
         interval:  null,
         endTimeout: null,
@@ -267,11 +284,25 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
 
     // Automatyczne zakończenie
     sessionData.endTimeout = setTimeout(async () => {
-        stopSession(userId);
+        stopSession(userId, supabase);
         await sendAfkSummary(userId, sessionData, interaction, COIN, 'czas');
     }, durationMs);
 
     activeSessions.set(userId, sessionData);
+
+    // Persist so reconcileAfkFishingSessions() can resume or finalize this
+    // session if the bot restarts before it naturally ends (see
+    // db/afk_fishing_sessions_schema.sql) - best-effort, same non-fatal
+    // pattern as voice_sessions in index.js.
+    supabase.from('afk_fishing_sessions').upsert({
+        user_id:       userId,
+        channel_id:    interaction.channelId,
+        start_time:    new Date(sessionData.startTime).toISOString(),
+        end_time:      new Date(sessionData.endTime).toISOString(),
+        last_catch_at: new Date(sessionData.startTime).toISOString(),
+    }, { onConflict: 'user_id' }).then(({ error }) => {
+        if (error) console.error('[AFK] session persist error:', error.message);
+    }).catch(e => console.error('[AFK] session persist error:', e.message));
     } catch (e) {
         // Setup failed after the slot was reserved above -- release it so
         // the user isn't permanently locked out of /afk start by a
@@ -289,7 +320,7 @@ async function handleAfkFishing(interaction, supabase, profile, COIN = '<:CoinTS
 }
 
 // ── /afk stop – wcześniejsze zakończenie ─────────────────────
-async function handleAfkStop(interaction, COIN = '<:CoinTSS:1548220404693213195>') {
+async function handleAfkStop(interaction, supabase, COIN = '<:CoinTSS:1548220404693213195>') {
     const userId = interaction.user.id;
     const session = activeSessions.get(userId);
 
@@ -300,7 +331,7 @@ async function handleAfkStop(interaction, COIN = '<:CoinTSS:1548220404693213195>
         });
     }
 
-    stopSession(userId);
+    stopSession(userId, supabase);
     await interaction.deferReply();
     await sendAfkSummary(userId, session, interaction, COIN, 'manual');
 }
@@ -363,12 +394,101 @@ async function sendAfkSummary(userId, session, interaction, COIN, reason) {
             // only valid for 15 minutes, so followUp()/editReply() here
             // failed silently for every session longer than that (i.e.
             // nearly all of them) and the summary was just never delivered.
-            // A plain channel message has no such expiry.
-            await session.interaction.channel?.send({ content: `<@${userId}>`, embeds: [embed] });
+            // A plain channel message has no such expiry. session.channel
+            // covers both a live session (interaction.channel, captured at
+            // /afk start) and one resumed by reconcileAfkFishingSessions()
+            // after a restart, where there's no interaction at all.
+            await (session.channel || session.interaction?.channel)?.send({ content: `<@${userId}>`, embeds: [embed] });
         }
     } catch (e) {
         console.error('[AFK] Błąd wysyłania podsumowania:', e.message);
     }
 }
 
-module.exports = { handleAfkFishing, handleAfkStop, activeSessions };
+// Runs once on startup - resumes or finalizes whatever afk_fishing_sessions
+// rows survived the restart (see afkCatch()/handleAfkFishing() above for
+// why they exist), the same pattern reconcileVoiceSessions() in index.js
+// already uses for voice XP. Missed catches are replayed for real (through
+// the same afkCatch() every live catch goes through, so rewards/DB writes
+// are identical to normal operation) from last_catch_at up to either now
+// or the session's end_time, whichever comes first - a restart mid-session
+// no longer drops the rest of it silently.
+async function reconcileAfkFishingSessions(client, supabase, COIN = '<:CoinTSS:1548220404693213195>') {
+    try {
+        const { data: sessions, error } = await supabase.from('afk_fishing_sessions').select('*');
+        if (error) {
+            if (error.code !== 'PGRST205') console.error('[AFK] reconcile fetch error:', error.message);
+            return;
+        }
+
+        for (const row of sessions || []) {
+            const userId      = row.user_id;
+            const startTime   = new Date(row.start_time).getTime();
+            const endTime     = new Date(row.end_time).getTime();
+            const lastCatchAt = new Date(row.last_catch_at).getTime();
+            const now         = Date.now();
+
+            let channel = null;
+            try {
+                channel = await client.channels.fetch(row.channel_id);
+            } catch { /* channel gone - still credit the catches, just can't deliver a summary */ }
+
+            const gearRow    = await fetchGearRow(supabase, userId);
+            const gearObj    = rowToGearObj(gearRow);
+            const gearStats  = getGearStats(gearObj);
+
+            const sessionData = {
+                catches: [], totalEarned: 0, totalXp: 0, totalSpent: 0,
+                stoppedReason: null, startTime, endTime,
+                interaction: null, channel, COIN,
+                interval: null, endTimeout: null,
+            };
+            activeSessions.set(userId, sessionData);
+
+            const catchUpUntil = Math.min(now, endTime);
+            // Sanity cap: sessions max out at 1440 catches anyway (24h, see
+            // SESSION_OPTIONS), so this only bites if the bot was down far
+            // longer than any session could ever run.
+            const missed = Math.min(1440, Math.max(0, Math.floor((catchUpUntil - lastCatchAt) / AFK_INTERVAL_MS)));
+
+            for (let i = 0; i < missed; i++) {
+                if (!activeSessions.has(userId)) break; // afkCatch() already stopped it (e.g. ran out of bait money)
+                try {
+                    await afkCatch(userId, supabase, gearStats);
+                } catch (e) {
+                    console.error('[AFK] reconcile catch error:', e.message);
+                    break;
+                }
+            }
+
+            if (!activeSessions.has(userId)) continue; // already finalized (brak_kasy) inside the loop above
+
+            if (now >= endTime) {
+                stopSession(userId, supabase);
+                await sendAfkSummary(userId, sessionData, null, COIN, 'czas');
+            } else {
+                const remainingMs = endTime - now;
+                sessionData.interval = setInterval(async () => {
+                    try {
+                        await afkCatch(userId, supabase, gearStats);
+                    } catch (e) {
+                        console.error('[AFK] Błąd połowu:', e.message);
+                    }
+                }, AFK_INTERVAL_MS);
+                sessionData.endTimeout = setTimeout(async () => {
+                    stopSession(userId, supabase);
+                    await sendAfkSummary(userId, sessionData, null, COIN, 'czas');
+                }, remainingMs);
+                activeSessions.set(userId, sessionData);
+                await supabase.from('afk_fishing_sessions')
+                    .update({ last_catch_at: new Date().toISOString() })
+                    .eq('user_id', userId);
+            }
+        }
+        if (sessions?.length) console.log(`[AFK] Reconciled ${sessions.length} session(s) from before restart`);
+    } catch (e) {
+        console.error('[AFK] reconcile error:', e.message);
+    }
+}
+
+module.exports = { handleAfkFishing, handleAfkStop, activeSessions, reconcileAfkFishingSessions };

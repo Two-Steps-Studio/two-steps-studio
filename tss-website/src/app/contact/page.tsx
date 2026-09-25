@@ -25,6 +25,7 @@ export default function ContactPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [subject, setSubject] = useState(t.contact.defaultSubject);
 
@@ -33,8 +34,16 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      // Symulacja wysyłania wiadomości
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, subject, message }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || t.contact.errorDesc);
+      }
 
       setSent(true);
       toast.success(t.contact.successTitle, {
@@ -42,6 +51,7 @@ export default function ContactPage() {
       });
 
       // Czyść formularz po sukcesie
+      setEmail("");
       setMessage("");
       setSubject(t.contact.defaultSubject);
 
@@ -51,7 +61,7 @@ export default function ContactPage() {
       }, 3000);
     } catch (err) {
       toast.error(t.contact.errorTitle, {
-        description: t.contact.errorDesc,
+        description: err instanceof Error ? err.message : t.contact.errorDesc,
       });
       setSent(false);
     } finally {
@@ -114,6 +124,18 @@ export default function ContactPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.contact.emailLabel}</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="twoj@email.com"
+                  className="bg-[var(--surface)] border-[var(--border-color)]"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">{t.contact.subjectLabel}</label>
                 <Input

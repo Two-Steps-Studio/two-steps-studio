@@ -18,9 +18,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Check authentication. getUser() (not getSession()) because it
+    // revalidates against the Auth server instead of trusting the cookie.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized. Please login to view shop.' },
         { status: 401 }

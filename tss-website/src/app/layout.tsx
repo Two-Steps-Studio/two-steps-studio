@@ -104,9 +104,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log('[BUILD] RootLayout rendering at', new Date().toISOString());
   return (
-    <html lang="pl" suppressHydrationWarning className={metropolis.variable}>
+    // DEFAULT_LOCALE (src/locales/index.ts) is "en" and openGraph.locale
+    // below is already "en_US" - lang="pl" disagreed with both, which is
+    // a real language-targeting signal search engines use (and would
+    // make a screen reader apply Polish phonetics to English content).
+    // Language selection itself is client-only (use-translation.tsx,
+    // localStorage-backed) with no server-visible signal to switch this
+    // per-request, so this matches the app's actual default rather than
+    // attempting per-request negotiation.
+    <html lang="en" suppressHydrationWarning className={metropolis.variable}>
       <head>
         <meta name="theme-color" content="#000000" />
         <script

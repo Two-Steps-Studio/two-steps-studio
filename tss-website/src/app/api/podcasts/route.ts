@@ -100,11 +100,21 @@ export async function GET(request: Request) {
       query = query.eq('featured', true);
     }
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,host.ilike.%${search}%`);
+      // Same sanitization api/games/route.ts's search filter uses - without
+      // it, a comma or parenthesis in `search` could alter the .or()
+      // filter's PostgREST syntax instead of being searched for literally.
+      const sanitizedSearch = search.replace(/[^\w\s-]/g, '').slice(0, 100);
+      if (sanitizedSearch) {
+        query = query.or(`title.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%,host.ilike.%${sanitizedSearch}%`);
+      }
     }
 
     // Order by created_at descending by default
     query = query.order('created_at', { ascending: false });
+
+    // Safety ceiling, same as api/games and api/music - no limit at all
+    // before.
+    query = query.limit(200);
 
     const { data, error } = await query;
 

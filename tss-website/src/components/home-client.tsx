@@ -109,7 +109,16 @@ const t = {
     }
 };
 
-export function HomeClient() {
+interface HomeNewsItem {
+  id: number;
+  title: string;
+  content: string;
+  image_url: string;
+  category: string;
+  published_at: string;
+}
+
+export function HomeClient({ initialNews = [] }: { initialNews?: HomeNewsItem[] }) {
   const { language, t: translations } = useLanguage();
   const content = t[language as keyof typeof t] || t.en;
 
@@ -242,7 +251,7 @@ export function HomeClient() {
             </div>
           </Link>
         </div>
-        <NewsFeed />
+        <NewsFeed initialNews={initialNews} />
       </section>
 
       {/* Community Stats Section */}

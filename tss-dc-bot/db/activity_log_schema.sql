@@ -37,3 +37,19 @@ BEGIN
   ALTER TABLE activity_log ADD CONSTRAINT activity_log_type_check
     CHECK (type IN ('join', 'level_up', 'purchase', 'message'));
 END $$;
+
+-- REVISION 3 -- adds 'leave'. index.js's guildMemberRemove handler has
+-- called logActivity(supabase, 'leave', ...) since it was added, but this
+-- type was never in the CHECK - every "member left" insert failed the
+-- constraint, and activityLog.js only console.error's a failed write, so
+-- every leave event silently never appeared on the website's activity feed.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'activity_log_type_check'
+  ) THEN
+    ALTER TABLE activity_log DROP CONSTRAINT activity_log_type_check;
+  END IF;
+  ALTER TABLE activity_log ADD CONSTRAINT activity_log_type_check
+    CHECK (type IN ('join', 'leave', 'level_up', 'purchase', 'message'));
+END $$;

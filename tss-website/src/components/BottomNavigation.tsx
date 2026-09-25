@@ -44,13 +44,6 @@ export function BottomNavigation() {
     return () => mobileMedia.removeEventListener("change", handler);
   }, []);
 
-  useEffect(() => {
-    const style = getComputedStyle(document.documentElement);
-    console.log("--color-general-current:", style.getPropertyValue("--color-general-current"));
-    console.log("--color-general:", style.getPropertyValue("--color-general"));
-    console.log("--color-general-rgb:", style.getPropertyValue("--color-general-rgb"));
-  }, []);
-
   if (!isMobile) return null;
 
   const getIcon = (href: string) => {

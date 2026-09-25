@@ -22,6 +22,11 @@
   --color-games: #dc3545;
   --color-records: #ad83f8;
   --color-dev: #ffcb2f;
+  /* Referenced by home-site-stats.tsx / online-chart.tsx (var(--color-e-sport))
+     and documented in CLAUDE.md's theme table, but never actually defined
+     here like its siblings above - those two components rendered with an
+     invalid/undefined color instead of this green. */
+  --color-e-sport: #06e402;
   --color-light: #e6e6e6;
   --color-dark: #000000;
   --color-border: var(--border-color);

@@ -21,7 +21,7 @@ const { createProfileCard, createWelcomeCard, availableBackgrounds, refreshBackg
 const { handleFishing, handleFishInventory, handleFishTop } = require('./fishing/fishing');
 const { handleShop, handleShopInteraction } = require('./shop');
 const { handleWedka, handleGearInteraction } = require('./fishing/wedka');
-const { handleAfkFishing, handleAfkStop } = require('./fishing/afk_fishing');
+const { handleAfkFishing, handleAfkStop, reconcileAfkFishingSessions } = require('./fishing/afk_fishing');
 const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete } = require('./events/events');
 const { handleServices } = require('./services');
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
@@ -130,6 +130,8 @@ const messageActivityCooldowns = new Map();
 const MESSAGE_ACTIVITY_COOLDOWN_MS = 120000;
 let messagesTodayCount = 0;
 let lastDay = new Date().getDate();
+let lastFullMemberFetch = 0;
+const MEMBER_FETCH_INTERVAL_MS = 10 * 60 * 1000;
 
 function getLevelFromXP(xp) {
     if (!xp || xp < 100) return 0;
@@ -607,6 +609,7 @@ client.once('clientReady', async () => {
     startGiveawayScheduler(client, supabase);
     await loadTags(supabase);
     await reconcileVoiceSessions();
+    await reconcileAfkFishingSessions(client, supabase);
 });
 
 // site_presence gets one INSERT every 30s per open page (see
@@ -737,7 +740,24 @@ async function updateDiscordStats() {
 
         await syncGuildOptions(guild);
 
-        const members  = await guild.members.fetch();
+        // GuildMembers + GuildPresences intents are both enabled (see the
+        // client's intents list above), so discord.js keeps
+        // guild.members.cache live via gateway events (join/leave/update,
+        // presence changes) once it's populated - but that cache is only
+        // complete for guilds at or under Discord's default
+        // large_threshold (50 members); above that, the rest is never
+        // backfilled without an explicit fetch at least once. A plain
+        // guild.members.cache read (an earlier version of this fix) would
+        // silently undercount member/online stats on any guild bigger
+        // than 50. Refetched periodically instead of on every 60s tick -
+        // gateway events keep the cache accurate in between - so this
+        // still avoids the original redundant full REST call every
+        // single tick, forever.
+        if (Date.now() - lastFullMemberFetch > MEMBER_FETCH_INTERVAL_MS) {
+            await guild.members.fetch();
+            lastFullMemberFetch = Date.now();
+        }
+        const members  = guild.members.cache;
         const humans   = members.filter(m => !m.user.bot).size;
         const online   = members.filter(m => m.presence?.status === 'online' || m.presence?.status === 'dnd').size;
         const channels = guild.channels.cache.size;
@@ -1327,7 +1347,7 @@ client.on('interactionCreate', async interaction => {
             if (subcommand === 'start') {
                 await handleAfkFishing(interaction, supabase, profile, COIN);
             } else if (subcommand === 'stop') {
-                await handleAfkStop(interaction, COIN);
+                await handleAfkStop(interaction, supabase, COIN);
             }
             break;
         }

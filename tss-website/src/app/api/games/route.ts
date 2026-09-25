@@ -130,6 +130,13 @@ export async function GET(request: Request) {
     // Order by created_at descending by default
     query = query.order('created_at', { ascending: false });
 
+    // Safety ceiling - this had no limit at all, so the catalog list
+    // response (including every joined screenshot/requirement row) would
+    // grow without bound as more games get added, with nothing capping it.
+    // Well above the current catalog size, so no visible behavior change
+    // today.
+    query = query.limit(200);
+
     const { data, error } = await query;
 
     if (error) {

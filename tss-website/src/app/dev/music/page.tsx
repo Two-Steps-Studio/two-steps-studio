@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -340,32 +340,53 @@ function MusicFormModal({ track, onClose, onSave }: { track: MusicTrack | null; 
   // row ever pointed back to. Create a minimal draft row on first upload and
   // reuse its id for every subsequent upload/save in this modal session.
   const [draftId, setDraftId] = useState<number | null>(track?.id ?? null);
+  // Cover and audio uploads can be picked in quick succession, both racing to
+  // create the draft row before the first one's setDraftId commits. Sharing
+  // the in-flight creation promise means the second upload awaits the first
+  // one's draft instead of creating a duplicate, orphaned row.
+  const draftCreationRef = useRef<Promise<number | null> | null>(null);
+
+  const ensureDraftId = async (): Promise<number | null> => {
+    if (draftId) return draftId;
+    if (draftCreationRef.current) return draftCreationRef.current;
+
+    const promise = (async (): Promise<number | null> => {
+      if (!formData.title.trim() || !formData.artist.trim()) {
+        toast.error(t.devMusicAdmin.errors.titleArtistRequiredForUpload);
+        return null;
+      }
+      const draftRes = await fetch('/api/music', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formData.title.trim(), artist: formData.artist.trim(), visibility: 'private' }),
+      });
+      const draftData = await draftRes.json();
+      if (!draftRes.ok || !draftData.success) {
+        toast.error(draftData.error || t.devMusicAdmin.errors.createDraftFailed);
+        return null;
+      }
+      const id = draftData.data.id as number;
+      setDraftId(id);
+      return id;
+    })();
+
+    draftCreationRef.current = promise;
+    try {
+      return await promise;
+    } finally {
+      draftCreationRef.current = null;
+    }
+  };
 
   const handleFileUpload = async (file: File, type: 'audio' | 'cover') => {
     if (!file) return;
 
     setUploading(true);
     try {
-      let musicId = draftId;
+      const musicId = await ensureDraftId();
       if (!musicId) {
-        if (!formData.title.trim() || !formData.artist.trim()) {
-          toast.error(t.devMusicAdmin.errors.titleArtistRequiredForUpload);
-          setUploading(false);
-          return;
-        }
-        const draftRes = await fetch('/api/music', {
-          method: 'POST',
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: formData.title.trim(), artist: formData.artist.trim(), visibility: 'private' }),
-        });
-        const draftData = await draftRes.json();
-        if (!draftRes.ok || !draftData.success) {
-          toast.error(draftData.error || t.devMusicAdmin.errors.createDraftFailed);
-          setUploading(false);
-          return;
-        }
-        musicId = draftData.data.id;
-        setDraftId(musicId);
+        setUploading(false);
+        return;
       }
 
       const uploadFormData = new FormData();

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, isSupabaseAdminInitialized } from "@/lib/supabase-admin";
-import { checkRateLimit } from "@/lib/api-rate-limit";
+import { checkRateLimit, getSanitizedClientIp } from "@/lib/api-rate-limit";
 import { timingSafeEqualString } from "@/lib/api-auth";
 
 const adminSecurityLog = (action: string, ip: string, endpoint: string) => {
@@ -9,7 +9,7 @@ const adminSecurityLog = (action: string, ip: string, endpoint: string) => {
 };
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const ip = getSanitizedClientIp(req);
 
   // --- Rate Limiting ---
   // The previous counter here was a no-op: `now < WINDOW_MS` compared a

@@ -63,13 +63,26 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        const { data: existing } = await supabase
-          .from("beat_sales")
-          .select("id")
-          .eq("stripe_session_id", session.id)
-          .maybeSingle();
+        // Insert first, relying on beat_sales.stripe_session_id's UNIQUE
+        // constraint (db/migrations/beat-sales-idempotency.sql) for
+        // idempotency instead of a check-then-write race: a retried/
+        // duplicated webhook for the same session hits a 23505 unique
+        // violation here and is treated as already processed, the same
+        // pattern events.js uses for event_participants.
+        const { error: insertError } = await supabase.from("beat_sales").insert({
+          beat_id: beatId,
+          stripe_session_id: session.id,
+          amount: amount,
+          tier: tier,
+        });
 
-        if (!existing) {
+        if (insertError) {
+          if (insertError.code === "23505") {
+            console.log("[Webhook] Beat sale already recorded for session:", session.id);
+          } else {
+            throw insertError;
+          }
+        } else {
           await supabase
             .from("beats")
             .update({
@@ -78,13 +91,6 @@ export async function POST(req: NextRequest) {
               sold_at: new Date().toISOString(),
             })
             .eq("id", beatId);
-
-          await supabase.from("beat_sales").insert({
-            beat_id: beatId,
-            stripe_session_id: session.id,
-            amount: amount,
-            tier: tier,
-          });
         }
       } catch (err) {
         console.error('[Webhook] Supabase error:', err);

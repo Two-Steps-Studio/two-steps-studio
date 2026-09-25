@@ -177,17 +177,17 @@ async function handleShop(interaction, supabase, profile) {
 
 // ── Handler interakcji sklepu (przyciski + dropdown) ─────────
 
-// Discord snowflakes are always numeric, but userId still ends up
-// interpolated straight into a raw PostgREST filter string below (the JS
-// client's .or() has no parameterized form) -- validating the format first
-// means a malformed id can never break out of the filter, rather than
-// relying solely on Discord's guarantee.
+// profiles.id IS the Discord snowflake (every profile is created with
+// id: userId, see getProfile() in index.js) - discord_id, when set, is
+// always the same value as id, never an independent lookup key, so the
+// .or() this used to do against both columns was pure redundant work on
+// every shop page-turn and purchase, forcing a less efficient OR-scan
+// plan instead of a single indexed primary-key lookup.
 async function findProfileByDiscordId(supabase, userId) {
-    if (!/^\d+$/.test(userId)) return null;
     const { data } = await supabase
         .from('profiles')
         .select('*')
-        .or(`id.eq."${userId}",discord_id.eq."${userId}"`)
+        .eq('id', userId)
         .maybeSingle();
     return data;
 }
@@ -334,12 +334,13 @@ async function processShopPurchase(interaction, supabase, userId) {
         // this, VIP/SVIP/MVIP/X2/X3 only ever granted a cosmetic Discord
         // role; profiles.multiplier/vip_status etc. existed but nothing
         // wrote to them, so people paid coins for a boost that did nothing.
+        let effectError = null;
         if (item.effect?.type === 'vip_status') {
-            const { error: effectError } = await supabase
+            const { error } = await supabase
                 .from('profiles')
                 .update({ [item.effect.column]: true })
                 .eq('id', profile.id);
-            if (effectError) console.error('[SHOP] Błąd nadawania statusu VIP:', effectError.message);
+            effectError = error;
         } else if (item.effect?.type === 'multiplier') {
             // Stacks fairly: a repeat purchase while one is still active
             // extends the remaining time rather than resetting it, and the
@@ -354,11 +355,29 @@ async function processShopPurchase(interaction, supabase, userId) {
             const newMultiplier = stillActive ? Math.max(current.multiplier, item.effect.value) : item.effect.value;
             const base = stillActive ? new Date(current.multiplier_expires_at) : new Date();
             const newExpiry = new Date(base.getTime() + item.effect.days * 24 * 60 * 60 * 1000).toISOString();
-            const { error: effectError } = await supabase
+            const { error } = await supabase
                 .from('profiles')
                 .update({ multiplier: newMultiplier, multiplier_expires_at: newExpiry })
                 .eq('id', profile.id);
-            if (effectError) console.error('[SHOP] Błąd nadawania mnożnika:', effectError.message);
+            effectError = error;
+        }
+
+        if (effectError) {
+            console.error('[SHOP] Błąd nadawania efektu:', effectError.message);
+            // Fail closed instead of charging for an effect that never
+            // applied: without rolling back, the player was left having
+            // paid (and, for role items, already holding the Discord role)
+            // for nothing, with the repurchase guard above then permanently
+            // blocking a retry since they already hold the role.
+            await supabase.rpc('increment_profile_money', { p_user_id: profile.id, p_delta: item.price })
+                .catch((e) => console.error('[SHOP] Rollback refund failed:', e));
+            if (item.type === 'role' && item.roleId) {
+                await member.roles.remove(item.roleId).catch((e) => console.error('[SHOP] Rollback role removal failed:', e));
+            }
+            return interaction.reply({
+                content: `❌ Wystąpił błąd podczas aktywacji **${item.label}**. Zwrócono **${item.price.toLocaleString('pl-PL')} ${COIN}**. Spróbuj ponownie.`,
+                flags: 1 << 6,
+            });
         }
 
         logActivity(supabase, 'purchase', interaction.user.username, item.label);

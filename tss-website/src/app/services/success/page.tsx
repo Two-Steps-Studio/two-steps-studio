@@ -16,7 +16,7 @@ export default function ServiceSuccessPage() {
       </h1>
       <p className="text-lg text-[var(--text-muted)] mb-8">{t.servicesPage.successMessage}</p>
       <Button asChild className="rounded-2xl bg-[var(--color-general)] hover:bg-[var(--color-general)]/80 text-white font-bold px-6">
-        <Link href="/services">{t.servicesPage.backToServices}</Link>
+        <Link href="/dev/services">{t.servicesPage.backToServices}</Link>
       </Button>
     </div>
   );

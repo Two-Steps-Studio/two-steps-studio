@@ -81,10 +81,15 @@ export default async function registerUser(formData: { email: string; password: 
       });
 
     if (profileError) {
-      // If profile creation fails, we might want to delete the user or just return an error.
-      // For now, let's log it and return the error.
       console.error('Error creating profile:', profileError);
-      return { error: 'User created but profile creation failed: ' + profileError.message };
+      // Roll back the auth user generateLink() already created above -
+      // otherwise a transient DB error (or a profiles constraint
+      // violation) here left a real, permanently-unconfirmed auth user
+      // for this email with no matching profile row, which could then
+      // block the same email from ever completing registration again.
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(authUser.id);
+      if (deleteError) console.error('Error rolling back orphaned auth user:', deleteError);
+      return { error: 'Rejestracja nie powiodła się: ' + profileError.message };
     }
   }
 

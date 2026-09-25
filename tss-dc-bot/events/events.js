@@ -162,50 +162,40 @@ async function handleEventJoin(interaction, supabase) {
         return interaction.editReply('❌ Ten event już się odbył!');
     }
 
-    // Pobierz aktualnych uczestników
-    const { data: participants } = await supabase
-        .from('event_participants')
-        .select('user_id, username')
-        .eq('event_id', eventId);
-
-    const count = participants?.length || 0;
-
-    // Sprawdź czy już zapisany
-    const alreadyJoined = participants?.some(p => p.user_id === interaction.user.id);
-    if (alreadyJoined) {
-        return interaction.editReply(`✅ Już jesteś zapisany na event **${event.name}**!`);
-    }
-
-    // Sprawdź limit
-    if (event.max_participants && count >= event.max_participants) {
-        return interaction.editReply(`❌ Event **${event.name}** jest już pełny! (${count}/${event.max_participants} uczestników)`);
-    }
-
-    // Zapisz uczestnika
-    const { error: joinError } = await supabase
-        .from('event_participants')
-        .insert({
-            event_id: eventId,
-            user_id:  interaction.user.id,
-            username: interaction.user.username,
-        });
+    // join_event() (db/join_event_atomic.sql) does the "already joined"
+    // check, the capacity check and the insert as one locked DB
+    // transaction, closing the race where two concurrent joins for the
+    // same event could both pass a separate count check before either
+    // insert landed and oversell max_participants.
+    const { error: joinError } = await supabase.rpc('join_event', {
+        p_event_id: eventId,
+        p_user_id:  interaction.user.id,
+        p_username: interaction.user.username,
+    });
 
     if (joinError) {
-        if (joinError.code === '23505') {
-            // Lost a race against another concurrent /event_join call for the
-            // same user (unique constraint on (event_id, user_id)) - the
-            // "already joined" check above already told them this, this is
-            // just the case where two calls both passed it before either
-            // insert landed.
+        const reason = joinError.message || '';
+        if (reason.includes('already_joined')) {
             return interaction.editReply(`✅ Już jesteś zapisany na event **${event.name}**!`);
+        }
+        if (reason.includes('event_full')) {
+            return interaction.editReply(`❌ Event **${event.name}** jest już pełny! (${event.max_participants}/${event.max_participants} uczestników)`);
+        }
+        if (reason.includes('event_not_found')) {
+            return interaction.editReply(`❌ Nie znaleziono eventu o ID **#${eventId}**.`);
         }
         console.error('[EVENT] Join error:', joinError.message);
         return interaction.editReply('❌ Błąd podczas zapisywania. Spróbuj ponownie.');
     }
 
-    const newCount     = count + 1;
+    const { data: participants } = await supabase
+        .from('event_participants')
+        .select('user_id, username')
+        .eq('event_id', eventId);
+
+    const allAfterJoin = participants || [{ user_id: interaction.user.id }];
+    const newCount     = allAfterJoin.length;
     const limit        = event.max_participants ? `${newCount}/${event.max_participants}` : `${newCount}`;
-    const allAfterJoin = [...(participants || []), { user_id: interaction.user.id }];
     const preview      = allAfterJoin.slice(0, 10).map(p => `<@${p.user_id}>`).join(', ');
     const extra        = allAfterJoin.length > 10 ? ` i ${allAfterJoin.length - 10} innych` : '';
 

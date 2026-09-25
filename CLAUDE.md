@@ -125,9 +125,14 @@ The app uses a dynamic color theme system defined in `globals.css`:
 - **Games**: `#dc3545`
 - **Records**: `#ad83f8`
 - **Dev**: `#ffcb2f`
-- **E-Sport**: `#06e402`
 
 Themes are CSS custom properties applied via `.theme-*` classes.
+
+(E-Sport `#06e402` was a themed section - dedicated logo assets still exist
+under `public/assets/Logo/E-Sport/` - but the section/page itself was
+removed from the site and there's no plan to bring it back soon as of
+2026-09-25. `--color-e-sport` in globals.css is kept, since the homepage's
+stats/online-chart components still use it independently of that section.)
 
 ### Protected Routes
 The middleware (`src/proxy.ts` — Next.js 16 renamed the `middleware.ts` convention to `proxy.ts`/`export function proxy()`) protects:
