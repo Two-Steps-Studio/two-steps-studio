@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       ],
       mode: "payment",
       success_url: `${siteUrl}/services/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/services`,
+      cancel_url: `${siteUrl}/dev/services`,
       metadata: {
         userId: user.id,
         serviceId: service.id,

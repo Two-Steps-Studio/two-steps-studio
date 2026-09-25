@@ -98,6 +98,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      // Canonical services page - /services redirects here (see
+      // next.config.ts).
+      url: `${baseUrl}/dev/services`,
+      lastModified: today,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/dev/about`,
       lastModified: today,
       changeFrequency: 'monthly' as const,

@@ -213,6 +213,16 @@ const nextConfig: NextConfig = {
         destination: '/settings',
         permanent: true,
       },
+      {
+        // /services and /dev/services rendered the same content at two
+        // URLs (same /api/services fetch, same UI) - /dev/services was
+        // kept as the canonical page, so this consolidates the
+        // duplicate-content signal onto one URL instead of leaving both
+        // live.
+        source: '/services',
+        destination: '/dev/services',
+        permanent: true,
+      },
     ];
   },
   webpack: (config, { isServer }) => {
