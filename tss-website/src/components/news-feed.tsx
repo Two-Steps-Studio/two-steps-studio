@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, Tag } from "lucide-react";
 import { useLanguage } from "@/hooks/use-translation";
@@ -17,33 +16,13 @@ interface NewsItem {
   published_at: string;
 }
 
-export function NewsFeed() {
+export function NewsFeed({ initialNews = [] }: { initialNews?: NewsItem[] }) {
   const { t } = useLanguage();
   const { theme } = useTheme();
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const news = initialNews;
 
   // darkMode based on next-themes
   const isDark = theme === "dark";
-
-  useEffect(() => {
-    fetch("/api/news")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setNews(data);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-[400px] rounded-[2rem] glass animate-pulse" />
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
