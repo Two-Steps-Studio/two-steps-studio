@@ -192,8 +192,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        // The E-Sport section itself was removed from the site (no
+        // /e-sport route exists), so this used to redirect one dead legacy
+        // URL straight into another 404 instead of somewhere real.
         source: '/pages/e-sport.html',
-        destination: '/e-sport',
+        destination: '/',
         permanent: true,
       },
       {

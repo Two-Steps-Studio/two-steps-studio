@@ -6,11 +6,6 @@ export const SECTIONS = {
     logo: "/assets/Logo/Games/Two Steps Studio Games Bez Tła.png",
     color: "#F43F5E",
   },
-  ESPORT: {
-    path: "/e-sport",
-    logo: "/assets/Logo/E-Sport/Two Steps Studio E-Sport Bez Tła.png",
-    color: "#10B981",
-  },
   RECORDS: {
     path: "/records",
     logo: "/assets/Logo/Records/Two Steps Studio Records Bez Tła.png",
