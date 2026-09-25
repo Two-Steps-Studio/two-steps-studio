@@ -130,6 +130,8 @@ const messageActivityCooldowns = new Map();
 const MESSAGE_ACTIVITY_COOLDOWN_MS = 120000;
 let messagesTodayCount = 0;
 let lastDay = new Date().getDate();
+let lastFullMemberFetch = 0;
+const MEMBER_FETCH_INTERVAL_MS = 10 * 60 * 1000;
 
 function getLevelFromXP(xp) {
     if (!xp || xp < 100) return 0;
@@ -739,12 +741,22 @@ async function updateDiscordStats() {
         await syncGuildOptions(guild);
 
         // GuildMembers + GuildPresences intents are both enabled (see the
-        // client's intents list above), so discord.js already keeps
+        // client's intents list above), so discord.js keeps
         // guild.members.cache live via gateway events (join/leave/update,
-        // presence changes) - re-fetching the entire member list from
-        // Discord's API here, every 60s, forever, was a redundant full
-        // REST round-trip doing the same job the cache already does for
-        // free.
+        // presence changes) once it's populated - but that cache is only
+        // complete for guilds at or under Discord's default
+        // large_threshold (50 members); above that, the rest is never
+        // backfilled without an explicit fetch at least once. A plain
+        // guild.members.cache read (an earlier version of this fix) would
+        // silently undercount member/online stats on any guild bigger
+        // than 50. Refetched periodically instead of on every 60s tick -
+        // gateway events keep the cache accurate in between - so this
+        // still avoids the original redundant full REST call every
+        // single tick, forever.
+        if (Date.now() - lastFullMemberFetch > MEMBER_FETCH_INTERVAL_MS) {
+            await guild.members.fetch();
+            lastFullMemberFetch = Date.now();
+        }
         const members  = guild.members.cache;
         const humans   = members.filter(m => !m.user.bot).size;
         const online   = members.filter(m => m.presence?.status === 'online' || m.presence?.status === 'dnd').size;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBotSetting } from "@/lib/bot-settings";
 import { createServiceClient } from "@/lib/supabase-server";
+import { checkRateLimit, getSanitizedClientIp } from "@/lib/api-rate-limit";
 
 interface RecruitmentFormData {
   type: "dev" | "discord_admin";
@@ -33,6 +34,14 @@ const TYPE_META: Record<RecruitmentFormData["type"], { title: string; color: num
 const escapeMd = (s: string) => s.replace(/([\\`*_~|>\[\]()])/g, '\\$1');
 const clip = (s: string) => escapeMd(s).substring(0, 1024);
 
+// Bounds for what actually gets stored in recruitment_applications -
+// separate from clip() above (which escapes for Discord's embed syntax
+// and would corrupt the stored copy with backslashes that were never
+// really typed). Matches the form's own maxLength on each field, as a
+// backstop against a request sent straight to this API bypassing the
+// browser's <input maxLength>.
+const clipStored = (s: string, max: number) => s.trim().substring(0, max);
+
 // Recruitment with a type selector (Dev / Discord Administration, more may
 // be added later) - separate from /api/dev/recruitment, which is the
 // dev-only form this one's "Dev" option is meant to feed into the same
@@ -40,6 +49,12 @@ const clip = (s: string) => escapeMd(s).substring(0, 1024);
 // an incoming webhook) so it needs no new Discord-side setup beyond an
 // optional channel id per type.
 export async function POST(request: NextRequest) {
+  const ip = getSanitizedClientIp(request);
+  const rateLimit = checkRateLimit(`recruitment:${ip}`, "recruitment");
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: "Zbyt wiele zgłoszeń. Spróbuj ponownie później." }, { status: 429 });
+  }
+
   try {
     const body: RecruitmentFormData = await request.json();
 
@@ -66,13 +81,13 @@ export async function POST(request: NextRequest) {
     const { error: insertError } = await supabase.from("recruitment_applications").insert({
       source: "recruitment",
       type: body.type,
-      name: body.name.trim(),
-      email: body.email.trim(),
-      discord: body.discord.trim(),
-      position: body.position.trim(),
-      experience: body.experience.trim(),
-      motivation: body.motivation.trim(),
-      portfolio: body.portfolio?.trim() || null,
+      name: clipStored(body.name, 200),
+      email: clipStored(body.email, 200),
+      discord: clipStored(body.discord, 200),
+      position: clipStored(body.position, 200),
+      experience: clipStored(body.experience, 1000),
+      motivation: clipStored(body.motivation, 1000),
+      portfolio: body.portfolio ? clipStored(body.portfolio, 200) : null,
     });
 
     if (insertError) {
