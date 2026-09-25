@@ -38,6 +38,21 @@ setInterval(() => {
     loadAvailableBackgrounds();
 }, 30 * 60 * 1000);
 
+// Static assets (coin icon, background images) are the same file every
+// time they're drawn - createProfileCard()/createWelcomeCard() used to
+// loadImage() (disk read + PNG decode) them fresh on every single card,
+// even though /profile is one of the most-used commands. Cache the
+// decoded Image the first time each path is loaded instead. Per-user
+// avatars are NOT cached here - those genuinely differ per call and are
+// loaded separately.
+const staticImageCache = new Map(); // path -> loaded Image
+async function loadImageCached(imgPath) {
+    if (staticImageCache.has(imgPath)) return staticImageCache.get(imgPath);
+    const img = await loadImage(imgPath);
+    staticImageCache.set(imgPath, img);
+    return img;
+}
+
 // Załaduj tła przy uruchomieniu
 loadAvailableBackgrounds();
 
@@ -132,7 +147,7 @@ async function createProfileCard(userData) {
     // Załaduj monetę (coin)
     let coinImage = null;
     try {
-        coinImage = await loadImage(path.join(ASSETS_DIR, 'Coin TSS.png'));
+        coinImage = await loadImageCached(path.join(ASSETS_DIR, 'Coin TSS.png'));
     } catch (e) {
         console.warn('[PROFILE] Coin image not found:', e.message);
     }
@@ -158,7 +173,7 @@ async function createProfileCard(userData) {
     }
 
     try {
-        const backgroundImage = await loadImage(backgroundPath);
+        const backgroundImage = await loadImageCached(backgroundPath);
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     } catch (e) {
         console.warn('[PROFILE] Nie znaleziono tła, użyto domyślnego koloru');
@@ -359,7 +374,7 @@ async function createWelcomeCard(userData) {
     const ctx = canvas.getContext('2d');
 
     try {
-        const backgroundImage = await loadImage(path.join(BACKGROUND_DIR, 'Two Steps Studio.png'));
+        const backgroundImage = await loadImageCached(path.join(BACKGROUND_DIR, 'Two Steps Studio.png'));
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     } catch (e) {
         console.warn('[WELCOME] Nie znaleziono tła, użyto domyślnego koloru');

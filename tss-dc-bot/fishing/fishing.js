@@ -260,25 +260,20 @@ async function handleFishInventory(interaction, supabase, COIN = '<:CoinTSS:1548
 // ── /top_fish ────────────────────────────────────────────────
 
 async function handleFishTop(interaction, supabase, COIN = '<:CoinTSS:1548220404693213195>') {
-    const { data: rows } = await supabase
-        .from('fishing_catches')
-        .select('user_id, value');
+    // Aggregated in Postgres (fishing_top_anglers RPC, db/fishing_top_anglers.sql)
+    // instead of pulling every row in fishing_catches and grouping in JS -
+    // that table is append-only with no pruning, so this scales with total
+    // catches ever made instead of a fixed top-10 response.
+    const { data: rows, error } = await supabase.rpc('fishing_top_anglers', { p_limit: 10 });
+
+    if (error) console.error('[FISHING] top_fish rpc error:', error.message);
 
     if (!rows || rows.length === 0) {
         return interaction.reply({ content: 'Brak danych.', flags: 1 << 6 });
     }
 
-    const grouped = {};
-    for (const row of rows) {
-        if (!grouped[row.user_id]) grouped[row.user_id] = { total: 0, count: 0 };
-        grouped[row.user_id].total += row.value || 0;
-        grouped[row.user_id].count += 1;
-    }
-
-    const list = Object.entries(grouped)
-        .sort((a, b) => b[1].total - a[1].total)
-        .slice(0, 10)
-        .map(([uid, d], i) => `**${i + 1}.** <@${uid}> – ${d.count} ryb, ${d.total} ${COIN}`)
+    const list = rows
+        .map((r, i) => `**${i + 1}.** <@${r.user_id}> – ${r.catch_count} ryb, ${r.total_value} ${COIN}`)
         .join('\n');
 
     const embed = new EmbedBuilder()

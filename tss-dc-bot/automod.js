@@ -29,14 +29,21 @@ const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // BLOCKED_WORDS is admin-editable from /admin/bot (comma-separated), same
 // bot_settings key/value store as every other runtime-configurable knob -
-// no new table needed. Rebuilt from the raw setting string on every message
-// rather than cached separately, since settings.js already caches the
-// underlying value for 60s.
+// no new table needed. checkAutoMod() runs on every single message in
+// every channel (unlike the XP path, which is cooldown-gated), so unlike
+// most getSetting() call sites this one is worth caching the *parsed*
+// form of too, not just relying on settings.js's 60s cache of the raw
+// string - recompiling a RegExp per blocked word on every message is
+// wasted work when the list only actually changes at most once a minute.
+let lastRawBlockedWords;
+let cachedBlockedWordPatterns = [];
 function getBlockedWordPatterns() {
     const raw = getSetting('BLOCKED_WORDS');
-    if (!raw) return [];
-    return raw.split(',').map((w) => w.trim()).filter(Boolean)
+    if (raw === lastRawBlockedWords) return cachedBlockedWordPatterns;
+    lastRawBlockedWords = raw;
+    cachedBlockedWordPatterns = !raw ? [] : raw.split(',').map((w) => w.trim()).filter(Boolean)
         .map((w) => new RegExp(`\\b${escapeRegex(w)}\\b`, 'i'));
+    return cachedBlockedWordPatterns;
 }
 
 async function notifyAndMaybeCleanup(message, reason) {

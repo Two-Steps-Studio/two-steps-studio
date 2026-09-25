@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,10 @@ export default function Page() {
     }
   };
 
-  const filteredGames = games.filter((game) => {
+  // Recomputed on every keystroke in the search box before - this scales
+  // with catalog size and re-ran over the full unbounded list on every
+  // character typed, with no memoization.
+  const filteredGames = useMemo(() => games.filter((game) => {
     const matchesSearch =
       searchQuery === "" ||
       game.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,7 +78,7 @@ export default function Page() {
       return ((a.downloads || 0) - (b.downloads || 0)) * modifier;
     }
     return 0;
-  });
+  }), [games, searchQuery, selectedCategory, sortBy, sortOrder]);
 
   const featuredGames = games.filter((game) => game.featured).slice(0, 5);
 

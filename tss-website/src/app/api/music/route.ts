@@ -92,11 +92,23 @@ export async function GET(request: Request) {
       query = query.eq('featured', true);
     }
     if (search) {
-      query = query.or(`title.ilike.%${search}%,artist.ilike.%${search}%,album.ilike.%${search}%`);
+      // Same sanitization api/games/route.ts's search filter already uses -
+      // without it, a comma or parenthesis in `search` could alter the
+      // .or() filter's PostgREST syntax instead of being searched for
+      // literally.
+      const sanitizedSearch = search.replace(/[^\w\s-]/g, '').slice(0, 100);
+      if (sanitizedSearch) {
+        query = query.or(`title.ilike.%${sanitizedSearch}%,artist.ilike.%${sanitizedSearch}%,album.ilike.%${sanitizedSearch}%`);
+      }
     }
 
     // Order by created_at descending by default
     query = query.order('created_at', { ascending: false });
+
+    // Safety ceiling - no limit at all before, so this response could grow
+    // without bound as more tracks get added. Well above the current
+    // catalog size, so no visible behavior change today.
+    query = query.limit(200);
 
     const { data, error } = await query;
 

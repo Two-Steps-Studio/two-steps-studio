@@ -40,23 +40,26 @@ export async function GET() {
   const bucketMs = 15 * 60 * 1000;
   const start = new Date(now - windowMs).toISOString();
 
-  const { data, error } = await supabase
-    .from("site_presence")
-    .select("session_id,user_id,seen_at")
-    .gte("seen_at", start)
-    .order("seen_at", { ascending: true }) as unknown as { data: PresenceRow[]; error: any };
+  // Two independent queries - run in parallel instead of one after the
+  // other, since neither depends on the other's result.
+  const [{ data, error }, { data: discordData }] = await Promise.all([
+    supabase
+      .from("site_presence")
+      .select("session_id,user_id,seen_at")
+      .gte("seen_at", start)
+      .order("seen_at", { ascending: true }) as unknown as Promise<{ data: PresenceRow[]; error: any }>,
+    // Discord online counts (db/discord_online_history_schema.sql, appended
+    // by the bot every 60s) - merged in below so this chart's numbers agree
+    // with the "Online" tile elsewhere on the site, which already combines
+    // Discord + website instead of showing website sessions only.
+    supabase
+      .from("discord_online_history")
+      .select("online_count,recorded_at")
+      .gte("recorded_at", start)
+      .order("recorded_at", { ascending: true }) as unknown as Promise<{ data: DiscordOnlineRow[] | null }>,
+  ]);
 
   const safeData: PresenceRow[] = Array.isArray((data as any)) ? (data as any) as PresenceRow[] : [];
-
-  // Discord online counts (db/discord_online_history_schema.sql, appended
-  // by the bot every 60s) - merged in below so this chart's numbers agree
-  // with the "Online" tile elsewhere on the site, which already combines
-  // Discord + website instead of showing website sessions only.
-  const { data: discordData } = await supabase
-    .from("discord_online_history")
-    .select("online_count,recorded_at")
-    .gte("recorded_at", start)
-    .order("recorded_at", { ascending: true }) as unknown as { data: DiscordOnlineRow[] | null };
   const safeDiscordData: DiscordOnlineRow[] = Array.isArray(discordData) ? discordData : [];
 
   const bucketStart = (ts: number) => Math.floor(ts / bucketMs) * bucketMs;
