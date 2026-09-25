@@ -73,6 +73,10 @@ export default function GamesPage() {
           </a>
         ))}
       </div>
+
+      <GameCarouselRow title={t.gamesCatalog.featuredTitle} games={featuredGames} />
+      <GameCarouselRow title={t.gamesPage.latestTitle} games={latestGames} />
+      <GameCarouselRow title={t.gamesPage.popularTitle} games={popularGames} />
     </div>
   );
 }

@@ -272,7 +272,7 @@ export default function Page() {
                       {game.title}
                     </CardTitle>
                     {game.status && game.status !== 'published' && (
-                      <Badge variant="secondary" className="bg-[var(--card-bg)] text-[var(--text-muted)] border border-[var(--border] text-xs shrink-0">
+                      <Badge variant="secondary" className="bg-[var(--card-bg)] text-[var(--text-muted)] border border-[var(--border-color)] text-xs shrink-0">
                         {STATUS_LABELS[game.status]}
                       </Badge>
                     )}

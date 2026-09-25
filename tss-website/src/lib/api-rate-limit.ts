@@ -143,3 +143,29 @@ export function getRateLimitStatus(
 export function resetRateLimit(identifier: string): void {
   rateLimitStore.delete(identifier);
 }
+
+const IP_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^::1$|^localhost$/;
+
+/**
+ * Extract and validate the client IP from request headers, for use as a
+ * rate-limit key. Mirrors proxy.ts's getClientIp() - without this, a raw
+ * `x-forwarded-for` value lets a caller pick their own rate-limit bucket by
+ * sending a different (even fake) value on every request.
+ */
+export function getSanitizedClientIp(req: { headers: { get(name: string): string | null } }): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const ip = forwarded.split(",")[0].trim();
+    if (IP_REGEX.test(ip)) {
+      return ip;
+    }
+  }
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) {
+    const ip = realIp.trim();
+    if (IP_REGEX.test(ip)) {
+      return ip;
+    }
+  }
+  return "unknown";
+}

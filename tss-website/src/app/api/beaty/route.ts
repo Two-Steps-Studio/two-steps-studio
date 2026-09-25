@@ -40,6 +40,10 @@ export async function GET() {
 
     if (error) {
       console.error("Błąd pobierania beatów:", error);
+      return NextResponse.json(
+        { error: "Sklep z beatami niedostepny - kontakt z administratorem" },
+        { status: 503 }
+      );
     }
 
     if (!beats || beats.length === 0) {

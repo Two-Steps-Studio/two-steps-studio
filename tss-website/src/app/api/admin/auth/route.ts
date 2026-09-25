@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, requireAdmin, isAuthError } from "@/lib/auth-helpers";
 import { timingSafeEqualString } from "@/lib/api-auth";
-import { checkRateLimit } from "@/lib/api-rate-limit";
+import { checkRateLimit, getSanitizedClientIp } from "@/lib/api-rate-limit";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth();
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   // operator precedence — so the counter got stuck at 1 and never
   // incremented. checkRateLimit() is the same correct, already-used
   // limiter the rest of the API relies on.)
-  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const ip = getSanitizedClientIp(req);
   const rateLimit = checkRateLimit(`admin-auth:${ip}`, "admin");
   if (!rateLimit.allowed) {
     return NextResponse.json(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -389,16 +389,63 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
   const [uploading, setUploading] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  // For a brand-new game there's no DB row yet when an image is picked --
+  // uploads used to go under a literal "temp" storage path that no game
+  // row ever pointed back to (same bug already fixed on the music admin
+  // page). Create a minimal draft row on first upload and reuse its id for
+  // every subsequent upload/save in this modal session. draftCreationRef
+  // shares the in-flight creation promise so a thumbnail+banner upload
+  // picked in quick succession can't each create their own draft row.
+  const [draftId, setDraftId] = useState<number | null>(game?.id ?? null);
+  const draftCreationRef = useRef<Promise<number | null> | null>(null);
+
+  const ensureDraftId = async (): Promise<number | null> => {
+    if (draftId) return draftId;
+    if (draftCreationRef.current) return draftCreationRef.current;
+
+    const promise = (async (): Promise<number | null> => {
+      if (!formData.title.trim()) {
+        toast.error(t.devGamesAdmin.errors.titleRequired);
+        return null;
+      }
+      const draftRes = await fetch('/api/games', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formData.title.trim(), status: 'draft', visibility: 'private' }),
+      });
+      const draftData = await draftRes.json();
+      if (!draftRes.ok || !draftData.success) {
+        toast.error(draftData.error || t.devCrudCommon.errorSaving);
+        return null;
+      }
+      const id = draftData.data.id as number;
+      setDraftId(id);
+      return id;
+    })();
+
+    draftCreationRef.current = promise;
+    try {
+      return await promise;
+    } finally {
+      draftCreationRef.current = null;
+    }
+  };
 
   const handleImageUpload = async (file: File, type: 'thumbnail' | 'banner') => {
     if (!file) return;
 
     setUploading(true);
     try {
+      const gameId = await ensureDraftId();
+      if (!gameId) {
+        setUploading(false);
+        return;
+      }
+
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('type', type);
-      uploadFormData.append('gameId', game?.id?.toString() || 'temp');
+      uploadFormData.append('gameId', String(gameId));
 
       const res = await fetch('/api/upload/games', {
         method: 'POST',
@@ -442,10 +489,10 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
 
     try {
       const url = "/api/games";
-      const method = game ? "PUT" : "POST";
-      
-      if (game) {
-        payload.id = game.id;
+      const method = draftId ? "PUT" : "POST";
+
+      if (draftId) {
+        payload.id = draftId;
       }
 
       const res = await fetch(url, {
@@ -462,7 +509,7 @@ function GameFormModal({ game, onClose, onSave }: { game: Game | null; onClose: 
       }
 
       if (data.success) {
-        toast.success(game ? t.devGamesAdmin.gameUpdated : t.devGamesAdmin.gameCreated);
+        toast.success(draftId ? t.devGamesAdmin.gameUpdated : t.devGamesAdmin.gameCreated);
         onSave();
       } else {
         toast.error(data.error || t.devCrudCommon.errorSaving);
