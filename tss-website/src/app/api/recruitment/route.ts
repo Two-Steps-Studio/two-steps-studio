@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     if (!body.type || !TYPE_META[body.type]) {
       return NextResponse.json({ error: "Invalid application type" }, { status: 400 });
     }
-    if (!body.name || !body.email || !body.discord || !body.position || !body.experience || !body.motivation) {
+    if (![body.name, body.email, body.discord, body.position, body.experience, body.motivation].every((v) => v?.trim())) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -54,22 +54,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
+    // Discord rejects the whole embed (400) if any field value exceeds
+    // 1024 chars - experience/motivation were already capped, but name/
+    // email/discord/position/portfolio (all free text, none length-
+    // limited in the form) weren't, so a long paste into any of those
+    // caused the entire application to be discarded with no way to
+    // recover it (this route has no persistence - see the comment above
+    // POST()).
+    // Escaped before truncating so an applicant can't use Discord
+    // markdown (masked links like [click here](evil.example), bold/
+    // strikethrough) to make submitted text render as something other
+    // than plain text in the staff-facing embed.
+    const escapeMd = (s: string) => s.replace(/([\\`*_~|>\[\]()])/g, '\\$1');
+    const clip = (s: string) => escapeMd(s).substring(0, 1024);
+
     const embed = {
       title: meta.title,
       color: meta.color,
       fields: [
-        { name: "👤 Imię i nazwisko", value: body.name, inline: true },
-        { name: "📧 Email", value: body.email, inline: true },
-        { name: "💬 Discord", value: body.discord, inline: true },
-        { name: "🎯 Czym chce się zajmować", value: body.position, inline: false },
-        { name: "💼 Doświadczenie", value: body.experience.substring(0, 1024), inline: false },
-        { name: "❤️ Motywacja", value: body.motivation.substring(0, 1024), inline: false },
+        { name: "👤 Imię i nazwisko", value: clip(body.name), inline: true },
+        { name: "📧 Email", value: clip(body.email), inline: true },
+        { name: "💬 Discord", value: clip(body.discord), inline: true },
+        { name: "🎯 Czym chce się zajmować", value: clip(body.position), inline: false },
+        { name: "💼 Doświadczenie", value: clip(body.experience), inline: false },
+        { name: "❤️ Motywacja", value: clip(body.motivation), inline: false },
       ] as { name: string; value: string; inline: boolean }[],
       timestamp: new Date().toISOString(),
     };
 
     if (body.portfolio) {
-      embed.fields.push({ name: "🔗 Portfolio/Social media", value: body.portfolio, inline: false });
+      embed.fields.push({ name: "🔗 Portfolio/Social media", value: clip(body.portfolio), inline: false });
     }
 
     const discordResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {

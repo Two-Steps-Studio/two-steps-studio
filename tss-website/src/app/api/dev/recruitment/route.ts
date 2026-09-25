@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const body: RecruitmentFormData = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.email || !body.discord || !body.position || !body.experience || !body.motivation) {
+    if (![body.name, body.email, body.discord, body.position, body.experience, body.motivation].every((v) => v?.trim())) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -37,6 +37,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Discord rejects the whole embed (400) if any field value exceeds
+    // 1024 chars - experience/motivation were already capped, but name/
+    // email/discord/position/portfolio (all free text, none length-
+    // limited in the form) weren't, so a long paste into any of those
+    // caused the entire application to be discarded with no way to
+    // recover it (this route has no persistence).
+    // Escaped before truncating so an applicant can't use Discord
+    // markdown (masked links, bold/strikethrough) to make submitted text
+    // render as something other than plain text in the staff embed.
+    const escapeMd = (s: string) => s.replace(/([\\`*_~|>\[\]()])/g, '\\$1');
+    const clip = (s: string) => escapeMd(s).substring(0, 1024);
+
     // Create Discord embed
     const embed = {
       title: "🎉 New Recruitment Application",
@@ -44,32 +56,32 @@ export async function POST(request: NextRequest) {
       fields: [
         {
           name: "👤 Name",
-          value: body.name,
+          value: clip(body.name),
           inline: true,
         },
         {
           name: "📧 Email",
-          value: body.email,
+          value: clip(body.email),
           inline: true,
         },
         {
           name: "💬 Discord",
-          value: body.discord,
+          value: clip(body.discord),
           inline: true,
         },
         {
           name: "🎯 Position",
-          value: body.position,
+          value: clip(body.position),
           inline: false,
         },
         {
           name: "💼 Experience",
-          value: body.experience.substring(0, 1024), // Discord field value limit is 1024
+          value: clip(body.experience), // Discord field value limit is 1024
           inline: false,
         },
         {
           name: "❤️ Motivation",
-          value: body.motivation.substring(0, 1024),
+          value: clip(body.motivation),
           inline: false,
         },
       ],
@@ -80,7 +92,7 @@ export async function POST(request: NextRequest) {
     if (body.portfolio) {
       embed.fields.push({
         name: "🔗 Portfolio/GitHub",
-        value: body.portfolio,
+        value: clip(body.portfolio),
         inline: false,
       });
     }

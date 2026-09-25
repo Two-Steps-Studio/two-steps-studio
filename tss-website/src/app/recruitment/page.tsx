@@ -140,16 +140,16 @@ export default function RekrutacjaPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{t.rekrutacja.name}</Label>
-                <Input id="name" name="name" value={formData.name} onChange={handleChange} required placeholder={t.rekrutacja.namePlaceholder} />
+                <Input id="name" name="name" value={formData.name} onChange={handleChange} required maxLength={200} placeholder={t.rekrutacja.namePlaceholder} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">{t.rekrutacja.email}</Label>
-                <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required placeholder={t.rekrutacja.emailPlaceholder} />
+                <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required maxLength={200} placeholder={t.rekrutacja.emailPlaceholder} />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="discord">{t.rekrutacja.discord}</Label>
-              <Input id="discord" name="discord" value={formData.discord} onChange={handleChange} required placeholder={t.rekrutacja.discordPlaceholder} />
+              <Input id="discord" name="discord" value={formData.discord} onChange={handleChange} required maxLength={200} placeholder={t.rekrutacja.discordPlaceholder} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="position">{t.rekrutacja.position}</Label>
@@ -159,20 +159,21 @@ export default function RekrutacjaPage() {
                 value={formData.position}
                 onChange={handleChange}
                 required
+                maxLength={200}
                 placeholder={formData.type === "dev" ? t.rekrutacja.positionPlaceholderDev : t.rekrutacja.positionPlaceholderDiscordAdmin}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="experience">{t.rekrutacja.experience}</Label>
-              <Textarea id="experience" name="experience" value={formData.experience} onChange={handleChange} required placeholder={t.rekrutacja.experiencePlaceholder} rows={3} />
+              <Textarea id="experience" name="experience" value={formData.experience} onChange={handleChange} required maxLength={1000} placeholder={t.rekrutacja.experiencePlaceholder} rows={3} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="motivation">{t.rekrutacja.motivation}</Label>
-              <Textarea id="motivation" name="motivation" value={formData.motivation} onChange={handleChange} required placeholder={t.rekrutacja.motivationPlaceholder} rows={3} />
+              <Textarea id="motivation" name="motivation" value={formData.motivation} onChange={handleChange} required maxLength={1000} placeholder={t.rekrutacja.motivationPlaceholder} rows={3} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="portfolio">{t.rekrutacja.portfolio}</Label>
-              <Input id="portfolio" name="portfolio" value={formData.portfolio} onChange={handleChange} placeholder={t.rekrutacja.portfolioPlaceholder} />
+              <Input id="portfolio" name="portfolio" value={formData.portfolio} onChange={handleChange} maxLength={200} placeholder={t.rekrutacja.portfolioPlaceholder} />
             </div>
             <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-2xl font-bold gap-2">
               {isSubmitting ? (

@@ -123,10 +123,11 @@ export default function RecruitmentPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
+                  maxLength={200}
                   placeholder="John Doe"
                 />
               </div>
-  
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -136,10 +137,11 @@ export default function RecruitmentPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  maxLength={200}
                   placeholder="john@example.com"
                 />
               </div>
-  
+
               <div className="space-y-2">
                 <Label htmlFor="discord">{t.devRecruitmentPage.discordUsername}</Label>
                 <Input
@@ -148,10 +150,11 @@ export default function RecruitmentPage() {
                   value={formData.discord}
                   onChange={handleChange}
                   required
+                  maxLength={200}
                   placeholder="john_example"
                 />
               </div>
-  
+
               <div className="space-y-2 ">
                 <Label htmlFor="position">{t.devRecruitmentPage.position}</Label>
                 <Input
@@ -160,10 +163,11 @@ export default function RecruitmentPage() {
                   value={formData.position}
                   onChange={handleChange}
                   required
+                  maxLength={200}
                   placeholder={t.devRecruitmentPage.positionPlaceholder}
                 />
               </div>
-  
+
               <div className="space-y-2">
                 <Label htmlFor="experience">{t.devRecruitmentPage.experience}</Label>
                 <Textarea
@@ -172,11 +176,12 @@ export default function RecruitmentPage() {
                   value={formData.experience}
                   onChange={handleChange}
                   required
+                  maxLength={1000}
                   placeholder={t.devRecruitmentPage.experiencePlaceholder}
                   rows={4}
                 />
               </div>
-  
+
               <div className="space-y-2">
                 <Label htmlFor="motivation">{t.devRecruitmentPage.motivation}</Label>
                 <Textarea
@@ -185,11 +190,12 @@ export default function RecruitmentPage() {
                   value={formData.motivation}
                   onChange={handleChange}
                   required
+                  maxLength={1000}
                   placeholder={t.devRecruitmentPage.motivationPlaceholder}
                   rows={4}
                 />
               </div>
-  
+
               <div className="space-y-2">
                 <Label htmlFor="portfolio">{t.devRecruitmentPage.portfolio}</Label>
                 <Input
@@ -197,6 +203,7 @@ export default function RecruitmentPage() {
                   name="portfolio"
                   value={formData.portfolio}
                   onChange={handleChange}
+                  maxLength={200}
                   placeholder={t.devRecruitmentPage.portfolioPlaceholder}
                 />
               </div>
