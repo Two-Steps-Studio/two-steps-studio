@@ -205,6 +205,15 @@ $$ LANGUAGE plpgsql;
 -- (getLevelFromXp from level_stats.js); this function stays curve-agnostic.
 -- money is clamped at 0 via GREATEST to match existing JS semantics
 -- (Math.max(0, ...)) in fishing.js / afk_fishing.js.
+-- level is clamped with GREATEST against the row's current value too: two
+-- of this function's own callers can race (e.g. a chat-XP award and a
+-- /fish catch firing close together), each computed from an xp snapshot
+-- read before either write landed. Without the guard, whichever call
+-- finishes last wins even if it was computing from the staler snapshot,
+-- so a level could regress below what the (correctly, additively) updated
+-- xp already implies. Since every caller's level is a monotonic function
+-- of xp, level can only ever need to go up from a reward - never down -
+-- so clamping here is always correct, never a lost intentional decrease.
 -- Also used directly by handleMine/handleStaw in rpg/index.js — the item-
 -- array append that used to be bundled with those two writes targeted
 -- columns that don't exist (see file header); this function is the correct,
@@ -222,7 +231,7 @@ BEGIN
     UPDATE profiles
     SET xp    = COALESCE(xp, 0) + p_xp_delta,
         money = GREATEST(0, COALESCE(money, 0) + p_money_delta),
-        level = p_new_level,
+        level = GREATEST(COALESCE(profiles.level, 0), p_new_level),
         updated_at = NOW()
     WHERE id = p_user_id
     RETURNING profiles.xp, profiles.money, profiles.level;

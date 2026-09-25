@@ -5,11 +5,28 @@ const { getGearStats } = require('./gear.config');
 const { fetchGearRow, rowToGearObj } = require('./wedka');
 
 const cooldowns = new Map();
+// Belt-and-braces guard alongside the cooldowns placeholder below: that
+// placeholder is a fixed 5s window meant to cover the fetchGearRow()
+// round-trip, but under a Supabase latency spike the fetch can take longer
+// than that, letting the placeholder expire and a second /fish call slip
+// through before the real cooldown (set from actual gear stats) lands -
+// reopening the double-catch race the placeholder exists to close.
+// inFlight has no fixed duration - it's only cleared once this exact call
+// finishes, so it holds regardless of how long the DB round-trip takes.
+const inFlight = new Set();
 
 // ── Losowanie ryby z uwzględnieniem bonusu rzadkości ─────────
 
-function rollFish(rarityBonus = 0, locationSlots = 0) {
-    if (Math.random() * 100 < TRASH_CHANCE) {
+// catchChance (Wędka gear) used to be defined and shown to the player
+// ("Szansa: +X%") but never actually read anywhere - every cast already
+// always returned a fish or trash, so the stat had nothing to modify.
+// Wired in as a reduction of TRASH_CHANCE: a maxed Wędka (+39%) cuts the
+// trash roll from 10% down to ~6.1%, so it does what the flavor text
+// promises ("higher chance of catching something [worthwhile]") without
+// introducing a new "caught nothing" outcome that would make casts worse
+// for anyone who hasn't bought it.
+function rollFish(rarityBonus = 0, locationSlots = 0, catchChance = 0) {
+    if (Math.random() * 100 < TRASH_CHANCE * (1 - catchChance)) {
         const trash = Object.values(FISH).filter(f => f.rarity === 'trash');
         return trash[Math.floor(Math.random() * trash.length)];
     }
@@ -75,111 +92,123 @@ async function handleFishing(interaction, supabase, profile, COIN = '<:CoinTSS:1
         }
     }
 
-    // Reserve a placeholder cooldown synchronously, before the DB round-trips
-    // below -- otherwise two near-simultaneous /fish calls can both pass
-    // the check above before either call actually sets one, letting a user
-    // catch (and get paid for) two fish off a single cooldown/bait check.
-    // Corrected to the real duration once gear stats are known.
-    cooldowns.set(userId, Date.now() + 5000);
-
-    // 2. Defer – wszystkie operacje DB mogą teraz trwać ile chcą
-    await interaction.deferReply();
-
-    // 3. Pobierz sprzęt z Supabase
-    const gearRow = await fetchGearRow(supabase, userId);
-    const gearObj = rowToGearObj(gearRow);
-    const { valueBonus, cooldownReduction, rarityBonus, baitDiscount, xpBonus, locationSlots } = getGearStats(gearObj);
-
-    const effectiveCooldown = Math.max(5, FISHING_COOLDOWN - cooldownReduction);
-    const BAIT_COST         = Math.max(0, 10 - baitDiscount);
-
-    // 4. Sprawdź gotówkę
-    if ((profile.money || 0) < BAIT_COST && BAIT_COST > 0) {
-        cooldowns.delete(userId); // release the reservation -- no catch happened
-        return interaction.editReply({
-            content: `❌ Nie stać Cię na przynętę! Potrzebujesz **${BAIT_COST} ${COIN}**.`,
+    if (inFlight.has(userId)) {
+        return interaction.reply({
+            content: '⏳ Poprzednie zarzucenie wędki jeszcze się przetwarza, poczekaj chwilę...',
+            flags: 1 << 6,
         });
     }
+    inFlight.add(userId);
 
-    // 5. Ustaw właściwy cooldown i pokaż animację
-    cooldowns.set(userId, Date.now() + effectiveCooldown * 1000);
-    setTimeout(() => cooldowns.delete(userId), effectiveCooldown * 1000);
+    try {
+        // Reserve a placeholder cooldown synchronously, before the DB round-trips
+        // below -- otherwise two near-simultaneous /fish calls can both pass
+        // the check above before either call actually sets one, letting a user
+        // catch (and get paid for) two fish off a single cooldown/bait check.
+        // Corrected to the real duration once gear stats are known.
+        cooldowns.set(userId, Date.now() + 5000);
 
-    await interaction.editReply({ content: '🎣 Zarzucasz wędkę...' });
-    await new Promise(r => setTimeout(r, 2000));
+        // 2. Defer – wszystkie operacje DB mogą teraz trwać ile chcą
+        await interaction.deferReply();
 
-    // 6. Losuj i oblicz
-    const fish    = rollFish(rarityBonus, locationSlots);
-    const weight  = rollWeight(fish);
-    const value   = calcValue(fish, weight, valueBonus);
-    const xpGain  = calcXp(fish, fish.rarity === 'trash' ? 0 : xpBonus); // śmieci bez bonusu XP
-    const style   = RARITY_STYLES[fish.rarity];
-    const isTrash = fish.rarity === 'trash';
+        // 3. Pobierz sprzęt z Supabase
+        const gearRow = await fetchGearRow(supabase, userId);
+        const gearObj = rowToGearObj(gearRow);
+        const { valueBonus, cooldownReduction, rarityBonus, baitDiscount, xpBonus, locationSlots, catchChance } = getGearStats(gearObj);
 
-    const newLevel = getLevelFromXP((profile.xp || 0) + xpGain);
+        const effectiveCooldown = Math.max(5, FISHING_COOLDOWN - cooldownReduction);
+        const BAIT_COST         = Math.max(0, 10 - baitDiscount);
 
-    // 7. Zapisz do DB
-    const { data: fishRewardData } = await supabase.rpc('apply_xp_money_reward', {
-        p_user_id: profile.id,
-        p_xp_delta: xpGain,
-        p_money_delta: value - BAIT_COST,
-        p_new_level: newLevel,
-    });
-    const newMoney = fishRewardData?.[0]?.money ?? Math.max(0, (profile.money || 0) - BAIT_COST + value);
-
-    if (!isTrash) {
-        try {
-            await supabase.from('fishing_catches').insert({
-                user_id:   userId,
-                fish_name: fish.name,
-                rarity:    fish.rarity,
-                weight,
-                value,
+        // 4. Sprawdź gotówkę
+        if ((profile.money || 0) < BAIT_COST && BAIT_COST > 0) {
+            cooldowns.delete(userId); // release the reservation -- no catch happened
+            return interaction.editReply({
+                content: `❌ Nie stać Cię na przynętę! Potrzebujesz **${BAIT_COST} ${COIN}**.`,
             });
-        } catch (_) {}
+        }
+
+        // 5. Ustaw właściwy cooldown i pokaż animację
+        cooldowns.set(userId, Date.now() + effectiveCooldown * 1000);
+        setTimeout(() => cooldowns.delete(userId), effectiveCooldown * 1000);
+
+        await interaction.editReply({ content: '🎣 Zarzucasz wędkę...' });
+        await new Promise(r => setTimeout(r, 2000));
+
+        // 6. Losuj i oblicz
+        const fish    = rollFish(rarityBonus, locationSlots, catchChance);
+        const weight  = rollWeight(fish);
+        const value   = calcValue(fish, weight, valueBonus);
+        const xpGain  = calcXp(fish, fish.rarity === 'trash' ? 0 : xpBonus); // śmieci bez bonusu XP
+        const style   = RARITY_STYLES[fish.rarity];
+        const isTrash = fish.rarity === 'trash';
+
+        const newLevel = getLevelFromXP((profile.xp || 0) + xpGain);
+
+        // 7. Zapisz do DB
+        const { data: fishRewardData } = await supabase.rpc('apply_xp_money_reward', {
+            p_user_id: profile.id,
+            p_xp_delta: xpGain,
+            p_money_delta: value - BAIT_COST,
+            p_new_level: newLevel,
+        });
+        const newMoney = fishRewardData?.[0]?.money ?? Math.max(0, (profile.money || 0) - BAIT_COST + value);
+
+        if (!isTrash) {
+            try {
+                await supabase.from('fishing_catches').insert({
+                    user_id:   userId,
+                    fish_name: fish.name,
+                    rarity:    fish.rarity,
+                    weight,
+                    value,
+                });
+            } catch (_) {}
+        }
+
+        // 8. Embed z wynikiem
+        const netGain = value - BAIT_COST;
+
+        const embed = new EmbedBuilder()
+            .setColor(style.color)
+            .setTitle(isTrash
+                ? `${fish.emoji} Wyciągnąłeś... śmieci`
+                : `${fish.emoji} Złapałeś ${fish.name}!`)
+            .addFields(
+                { name: '📦 Rzadkość', value: `${style.emoji} ${style.label}`, inline: true },
+                { name: '⚖️ Waga',     value: `${weight} kg`,                  inline: true },
+                {
+                    name:  '💰 Zysk',
+                    value: isTrash
+                        ? `Strata przynęty (-${BAIT_COST} ${COIN})`
+                        : `${netGain >= 0 ? '+' : ''}${netGain} ${COIN}`,
+                    inline: true,
+                },
+            );
+
+        if (!isTrash) {
+            embed.addFields(
+                { name: '✨ XP',      value: `+${xpGain} XP`,     inline: true },
+                { name: '💵 Gotówka', value: `${newMoney} ${COIN}`, inline: true },
+            );
+        }
+
+        // Aktywne bonusy w footerze
+        const bonusLines = [];
+        if (valueBonus > 0)        bonusLines.push(`🪢 Wartość +${Math.round(valueBonus * 100)}%`);
+        if (cooldownReduction > 0) bonusLines.push(`🎡 Cooldown -${cooldownReduction}s`);
+        if (rarityBonus > 0)       bonusLines.push(`🪝 Rzadkość +${Math.round(rarityBonus * 100)}%`);
+        if (baitDiscount > 0)      bonusLines.push(`🪱 Przynęta -${baitDiscount}$`);
+        if (xpBonus > 0)           bonusLines.push(`🫙 XP +${Math.round(xpBonus * 100)}%`);
+
+        embed.setFooter({
+            text: `Cooldown: ${effectiveCooldown}s | Przynęta: ${BAIT_COST}$` +
+                (bonusLines.length ? ` | ${bonusLines.join(' · ')}` : ''),
+        });
+
+        await interaction.editReply({ content: null, embeds: [embed] });
+    } finally {
+        inFlight.delete(userId);
     }
-
-    // 8. Embed z wynikiem
-    const netGain = value - BAIT_COST;
-
-    const embed = new EmbedBuilder()
-        .setColor(style.color)
-        .setTitle(isTrash
-            ? `${fish.emoji} Wyciągnąłeś... śmieci`
-            : `${fish.emoji} Złapałeś ${fish.name}!`)
-        .addFields(
-            { name: '📦 Rzadkość', value: `${style.emoji} ${style.label}`, inline: true },
-            { name: '⚖️ Waga',     value: `${weight} kg`,                  inline: true },
-            {
-                name:  '💰 Zysk',
-                value: isTrash
-                    ? `Strata przynęty (-${BAIT_COST} ${COIN})`
-                    : `${netGain >= 0 ? '+' : ''}${netGain} ${COIN}`,
-                inline: true,
-            },
-        );
-
-    if (!isTrash) {
-        embed.addFields(
-            { name: '✨ XP',      value: `+${xpGain} XP`,     inline: true },
-            { name: '💵 Gotówka', value: `${newMoney} ${COIN}`, inline: true },
-        );
-    }
-
-    // Aktywne bonusy w footerze
-    const bonusLines = [];
-    if (valueBonus > 0)        bonusLines.push(`🪢 Wartość +${Math.round(valueBonus * 100)}%`);
-    if (cooldownReduction > 0) bonusLines.push(`🎡 Cooldown -${cooldownReduction}s`);
-    if (rarityBonus > 0)       bonusLines.push(`🪝 Rzadkość +${Math.round(rarityBonus * 100)}%`);
-    if (baitDiscount > 0)      bonusLines.push(`🪱 Przynęta -${baitDiscount}$`);
-    if (xpBonus > 0)           bonusLines.push(`🫙 XP +${Math.round(xpBonus * 100)}%`);
-
-    embed.setFooter({
-        text: `Cooldown: ${effectiveCooldown}s | Przynęta: ${BAIT_COST}$` +
-            (bonusLines.length ? ` | ${bonusLines.join(' · ')}` : ''),
-    });
-
-    await interaction.editReply({ content: null, embeds: [embed] });
 }
 
 // ── /catches ─────────────────────────────────────────────────

@@ -21,7 +21,7 @@ const { createProfileCard, createWelcomeCard, availableBackgrounds, refreshBackg
 const { handleFishing, handleFishInventory, handleFishTop } = require('./fishing/fishing');
 const { handleShop, handleShopInteraction } = require('./shop');
 const { handleWedka, handleGearInteraction } = require('./fishing/wedka');
-const { handleAfkFishing, handleAfkStop } = require('./fishing/afk_fishing');
+const { handleAfkFishing, handleAfkStop, reconcileAfkFishingSessions } = require('./fishing/afk_fishing');
 const { handleEventCreate, handleEventList, handleEventJoin, handleEventDelete } = require('./events/events');
 const { handleServices } = require('./services');
 const { sendModLog, handleKick, handleBan, handleTimeout, handleWarn, handleWarnings } = require('./moderation');
@@ -607,6 +607,7 @@ client.once('clientReady', async () => {
     startGiveawayScheduler(client, supabase);
     await loadTags(supabase);
     await reconcileVoiceSessions();
+    await reconcileAfkFishingSessions(client, supabase);
 });
 
 // site_presence gets one INSERT every 30s per open page (see
@@ -1327,7 +1328,7 @@ client.on('interactionCreate', async interaction => {
             if (subcommand === 'start') {
                 await handleAfkFishing(interaction, supabase, profile, COIN);
             } else if (subcommand === 'stop') {
-                await handleAfkStop(interaction, COIN);
+                await handleAfkStop(interaction, supabase, COIN);
             }
             break;
         }
