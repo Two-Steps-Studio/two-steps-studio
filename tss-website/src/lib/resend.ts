@@ -5,8 +5,20 @@ import { Resend } from 'resend';
  * Used to send transactional emails for login tokens, password resets, etc.
  */
 
-// Initialize Resend client
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Constructed lazily, on first actual send, not at module load - the
+// Resend SDK's constructor throws on a missing/malformed API key, and
+// this module is imported by route files, so an eager `new Resend(...)`
+// here crashed Next.js's build-time "collecting page data" step for any
+// route that imports this module (api/contact/route.ts, the first one to
+// surface it) in any environment without RESEND_API_KEY set - not just at
+// request time, where isResendConfigured below was already guarding it.
+let _resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 
 // Default sender configuration - twostepsstudio.gg is the real domain (see
 // metadataBase in app/layout.tsx); two-steps-studio.com was a stale
@@ -35,7 +47,7 @@ export async function sendEmail(
   }
 
   try {
-    const result = await resend.emails.send({
+    const result = await getResendClient().emails.send({
       from: `Two Steps Studio <${FROM_EMAIL}>`,
       to,
       subject,
