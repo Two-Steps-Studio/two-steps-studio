@@ -494,7 +494,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]0">
+              <div className="p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg)]/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center">

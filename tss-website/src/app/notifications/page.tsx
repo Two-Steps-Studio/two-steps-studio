@@ -154,19 +154,19 @@ export default function NotificationsPage() {
         </CardHeader>
         <CardContent className="relative z-10 p-8 pt-0 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]5 border border-[var(--border-color)]">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]/5 border border-[var(--border-color)]">
               <div className="flex items-center gap-2">
                 <Newspaper size={16} className="text-[var(--color-records)]" /> News
               </div>
               <Switch checked={prefs.news} onCheckedChange={() => togglePref("news")} />
             </div>
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]5 border border-[var(--border-color)]">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]/5 border border-[var(--border-color)]">
               <div className="flex items-center gap-2">
                 <Trophy size={16} className="text-[var(--color-e-sport)]" /> E-Sport
               </div>
               <Switch checked={prefs.esport} onCheckedChange={() => togglePref("esport")} />
             </div>
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]5 border border-[var(--border-color)]">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg)]/5 border border-[var(--border-color)]">
               <div className="flex items-center gap-2">
                 <Code2 size={16} className="text-[var(--color-dev)]" /> DEV
               </div>
