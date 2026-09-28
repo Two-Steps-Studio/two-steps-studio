@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Download, Play, RefreshCw, Trash2, ShieldCheck, XCircle, Loader2 } from "lucide-react";
@@ -29,6 +30,7 @@ function formatBytes(bytes: number): string {
 export function GameInstallControls({ gameId, title, compact = false }: GameInstallControlsProps) {
   const { t } = useLanguage();
   const isElectron = useIsElectron();
+  const shouldReduceMotion = useReducedMotion();
   const { status, progress, error, currentVersion, install, update, repair, cancel, launch, uninstall } = useGameDownload(gameId);
 
   const isBusy = status === "downloading" || status === "updating" || status === "repairing" || status === "verifying";
@@ -89,12 +91,22 @@ export function GameInstallControls({ gameId, title, compact = false }: GameInst
         </div>
       )}
 
-      {error && status === "error" && (
-        <div className="flex items-start gap-2 text-red-400 text-sm bg-red-950/40 border border-red-500/30 rounded-xl p-3">
-          <XCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>{error}</span>
-        </div>
-      )}
+      {/* Used to appear with no transition, same jarring pop-in as any other
+          teleporting state change. */}
+      <AnimatePresence>
+        {error && status === "error" && (
+          <motion.div
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -4 }}
+            transition={{ duration: shouldReduceMotion ? 0.01 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-start gap-2 text-red-400 text-sm bg-red-950/40 border border-red-500/30 rounded-xl p-3"
+          >
+            <XCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {status === "not-installed" || status === "error" ? (
         <Button

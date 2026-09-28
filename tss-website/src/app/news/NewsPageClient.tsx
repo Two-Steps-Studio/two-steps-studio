@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export default function NewsPageClient({ initialNews }: { initialNews: NewsItem[
   const { t } = useLanguage();
   const router = useRouter();
   const news = initialNews;
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <div className="container mx-auto p-6 mt-20 max-w-7xl">
@@ -47,9 +49,14 @@ export default function NewsPageClient({ initialNews }: { initialNews: NewsItem[
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {news.map((item) => (
-            <Card
+          {news.map((item, index) => (
+            <motion.div
               key={item.id}
+              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 7) * 0.04 }}
+            >
+            <Card
               className={`glass rounded-[2rem] shadow-2xl overflow-hidden relative border transition-all duration-300 hover:shadow-[var(--color-general)]/10 hover:border-[var(--color-general)]/20 ${
                 !item.published_at
                   ? "bg-red-500/5 border-red-500/20"
@@ -107,6 +114,7 @@ export default function NewsPageClient({ initialNews }: { initialNews: NewsItem[
                 </Button>
               </CardContent>
             </Card>
+            </motion.div>
           ))}
         </div>
       )}

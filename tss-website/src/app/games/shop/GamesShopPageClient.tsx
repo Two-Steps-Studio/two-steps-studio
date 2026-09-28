@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ const CATEGORIES: GameCategory[] = ['action', 'adventure', 'rpg', 'strategy', 's
 
 export default function GamesShopPageClient({ initialGames }: { initialGames: Game[] }) {
   const { t } = useLanguage();
+  const shouldReduceMotion = useReducedMotion();
 
   const CATEGORY_LABELS = getGameCategoryLabels(t);
   const STATUS_LABELS = getGameStatusLabels(t);
@@ -212,23 +214,43 @@ export default function GamesShopPageClient({ initialGames }: { initialGames: Ga
 
       {/* Games List */}
       <div className="container mx-auto px-6 pb-12 max-w-7xl">
-        {filteredGames.length === 0 ? (
-          <Card className="w-full rounded-[2.5rem] ">
-            <CardContent className="p-12 text-center">
-              <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
-              <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.gamesCatalog.emptyTitle}</h2>
-              <p className="text-[var(--text-muted)]">
-                {searchQuery || selectedCategory !== "all"
-                  ? t.gamesCatalog.emptyFiltered
-                  : t.gamesCatalog.emptyNone}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredGames.map((game) => (
-              <Card
+        {/* Grid <-> empty state used to snap instantly when a search/filter
+            change flips filteredGames.length to/from 0 - AnimatePresence
+            bridges it. Cards themselves only fade+rise in on the render
+            where they first mount (a genuinely new filter match), not on
+            every re-filter of already-mounted cards, so it stays out of the
+            way of fast typing. */}
+        <AnimatePresence mode="wait">
+          {filteredGames.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: shouldReduceMotion ? 0.01 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Card className="w-full rounded-[2.5rem] ">
+                <CardContent className="p-12 text-center">
+                  <Gamepad2 className="w-16 h-16 mx-auto mb-6 text-[var(--text-muted)]" />
+                  <h2 className="text-2xl font-bold mb-2 text-[var(--text)]">{t.gamesCatalog.emptyTitle}</h2>
+                  <p className="text-[var(--text-muted)]">
+                    {searchQuery || selectedCategory !== "all"
+                      ? t.gamesCatalog.emptyFiltered
+                      : t.gamesCatalog.emptyNone}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+          <div key="grid" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {filteredGames.map((game, index) => (
+              <motion.div
                 key={game.id}
+                initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 7) * 0.04 }}
+              >
+              <Card
                 className="group relative overflow-hidden rounded-[2rem] hover:border-[var(--color-games)] transition-all duration-300 hover:-translate-y-1"
               >
                 {game.thumbnail_url && (
@@ -296,9 +318,11 @@ export default function GamesShopPageClient({ initialGames }: { initialGames: Ga
                   </div>
                 </CardContent>
               </Card>
+              </motion.div>
             ))}
           </div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </>
   );
