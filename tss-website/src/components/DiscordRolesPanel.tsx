@@ -68,7 +68,7 @@ export function DiscordRolesPanel({ discordRoles }: { discordRoles: string[] }) 
 
     return (
         <div className="space-y-2 pt-1">
-            <p className="text-[10px] uppercase tracking-[0.14em] font-black text-white/35 select-none">{t.profile.roles} - {matched.length}</p>
+            <p className="text-[0.625rem] uppercase tracking-[0.14em] font-black text-white/35 select-none">{t.profile.roles} - {matched.length}</p>
             <div className="flex flex-wrap gap-1.5">
                 {matched.map(({ raw, info }) => (
                     <span key={raw} className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[12px] font-semibold border cursor-default select-none transition-all hover:brightness-125"

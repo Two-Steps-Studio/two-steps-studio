@@ -59,7 +59,7 @@ export function LanguageSelect({
           )}
         >
           <Languages size={20} />
-          <span className="absolute -top-1 -right-1 bg-[var(--color-general)] text-white text-[10px] px-1.5 rounded-full font-black">
+          <span className="absolute -top-1 -right-1 bg-[var(--color-general)] text-white text-[0.625rem] px-1.5 rounded-full font-black">
             {language.toUpperCase()}
           </span>
         </Button>
@@ -123,10 +123,10 @@ export function LanguageSelect({
                 />
               </label>
 
-              <div className="text-[10px] text-muted-foreground px-2">
+              <div className="text-[0.625rem] text-muted-foreground px-2">
                 <p className="mb-1">JSON format:</p>
                 <pre className={cn(
-                  "text-[10px] p-2 rounded bg-black/30 overflow-auto max-h-[80px]",
+                  "text-[0.625rem] p-2 rounded bg-black/30 overflow-auto max-h-[80px]",
                   "font-mono text-white/70",
                 )}>
 {`{

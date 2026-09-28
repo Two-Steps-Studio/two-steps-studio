@@ -188,7 +188,7 @@ export function TopBar({ className }: { className?: string }) {
                 <Button variant="ghost" size="icon" aria-label={t.nav.notifications} className="rounded-2xl w-11 h-11 relative bg-[var(--bg)] border border-[var(--border-color)] transition-all hover:scale-105 active:scale-95 cursor-pointer">
                   <Bell size={20} />
                   {unread > 0 ? (
-                      <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[var(--color-general)] text-white text-[10px] font-black flex items-center justify-center border-2 border-[var(--bg)]">
+                      <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[var(--color-general)] text-white text-[0.625rem] font-black flex items-center justify-center border-2 border-[var(--bg)]">
                     {unread}
                   </span>
                   ) : (

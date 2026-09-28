@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/hooks/use-translation";
 import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { Bell, Newspaper, Trophy, Code2, Check } from "lucide-react";
 
 export default function NotificationsPage() {
   const { t } = useLanguage();
+  const shouldReduceMotion = useReducedMotion();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<any[]>([]);
   const [prefs, setPrefs] = useState<{ news: boolean; esport: boolean; dev: boolean }>({ news: true, esport: true, dev: true });
@@ -90,6 +92,8 @@ export default function NotificationsPage() {
   const unreadCount = useMemo(() => {
     return items.filter((i) => !i.read && (prefs as any)[i.type]).length;
   }, [items, prefs]);
+
+  const filteredItems = useMemo(() => items.filter((i) => (prefs as any)[i.type]), [items, prefs]);
 
   useEffect(() => {
     localStorage.setItem("notif_unread_count", String(unreadCount));
@@ -179,24 +183,48 @@ export default function NotificationsPage() {
             </Button>
           </div>
 
-          <div className="space-y-4">
-            {loading && (
-              <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
-                <CardContent className="p-6">Ładowanie...</CardContent>
-              </Card>
-            )}
-            {!loading && items.filter((i) => (prefs as any)[i.type]).length === 0 && (
-              <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
-                <CardContent className="p-6 text-[var(--text-muted)]">Brak powiadomień</CardContent>
-              </Card>
-            )}
-            {!loading &&
-              items
-                .filter((i) => (prefs as any)[i.type])
-                .map((i) => (
+          {/* Loading -> empty -> list used to swap with zero transition, and
+              the read/unread card recolored instantly on every markRead
+              click - AnimatePresence bridges the three states, the fade
+              uses the app's own --transition-speed/--transition-timing. */}
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: shouldReduceMotion ? 0.01 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
+                  <CardContent className="p-6">Ładowanie...</CardContent>
+                </Card>
+              </motion.div>
+            ) : filteredItems.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: shouldReduceMotion ? 0.01 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Card className="rounded-2xl bg-[var(--surface)] border border-[var(--border-color)]">
+                  <CardContent className="p-6 text-[var(--text-muted)]">Brak powiadomień</CardContent>
+                </Card>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                className="space-y-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: shouldReduceMotion ? 0.01 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {filteredItems.map((i) => (
                   <Card
                     key={i.id}
-                    className={`rounded-2xl border ${i.read ? "bg-white/5 border-white/10" : "bg-white/10 border-[var(--color-general)]/20"}`}
+                    className={`rounded-2xl border transition-colors duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${i.read ? "bg-white/5 border-white/10" : "bg-white/10 border-[var(--color-general)]/20"}`}
                   >
                     <CardContent className="p-6 flex items-start justify-between gap-6">
                       <div className="space-y-1">
@@ -223,7 +251,9 @@ export default function NotificationsPage() {
                     </CardContent>
                   </Card>
                 ))}
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardContent>
       </Card>
     </div>

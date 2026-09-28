@@ -107,10 +107,34 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* -0.05em used to apply uniformly to every heading regardless of size -
+   correct-ish for a big display hero (text-6xl+), way too tight for a
+   small text-lg/text-2xl card heading where it started hurting legibility.
+   Apple's guidance is that tracking should get *more* negative as text gets
+   bigger, not stay a flat ratio - -0.02em is a safer default for the
+   common case (small/medium headings); large display text should opt into
+   tighter tracking explicitly (e.g. tracking-tighter), which ~47 components
+   already do ad hoc - a sign the old flat value was already being patched
+   around rather than actually working for them. Explicit tracking-*
+   utility classes still win here (class specificity beats this tag
+   selector), so none of those existing overrides are affected. */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-space);
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   font-weight: 800
+}
+
+/* Reduced motion doesn't mean *no* feedback - it means dropping slides,
+   springs, parallax and elastic overshoot in favor of a short cross-fade.
+   This is the CSS-level fallback for anything that isn't already gated by
+   framer-motion's useReducedMotion() (PageTransition, BottomNavigation). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .glass {

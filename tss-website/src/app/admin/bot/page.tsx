@@ -400,7 +400,7 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
             key={key}
             type="button"
             onClick={() => setVip((v) => ({ ...v, [key]: !v[key] }))}
-            className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide border transition-colors ${
+            className={`px-2 py-1 rounded-md text-[0.625rem] font-bold uppercase tracking-wide border transition-colors ${
               vip[key]
                 ? "bg-[var(--color-general)] text-[var(--text)] border-[var(--color-general)]"
                 : "bg-transparent text-[var(--text-muted)] border-[var(--border-color)]"
@@ -497,7 +497,7 @@ function LogsTab() {
                 <div className="flex items-center justify-between">
                   <span className="font-medium flex items-center gap-1.5">
                     <Icon size={14} style={{ color: meta.color }} /> {m.username}
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{meta.label}</Badge>
+                    <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0">{meta.label}</Badge>
                   </span>
                   <span className="text-xs text-[var(--text-muted)]">{formatLogTime(m.created_at)}</span>
                 </div>

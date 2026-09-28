@@ -226,7 +226,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 overflow-y-auto no-scrollbar pb-6" suppressHydrationWarning>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 px-4 opacity-60 text-[var(--text)]">{t.nav.mainMenu}</h2>
+          <h2 className="text-[0.6875rem] font-black uppercase tracking-[0.2em] mb-4 px-4 opacity-60 text-[var(--text)]">{t.nav.mainMenu}</h2>
           <ul className="space-y-1">
             {sections.map((section) => {
               if (section.type === "single") {

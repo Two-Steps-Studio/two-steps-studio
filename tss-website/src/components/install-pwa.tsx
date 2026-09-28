@@ -41,7 +41,7 @@ export function InstallPWA() {
                 </div>
               ))}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 pr-2">
+            <span className="text-[0.625rem] font-black uppercase tracking-[0.2em] text-white/40 pr-2">
               {t.home.availableOn}
             </span>
           </motion.div>
@@ -64,7 +64,7 @@ export function InstallPWA() {
               </div>
             </Button>
             
-            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-2 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all group-hover:-bottom-14 pointer-events-none shadow-xl">
+            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-2 rounded-xl bg-white text-black text-[0.625rem] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all group-hover:-bottom-14 pointer-events-none shadow-xl">
               {t.home.installAppDesc}
             </div>
           </motion.div>

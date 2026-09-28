@@ -27,7 +27,7 @@ export function SidebarStats({ translations, stats }: SidebarStatsProps) {
         <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-general)] opacity-5 blur-2xl group-hover:opacity-10 transition-opacity" />
 
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] opacity-40 flex items-center gap-2 text-[var(--text)]">
+          <h2 className="text-[0.6875rem] font-black uppercase tracking-[0.2em] opacity-40 flex items-center gap-2 text-[var(--text)]">
             <BarChart3 size={12} className="text-[var(--color-general)] shrink-0" /> {translations.nav.stats}
           </h2>
         </div>

@@ -19,12 +19,21 @@ interface AvatarCropperProps {
   onCropped: (blob: Blob) => void;
 }
 
+// Apple's rubber-band resistance curve (used for scroll/drag boundaries) -
+// the further past the bound, the less the element follows, instead of
+// stopping dead. See handleConfirm below for why the final crop math still
+// only ever uses the clamped (never-overshot) pan value.
+function rubberband(overshoot: number, dimension: number, constant = 0.55) {
+  return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
+}
+
 export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropperProps) {
   const { t } = useLanguage();
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [natural, setNatural] = useState({ w: 0, h: 0 });
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isSettling, setIsSettling] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const dragRef = useRef<{ startX: number; startY: number; startPanX: number; startPanY: number } | null>(null);
 
@@ -52,6 +61,13 @@ export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropp
     y: Math.min(maxPanY, Math.max(-maxPanY, p.y)),
   });
 
+  // While actively dragging, resist past the edge instead of stopping dead
+  // (rubber-banding) - only the release snap-back below ever hard-clamps.
+  const resistPan = (p: { x: number; y: number }) => ({
+    x: Math.abs(p.x) <= maxPanX ? p.x : Math.sign(p.x) * (maxPanX + rubberband(Math.abs(p.x) - maxPanX, VIEWPORT)),
+    y: Math.abs(p.y) <= maxPanY ? p.y : Math.sign(p.y) * (maxPanY + rubberband(Math.abs(p.y) - maxPanY, VIEWPORT)),
+  });
+
   // Re-clamp whenever zoom shrinks the allowed pan range (e.g. zooming back
   // out toward 1x after having dragged near an edge at higher zoom).
   useEffect(() => {
@@ -67,10 +83,15 @@ export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropp
     if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    setPan(clampPan({ x: dragRef.current.startPanX + dx, y: dragRef.current.startPanY + dy }));
+    setPan(resistPan({ x: dragRef.current.startPanX + dx, y: dragRef.current.startPanY + dy }));
   };
   const onPointerUp = () => {
+    if (!dragRef.current) return;
     dragRef.current = null;
+    // Snap back into bounds now that the drag has ended - the transition
+    // class on the image (below) animates this settle instead of jumping.
+    setIsSettling(true);
+    setPan((p) => clampPan(p));
   };
 
   const handleConfirm = () => {
@@ -120,6 +141,7 @@ export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropp
                 alt=""
                 draggable={false}
                 onLoad={(e) => setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+                onTransitionEnd={() => setIsSettling(false)}
                 style={{
                   position: "absolute",
                   left: "50%",
@@ -128,6 +150,7 @@ export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropp
                   height: displayedH || undefined,
                   transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px))`,
                   maxWidth: "none",
+                  transition: isSettling ? "transform 300ms var(--transition-timing)" : "none",
                 }}
               />
             </div>

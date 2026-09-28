@@ -685,7 +685,7 @@ export default function ProfilePage() {
                                                 </div>
                                                 <p className="text-xs text-[var(--text)] opacity-60 truncate">{a.description}</p>
                                                 {!unlocked && (
-                                                    <p className="text-[10px] font-bold opacity-50 text-[var(--text)] mt-0.5">
+                                                    <p className="text-[0.625rem] font-bold opacity-50 text-[var(--text)] mt-0.5">
                                                         {Math.min(current, target).toLocaleString()} / {target.toLocaleString()}
                                                     </p>
                                                 )}

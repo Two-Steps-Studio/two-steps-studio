@@ -198,7 +198,7 @@ export function HomeClient({ initialNews = [] }: { initialNews?: HomeNewsItem[] 
               }}
             />
               <div>
-                <span className="inline-block px-4 py-1.5 rounded-full bg-black/20 text-[10px] font-black tracking-widest mb-4">{content.sections.records.stats}</span>
+                <span className="inline-block px-4 py-1.5 rounded-full bg-black/20 text-[0.625rem] font-black tracking-widest mb-4">{content.sections.records.stats}</span>
                   <h2 className="text-4xl font-black tracking-tight mb-4 italic pr-2">{content.sections.records.title}</h2>
                 <p className="text-lg font-medium opacity-80">{content.sections.records.desc}</p>
               </div>
@@ -224,7 +224,7 @@ export function HomeClient({ initialNews = [] }: { initialNews?: HomeNewsItem[] 
               }}
             />
                 <div>
-                  <span className="inline-block px-4 py-1.5 rounded-full bg-black/20 text-[10px] font-black tracking-widest mb-4">{content.sections.dev.stats}</span>
+                  <span className="inline-block px-4 py-1.5 rounded-full bg-black/20 text-[0.625rem] font-black tracking-widest mb-4">{content.sections.dev.stats}</span>
                   <h2 className="text-4xl font-black tracking-tight mb-4 italic pr-2">{content.sections.dev.title}</h2>
                   <p className="text-lg font-medium opacity-80">{content.sections.dev.desc}</p>
                 </div>
