@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Home,
   User,
@@ -19,6 +20,7 @@ export function BottomNavigation() {
   const { t } = useLanguage();
   const [isMobile, setIsMobile] = useState(false);
   const mediaQuery = "(max-width: 1023px)";
+  const shouldReduceMotion = useReducedMotion();
 
   // Dedicated, shorter labels just for this bar - t.nav.* is written for
   // full page titles/headers ("Notifications" / "Benachrichtigungen") and
@@ -55,23 +57,33 @@ export function BottomNavigation() {
       color: isActive
           ? "var(--color-general-current)"
           : "var(--text)",
-      className: cn(
-          "transition-all duration-300",
-          isActive
-              ? "scale-125 drop-shadow-[0_0_8px_rgba(var(--color-general-rgb),0.5)]"
-              : "scale-100"
-      ),
+      className: cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--color-general-rgb),0.5)]"),
     };
 
+    let icon: React.ReactNode;
     switch (href) {
-      case "/":              return <Home {...props} />;
-      case "/profile":       return <User {...props} />;
-      case "/games":         return <Gamepad2 {...props} />;
-      case "/records":       return <Music2 {...props} />;
-      case "/dev":           return <Code {...props} />;
-      case "/notifications": return <MessageSquare {...props} />;
-      default:               return null;
+      case "/":              icon = <Home {...props} />; break;
+      case "/profile":       icon = <User {...props} />; break;
+      case "/games":         icon = <Gamepad2 {...props} />; break;
+      case "/records":       icon = <Music2 {...props} />; break;
+      case "/dev":           icon = <Code {...props} />; break;
+      case "/notifications": icon = <MessageSquare {...props} />; break;
+      default:                return null;
     }
+
+    // Spring instead of the fixed-duration CSS transition this used to
+    // carry (transition-all duration-300) - this is the app's primary
+    // mobile tab bar, exactly the "feel it" surface Apple's guidance wants
+    // spring-driven rather than linear/eased.
+    return (
+      <motion.span
+        className="inline-flex"
+        animate={{ scale: isActive ? 1.25 : 1 }}
+        transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", bounce: 0.3, duration: 0.3 }}
+      >
+        {icon}
+      </motion.span>
+    );
   };
 
   return (
@@ -97,7 +109,7 @@ export function BottomNavigation() {
                         )}
                     >
                       {getIcon(item.href)}
-                      <span className="w-full truncate px-0 text-center text-[9px] font-bold leading-none text-[var(--text)]">
+                      <span className="w-full truncate px-0 text-center text-[0.5625rem] font-bold leading-none text-[var(--text)]">
                         {item.label}
                       </span>
                     </Link>

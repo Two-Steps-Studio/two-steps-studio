@@ -50,7 +50,7 @@ export const HomeSiteStats = memo(function HomeSiteStats() {
             <div className="p-3 rounded-2xl bg-[var(--surface)] group-hover:bg-white/10 transition-colors">
               <item.icon size={24} style={{ color: item.color }} />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{item.label}</span>
+            <span className="text-[0.625rem] font-black uppercase tracking-[0.2em] opacity-40">{item.label}</span>
           </div>
           <span className="text-5xl font-black tracking-tighter">{item.value}</span>
           <div className="absolute -bottom-2 -right-2 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">

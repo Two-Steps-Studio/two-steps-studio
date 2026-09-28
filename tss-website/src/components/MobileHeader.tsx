@@ -159,7 +159,7 @@ export function MobileHeader() {
               >
                 <Bell size={20} className="text-[var(--text)]" />
                 {unread > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-[var(--color-general)] text-white text-[9px] font-black flex items-center justify-center border border-[var(--border-color)]">
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-[var(--color-general)] text-white text-[0.5625rem] font-black flex items-center justify-center border border-[var(--border-color)]">
                     {unread}
                   </span>
                 )}

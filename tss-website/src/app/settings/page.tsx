@@ -340,9 +340,9 @@ export default function SettingsPage() {
         <Icon className="text-[var(--color-general)] shrink-0 size-8" />
         <div className="text-center mt-1">
           <div className="text-sm font-black">{label}</div>
-          {value === "light" && <div className="text-[10px] opacity-60 uppercase tracking-widest mt-1">{t.settings.lightDesc}</div>}
-          {value === "dark" && <div className="text-[10px] opacity-60 uppercase tracking-widest mt-1">{t.settings.darkDesc}</div>}
-          {value === "system" && <div className="text-[10px] opacity-60 uppercase tracking-widest mt-1">{t.settings.systemDesc}</div>}
+          {value === "light" && <div className="text-[0.625rem] opacity-60 uppercase tracking-widest mt-1">{t.settings.lightDesc}</div>}
+          {value === "dark" && <div className="text-[0.625rem] opacity-60 uppercase tracking-widest mt-1">{t.settings.darkDesc}</div>}
+          {value === "system" && <div className="text-[0.625rem] opacity-60 uppercase tracking-widest mt-1">{t.settings.systemDesc}</div>}
         </div>
       </button>
     );

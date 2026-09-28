@@ -326,7 +326,7 @@ export default function ProfileForm({
                 <button
                   type="button"
                   onClick={() => setEquippedFrame(null)}
-                  className={`h-12 w-12 rounded-full border-2 flex items-center justify-center text-[10px] font-bold shrink-0 cursor-pointer ${
+                  className={`h-12 w-12 rounded-full border-2 flex items-center justify-center text-[0.625rem] font-bold shrink-0 cursor-pointer ${
                     equippedFrame === null
                       ? "border-[var(--color-general)] ring-2 ring-[var(--color-general)]/40"
                       : "border-[var(--border-color)] opacity-70 hover:opacity-100"

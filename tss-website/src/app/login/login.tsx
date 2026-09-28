@@ -267,7 +267,7 @@ export default function LoginPage() {
                    sessionStorage.clear();
                    window.location.reload();
                 }}
-                className="text-[10px] text-[var(--color-general)] hover:underline opacity-40 font-black tracking-widest uppercase"
+                className="text-[0.625rem] text-[var(--color-general)] hover:underline opacity-40 font-black tracking-widest uppercase"
              >
                 {t.loginExtra.clearSession}
              </button>

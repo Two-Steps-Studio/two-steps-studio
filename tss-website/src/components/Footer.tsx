@@ -22,7 +22,7 @@ export function Footer() {
                 <p className="text-xs text-[var(--text-muted)] font-medium">
                     © Two Steps Studio 2026 — Create. Build. Inspire.
                 </p>
-                <p className="text-[10px] text-[var(--text-muted)] font-medium mt-0.5 tracking-widest uppercase">
+                <p className="text-[0.625rem] text-[var(--text-muted)] font-medium mt-0.5 tracking-widest uppercase">
                     v{packageJson.version}
                 </p>
             </div>

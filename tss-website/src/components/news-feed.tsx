@@ -44,7 +44,7 @@ export function NewsFeed({ initialNews = [] }: { initialNews?: NewsItem[] }) {
               sizes="(max-width: 768px) 100vw, 33vw"
             />
             <div className="absolute top-4 left-4">
-              <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-md text-[10px] font-black uppercase tracking-widest transition-colors ${!isDark ? 'bg-neutral-800/80 text-neutral-100' : 'bg-black/60 text-white'}`}>
+              <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-md text-[0.625rem] font-black uppercase tracking-widest transition-colors ${!isDark ? 'bg-neutral-800/80 text-neutral-100' : 'bg-black/60 text-white'}`}>
                 <Tag size={10} className="text-[var(--color-general)]" />
                 {item.category}
               </span>
@@ -52,7 +52,7 @@ export function NewsFeed({ initialNews = [] }: { initialNews?: NewsItem[] }) {
           </div>
 
           <div className="p-8 flex flex-col flex-grow">
-            <div className={`flex items-center gap-2 text-[10px] font-bold mb-3 uppercase tracking-wider transition-colors ${!isDark ? 'text-neutral-600' : 'text-zinc-500'}`}>
+            <div className={`flex items-center gap-2 text-[0.625rem] font-bold mb-3 uppercase tracking-wider transition-colors ${!isDark ? 'text-neutral-600' : 'text-zinc-500'}`}>
               <Calendar size={12} />
               {new Date(item.published_at).toLocaleDateString()}
             </div>

@@ -77,11 +77,11 @@ export function UpdaterPanel() {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg)]/50 px-4 py-3">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Current version</div>
+          <div className="text-[0.625rem] font-mono uppercase tracking-widest text-[var(--text-muted)]">Current version</div>
           <div className="text-lg font-mono text-[var(--text)] mt-1">v{currentVersion}</div>
         </div>
         <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg)]/50 px-4 py-3">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Latest version</div>
+          <div className="text-[0.625rem] font-mono uppercase tracking-widest text-[var(--text-muted)]">Latest version</div>
           <div className="text-lg font-mono text-[var(--text)] mt-1">
             {remoteVersion ? `v${remoteVersion}` : '—'}
           </div>

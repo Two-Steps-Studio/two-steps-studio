@@ -115,7 +115,7 @@ export default function AdminConsole() {
               <CardTitle className="text-[var(--text)] font-[family-name:var(--font-space)]">Konsola Admin</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-             <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">Użyj nazwy: TwoStepsStudioAdmin</div>
+             <div className="text-[0.625rem] uppercase tracking-[0.2em] text-white/40">Użyj nazwy: TwoStepsStudioAdmin</div>
               <Input
                 placeholder="Nazwa"
                 value={name}
@@ -147,7 +147,7 @@ export default function AdminConsole() {
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   {examples.map((e) => (
-                    <span key={e} className="text-[10px] uppercase tracking-[0.2em] bg-[var(--card-bg)] text-white/70 px-2 py-1 rounded-full border border-[var(--border-color)]">
+                    <span key={e} className="text-[0.625rem] uppercase tracking-[0.2em] bg-[var(--card-bg)] text-white/70 px-2 py-1 rounded-full border border-[var(--border-color)]">
                       {e}
                     </span>
                   ))}
