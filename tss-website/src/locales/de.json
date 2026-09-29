@@ -526,7 +526,20 @@
     "fpsDesc": "Wie viele Millisekunden jeder Frame bei einer Bild- oder Bildwiederholrate hat.",
     "fpsFrameTime": "Frametime",
     "tunerReload": "Lade diese Seite einmal neu, um das Mikrofon für das Stimmgerät zu aktivieren.",
-    "tunerReloadButton": "Seite neu laden"
+    "tunerReloadButton": "Seite neu laden",
+    "analyzerTitle": "Tonart- & BPM-Erkennung",
+    "analyzerDesc": "Lege einen Track oder ein Sample ab, um Tempo und Tonart zu schätzen. Die Datei wird im Browser analysiert und nie hochgeladen.",
+    "analyzerDrop": "Klicken oder Audiodatei ablegen (MP3, WAV, OGG, FLAC...)",
+    "analyzerDecoding": "Audio wird dekodiert...",
+    "analyzerKey": "Tonart",
+    "analyzerAlt": "oder",
+    "analyzerUseBpm": "Im Metronom verwenden",
+    "analyzerConfidence": "Sicherheit",
+    "analyzerError": "Diese Datei konnte nicht als Audio gelesen werden.",
+    "analyzerTooShort": "Kein klarer Beat oder keine Tonart gefunden - die Datei ist vielleicht zu kurz oder zu leise.",
+    "analyzerNote": "Schätzung aus den mittleren 90 Sekunden. Bei sehr langsamen oder schnellen Tracks wird oft das halbe oder doppelte Tempo erkannt, und Paralleltonarten (z. B. a-Moll / C-Dur) können verwechselt werden - nach Gehör prüfen.",
+    "keyMajor": "Dur",
+    "keyMinor": "Moll"
   },
   "gamesAbout": {
     "title": "Über unsere Spiele",

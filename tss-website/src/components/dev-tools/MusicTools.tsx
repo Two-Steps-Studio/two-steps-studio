@@ -10,6 +10,7 @@ import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { createAudioContext, midiToFreq, playTone } from "./audio";
 import { CopyButton, Segmented, ToolCard, monoField, nativeSelect } from "./shared";
+import { AudioAnalyzerTool } from "./AudioAnalyzerTool";
 import { TunerTool } from "./TunerTool";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
@@ -327,11 +328,12 @@ function ScaleTool() {
 }
 
 export function MusicTools() {
-  // Shared across tap tempo, delay table and metronome, so tapping a tempo
-  // immediately drives the other two.
+  // Shared across the analyzer, tap tempo, delay table and metronome, so a
+  // detected or tapped tempo immediately drives the others.
   const [bpm, setBpm] = useState(120);
   return (
     <div className="grid gap-6 lg:grid-cols-2">
+      <AudioAnalyzerTool onUseBpm={(n) => setBpm(clampBpm(n))} />
       <TapTempoTool bpm={bpm} setBpm={setBpm} />
       <MetronomeTool bpm={bpm} setBpm={setBpm} />
       <DelayTool bpm={bpm} />

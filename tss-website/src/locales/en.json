@@ -526,7 +526,20 @@
     "fpsDesc": "How many milliseconds each frame gets at a given frame rate or refresh rate.",
     "fpsFrameTime": "Frame time",
     "tunerReload": "Reload this page once to enable the microphone for the tuner.",
-    "tunerReloadButton": "Reload page"
+    "tunerReloadButton": "Reload page",
+    "analyzerTitle": "Key & BPM detector",
+    "analyzerDesc": "Drop a track or sample to estimate its tempo and musical key. The file is analyzed in your browser and never uploaded.",
+    "analyzerDrop": "Click or drop an audio file (MP3, WAV, OGG, FLAC...)",
+    "analyzerDecoding": "Decoding audio...",
+    "analyzerKey": "Key",
+    "analyzerAlt": "or",
+    "analyzerUseBpm": "Use in metronome",
+    "analyzerConfidence": "Confidence",
+    "analyzerError": "This file couldn't be decoded as audio.",
+    "analyzerTooShort": "Couldn't find a clear beat or key - the file may be too short or too quiet.",
+    "analyzerNote": "Estimates from the middle 90 seconds. Half or double tempo is common for very slow or fast tracks, and relative keys (e.g. A minor / C major) can be confused - check by ear.",
+    "keyMajor": "major",
+    "keyMinor": "minor"
   },
   "gamesAbout": {
     "title": "About Games",

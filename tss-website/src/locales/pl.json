@@ -526,7 +526,20 @@
     "fpsDesc": "Ile milisekund dostaje każda klatka przy danej liczbie FPS lub odświeżaniu monitora.",
     "fpsFrameTime": "Czas klatki",
     "tunerReload": "Odśwież tę stronę raz, żeby włączyć mikrofon dla stroika.",
-    "tunerReloadButton": "Odśwież stronę"
+    "tunerReloadButton": "Odśwież stronę",
+    "analyzerTitle": "Wykrywanie tonacji i BPM",
+    "analyzerDesc": "Wrzuć utwór lub sampel, żeby oszacować tempo i tonację. Plik jest analizowany w przeglądarce i nigdzie nie jest wysyłany.",
+    "analyzerDrop": "Kliknij lub upuść plik audio (MP3, WAV, OGG, FLAC...)",
+    "analyzerDecoding": "Dekodowanie audio...",
+    "analyzerKey": "Tonacja",
+    "analyzerAlt": "lub",
+    "analyzerUseBpm": "Użyj w metronomie",
+    "analyzerConfidence": "Pewność",
+    "analyzerError": "Nie udało się odczytać tego pliku jako audio.",
+    "analyzerTooShort": "Nie znaleziono wyraźnego rytmu ani tonacji - plik może być za krótki albo za cichy.",
+    "analyzerNote": "Szacunek na podstawie środkowych 90 sekund. Przy bardzo wolnych lub szybkich utworach częste jest wykrycie połowy lub podwójnego tempa, a tonacje równoległe (np. a-moll / C-dur) mogą się mylić - sprawdź na słuch.",
+    "keyMajor": "dur",
+    "keyMinor": "moll"
   },
   "gamesAbout": {
     "title": "O grach",
