@@ -36,10 +36,9 @@ function Slider({
       )}
       {...props}
     >
-      {/* Project vars instead of shadcn's bg-muted / bg-background / ring-ring:
-          none of those tokens exist in this theme, so the track was invisible
-          (a lone dot at min value), the thumb transparent, and the keyboard
-          focus ring never showed. */}
+      {/* Project vars instead of shadcn's bg-muted / bg-background / ring-ring.
+          Those tokens now exist (globals.css), but bg-muted is too faint for a
+          track: this keeps the track visible and the thumb raised. */}
       <SliderPrimitive.Track
         data-slot="slider-track"
         className={cn(

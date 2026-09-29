@@ -88,6 +88,9 @@ npm run build
 # Run linting
 npm run lint
 
+# Unit tests (Vitest, Node; `*.test.ts` files next to the code they test)
+npm test
+
 # Electron desktop app (dev)
 npm run electron:dev
 
