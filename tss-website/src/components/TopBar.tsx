@@ -15,13 +15,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { LanguageSelect } from "./LanguageSelect";
 import { supabase } from "@/lib/supabase";
 import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
+import { useMounted } from "@/hooks/use-mounted";
 
 export function TopBar({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const { toggle } = useSidebar();
   const { t, language, setLanguage } = useLanguage();
   const { user, loading } = useAuth();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [isScrolled, setIsScrolled] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
@@ -44,7 +45,6 @@ export function TopBar({ className }: { className?: string }) {
   }, []);
 
   useEffect(() => {
-    setMounted(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);

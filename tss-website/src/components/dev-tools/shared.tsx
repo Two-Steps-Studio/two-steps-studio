@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,14 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
-const noopSubscribe = () => () => {};
-
-// false during SSR and hydration, true afterwards - for values that differ
-// between server and browser (current time, timezone, locale formatting)
-// without a setState-in-effect round trip.
-export function useMounted() {
-  return useSyncExternalStore(noopSubscribe, () => true, () => false);
-}
+export { useMounted } from "@/hooks/use-mounted";
 
 export const monoField = "font-mono text-sm";
 

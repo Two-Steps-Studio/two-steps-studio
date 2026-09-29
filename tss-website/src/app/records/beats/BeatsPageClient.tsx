@@ -75,7 +75,6 @@ export default function BeatsPageClient({ initialBeats }: { initialBeats: Beat[]
     if (searchParams.get("canceled")) {
       toast.error(t.recordsBeats.paymentCanceled);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleBuy = async (beat: Beat, pkg: BeatPackage) => {
@@ -110,7 +109,7 @@ export default function BeatsPageClient({ initialBeats }: { initialBeats: Beat[]
       const data = await res.json();
 
       if (data.url) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       } else {
         toast.error(t.recordsBeats.checkoutError);
       }

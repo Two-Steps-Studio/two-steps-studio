@@ -11,6 +11,20 @@ interface ColorThemeContextType {
 
 const ColorThemeContext = createContext<ColorThemeContextType | undefined>(undefined);
 
+// Module-level: touches only the document, nothing from component state.
+function applyThemeToElement(newTheme: ColorTheme) {
+  const root = document.documentElement;
+
+  // ocean and amber are light mode themes, others are dark
+  if (newTheme === "ocean" || newTheme === "amber") {
+    root.classList.remove('dark');
+    root.classList.add('light');
+  } else {
+    root.classList.remove('light');
+    root.classList.add('dark');
+  }
+}
+
 export function ColorThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ColorTheme>("ocean");
 
@@ -25,19 +39,6 @@ export function ColorThemeProvider({ children }: { children: React.ReactNode }) 
       applyThemeToElement("ocean");
     }
   }, []);
-
-  const applyThemeToElement = (newTheme: ColorTheme) => {
-    const root = document.documentElement;
-
-    // ocean and amber are light mode themes, others are dark
-    if (newTheme === "ocean" || newTheme === "amber") {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    } else {
-      root.classList.remove('light');
-      root.classList.add('dark');
-    }
-  };
 
   const setTheme = (newTheme: ColorTheme) => {
     applyThemeToElement(newTheme);

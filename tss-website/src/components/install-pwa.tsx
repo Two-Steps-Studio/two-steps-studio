@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Monitor, Laptop, Gamepad2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useLanguage } from "../hooks/use-translation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMounted } from "@/hooks/use-mounted";
 
 export function InstallPWA() {
   const router = useRouter();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstall, setShowInstall] = useState(true);
     const { t } = useLanguage();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-      setMounted(true);
-    }, []);
+    const mounted = useMounted();
 
     const handleInstall = () => {
       // /download is the single source of truth for the current build: it reads

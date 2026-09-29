@@ -73,7 +73,6 @@ function buildHybridT(messages: LocaleMessages): TranslationT {
     const value = lookupPath(messages, path);
     if (value === undefined) {
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
         console.warn(`[i18n] Missing key: ${path}`);
       }
       return path;

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react';
 import type {
   ElectronAPI, UpdateInfo, DownloadProgress, SessionData, AppInfo,
   LibraryEntry, GameSyncProgress, GameSyncCompleteEvent, GameSyncErrorEvent,
@@ -8,14 +8,13 @@ import type {
 /**
  * Hook to check if the app is running in Electron
  */
+const noopSubscribe = () => () => {};
+
 export function useIsElectron(): boolean {
-  const [isElectron, setIsElectron] = useState(false);
-
-  useEffect(() => {
-    setIsElectron(typeof window !== 'undefined' && window.electron?.isElectron === true);
-  }, []);
-
-  return isElectron;
+  // The preload bridge exists before any React code runs and never changes,
+  // so it's read directly (false on the server/during hydration) instead of
+  // being copied into state from an effect.
+  return useSyncExternalStore(noopSubscribe, () => window.electron?.isElectron === true, () => false);
 }
 
 /**

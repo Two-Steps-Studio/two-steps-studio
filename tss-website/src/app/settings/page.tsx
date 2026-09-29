@@ -69,6 +69,23 @@ export default function SettingsPage() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loadingIntegrations, setLoadingIntegrations] = useState(false);
 
+  // Component-level (not nested in the mount effect) so syncDiscord below
+  // can actually call it -- it used to be declared only inside that
+  // effect's closure, so calling it from here threw a ReferenceError at
+  // runtime (the sync itself succeeded, but refreshing the list after it
+  // always crashed into the catch block and showed an error instead).
+  const loadIntegrations = async () => {
+    try {
+      const response = await fetch("/api/integrations");
+      if (response.ok) {
+        const data = await response.json();
+        setIntegrations(data.integrations || []);
+      }
+    } catch (error) {
+      console.error("Failed to load integrations:", error);
+    }
+  };
+
   useEffect(() => {
     const loadLocalStorage = (): Prefs => ({
       animations: localStorage.getItem("ui-animations") !== "off",
@@ -241,22 +258,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Component-level (not nested in the mount effect) so syncDiscord below
-  // can actually call it -- it used to be declared only inside that
-  // effect's closure, so calling it from here threw a ReferenceError at
-  // runtime (the sync itself succeeded, but refreshing the list after it
-  // always crashed into the catch block and showed an error instead).
-  const loadIntegrations = async () => {
-    try {
-      const response = await fetch("/api/integrations");
-      if (response.ok) {
-        const data = await response.json();
-        setIntegrations(data.integrations || []);
-      }
-    } catch (error) {
-      console.error("Failed to load integrations:", error);
-    }
-  };
 
   const connectDiscord = async () => {
     setLoadingIntegrations(true);
@@ -328,7 +329,10 @@ export default function SettingsPage() {
     }
   };
 
-  const AppearanceOption = ({ value, icon: Icon, label }: { value: "light" | "dark" | "system"; icon: any; label: string }) => {
+  // A render helper, not a component: a component declared inside this one
+  // is a new type on every render, so React remounted the buttons each time
+  // (clicking one dropped keyboard focus).
+  const renderAppearanceOption = (value: "light" | "dark" | "system", Icon: any, label: string) => {
     // Both classes used to be concatenated on every button regardless of
     // which theme was actually active (also with the arguments swapped --
     // getThemeUnselectedClass needs isDark, getThemeSelectedClass takes
@@ -336,6 +340,8 @@ export default function SettingsPage() {
     const isSelected = value === appearance;
     return (
       <button
+        key={value}
+        type="button"
         onClick={() => setTheme(value)}
         className={`${isSelected ? getThemeSelectedClass() : getThemeUnselectedClass(darkMode)} rounded-xl border`}
       >
@@ -369,9 +375,9 @@ export default function SettingsPage() {
             <CardTitle className="text-[var(--text)]">{t.settings.appearance}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-3 gap-3">
-            <AppearanceOption value="light" icon={Sun} label={t.settings.light} />
-            <AppearanceOption value="dark" icon={Moon} label={t.settings.dark} />
-            <AppearanceOption value="system" icon={MonitorSmartphone} label={t.settings.system} />
+            {renderAppearanceOption("light", Sun, t.settings.light)}
+            {renderAppearanceOption("dark", Moon, t.settings.dark)}
+            {renderAppearanceOption("system", MonitorSmartphone, t.settings.system)}
           </CardContent>
         </Card>
 

@@ -77,11 +77,6 @@ export default function GamesAdminPage() {
     })();
   }, []);
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    fetchGames();
-  }, [isAdmin]);
-
   const fetchGames = async () => {
     try {
       const res = await fetch("/api/games");
@@ -94,6 +89,12 @@ export default function GamesAdminPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchGames();
+  }, [isAdmin]);
+
 
   const handleDelete = async (id: number) => {
     if (!confirm(t.devGamesAdmin.confirmDelete)) return;
