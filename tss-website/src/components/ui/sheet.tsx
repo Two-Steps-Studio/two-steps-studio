@@ -157,9 +157,9 @@ function SheetContent({
                   : { type: "spring", bounce: 0, duration: 0.4 }
               }
               className={cn(
-                // bg-background/80 + backdrop-blur matches the app's own
-                // .glass material (globals.css), already used for nav chrome.
-                "bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 fixed z-50 flex flex-col gap-4 shadow-lg touch-none",
+                // --card-bg, not bg-background (undefined in this theme) -
+                // see dialog.tsx.
+                "bg-[var(--card-bg)]/90 backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--card-bg)]/75 fixed z-50 flex flex-col gap-4 shadow-lg touch-none",
                 side === "right" && "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
                 side === "left" && "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
                 side === "top" && "inset-x-0 top-0 h-auto border-b",
