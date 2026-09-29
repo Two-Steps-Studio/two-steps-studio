@@ -1,4 +1,12 @@
 @import "tailwindcss";
+/* Provides animate-in / fade-in-0 / zoom-in-95 / slide-in-from-* etc. that
+   every shadcn primitive here (dialog, dropdown, popover, tooltip, sheet
+   overlay) already declares. It was installed but never imported, so those
+   classes compiled to nothing and every one of them popped in unanimated.
+   Relative path on purpose: the bare `@import "tw-animate-css"` builds
+   without error under Turbopack but silently drops all of its @utility
+   rules (0 matches in the output CSS), while plain Tailwind handles it fine. */
+@import "../../node_modules/tw-animate-css/dist/tw-animate.css";
 
 /* Electron packaging output sits inside this package and contains .asar
    blobs with prerendered HTML. Tailwind v4 auto content detection would

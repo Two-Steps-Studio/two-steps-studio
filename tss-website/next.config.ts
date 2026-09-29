@@ -177,6 +177,19 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
+      // The /dev/tools tuner needs the microphone. Same override pattern as
+      // above: only this one path relaxes microphone=() to (self) - our own
+      // origin, no iframes - and the browser still asks the user first.
+      // Everything else in the policy stays identical to the catch-all.
+      {
+        source: '/dev/tools',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'geolocation=(), camera=(), microphone=(self), magnetometer=(), gyroscope=(), payment=()',
+          },
+        ],
+      },
     ];
   },
   async redirects() {
