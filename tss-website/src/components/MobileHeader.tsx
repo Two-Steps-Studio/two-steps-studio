@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { toProxiedAvatarUrl } from "@/lib/discord-avatar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMounted } from "@/hooks/use-mounted";
 
 export function MobileHeader() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -21,8 +22,7 @@ export function MobileHeader() {
   // markup and the client's first paint. Gate the icon on mount - same
   // pattern Sidebar.tsx uses for its own theme toggle - instead of
   // rendering it from a value that disagrees with the server.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
   // Same source the sidebar uses, so both swap to the section's own logo
   // (Games / Records / DEV / E-Sport / main) as the user moves around.
   const { logo, color: sectionColor } = useSectionTheme();

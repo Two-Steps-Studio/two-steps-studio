@@ -60,7 +60,6 @@ export default function AdminGameReleasesPage({ params }: { params: Promise<{ ga
 
   useEffect(() => {
     if (isAdmin) fetchReleases();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
   const archiveRelease = async (releaseId: string) => {

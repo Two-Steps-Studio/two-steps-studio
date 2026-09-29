@@ -48,11 +48,6 @@ export default function PodcastsAdminPage() {
     })();
   }, []);
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    fetchPodcasts();
-  }, [isAdmin]);
-
   const fetchPodcasts = async () => {
     try {
       const res = await fetch("/api/podcasts");
@@ -65,6 +60,12 @@ export default function PodcastsAdminPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchPodcasts();
+  }, [isAdmin]);
+
 
   const handleDelete = async (id: number) => {
     if (!confirm(t.devPodcastsAdmin.confirmDelete)) return;

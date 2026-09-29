@@ -72,7 +72,6 @@ export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropp
   // out toward 1x after having dragged near an edge at higher zoom).
   useEffect(() => {
     setPan((p) => clampPan(p));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom, natural.w, natural.h]);
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -132,9 +131,8 @@ export default function AvatarCropper({ file, onCancel, onCropped }: AvatarCropp
               onPointerUp={onPointerUp}
               onPointerLeave={onPointerUp}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- cropped
-                  via canvas from the raw element, next/image's optimizer would
-                  just get in the way here */}
+              {/* Plain <img>: cropped via canvas from the raw element - next/image's
+                  optimizer would just get in the way here. */}
               <img
                 ref={imgRef}
                 src={imgUrl}

@@ -282,7 +282,6 @@ function UsersTab() {
   useEffect(() => {
     const t = setTimeout(() => load(search), 350);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   const updateUserLocally = (id: string, patch: Partial<BotUser>) => {
@@ -358,7 +357,6 @@ function UserRow({ user, onSaved }: { user: BotUser; onSaved: (patch: Partial<Bo
     <div className="rounded-xl border border-[var(--border-color)] p-3 flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-2 min-w-[140px]">
         {user.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={user.avatar_url} alt="" width={32} height={32} className="rounded-full" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)]" />
@@ -611,7 +609,6 @@ function EngagementTab() {
       loadEngagement();
     }, 5000);
     return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commands]);
 
   if (loading) {

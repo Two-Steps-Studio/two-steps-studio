@@ -63,11 +63,6 @@ export default function MusicAdminPage() {
     })();
   }, []);
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    fetchTracks();
-  }, [isAdmin]);
-
   const fetchTracks = async () => {
     try {
       const res = await fetch("/api/music");
@@ -80,6 +75,12 @@ export default function MusicAdminPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchTracks();
+  }, [isAdmin]);
+
 
   const handleDelete = async (id: number) => {
     if (!confirm(t.devMusicAdmin.confirmDelete)) return;

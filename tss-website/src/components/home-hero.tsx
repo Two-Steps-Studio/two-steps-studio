@@ -5,8 +5,9 @@ import { Sparkles, Download as LucideDownload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { InstallPWA } from "./install-pwa";
+import { useMounted } from "@/hooks/use-mounted";
 
 interface HomeHeroProps {
   language: string;
@@ -16,11 +17,7 @@ interface HomeHeroProps {
 export function HomeHero({ language, content }: HomeHeroProps) {
   const router = useRouter();
   const containerRef = useRef(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,

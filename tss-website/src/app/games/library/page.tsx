@@ -35,7 +35,6 @@ export default function GameLibraryPage() {
         console.error("Failed to fetch games for library:", error);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameIds.length]);
 
   if (!isElectron) {

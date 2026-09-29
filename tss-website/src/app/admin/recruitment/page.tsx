@@ -74,7 +74,6 @@ export default function AdminRecruitmentPage() {
   useEffect(() => {
     if (!isAdmin) return;
     fetchApplications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, filter]);
 
   const handleStatusChange = async (id: string, status: "accepted" | "rejected") => {

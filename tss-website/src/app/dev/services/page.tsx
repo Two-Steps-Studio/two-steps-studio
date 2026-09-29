@@ -60,7 +60,7 @@ export default function DevServicesPage() {
       }
 
       if (data.url) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       }
     } catch (error) {
       console.error("Payment error:", error);

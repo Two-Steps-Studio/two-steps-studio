@@ -32,6 +32,7 @@ import { useTheme } from "next-themes";
 import { BottomNavigation } from "./BottomNavigation";
 import { SidebarStats } from "./SidebarStats";
 import { supabase } from "@/lib/supabase";
+import { useMounted } from "@/hooks/use-mounted";
 
 export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
   const pathname = usePathname();
@@ -39,7 +40,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
   const { t, language, setLanguage } = useLanguage();
   const { logo } = useSectionTheme();
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [categoryVisibility, setCategoryVisibility] = useState({
     games: true,
     records: true,
@@ -47,7 +48,6 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
   });
 
   useEffect(() => {
-    setMounted(true);
     
     // Load category visibility from profile
     const loadCategoryVisibility = async () => {

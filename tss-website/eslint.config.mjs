@@ -32,16 +32,14 @@ const eslintConfig = [
       'import/no-self-import': 'off',
       'import/no-cycle': 'off',
       'import/no-useless-path-segments': 'off',
-      // React Compiler rules that eslint-plugin-react-hooks v6 turned on.
-      // They flag ~50 existing spots (mostly setState in data-fetching
-      // effects in admin/profile pages) that predate them. Warnings for now
-      // so they stay visible without blocking CI; new code shouldn't add
-      // more, and they should go back to errors once the backlog is fixed.
+      // React Compiler rules (eslint-plugin-react-hooks v6). immutability,
+      // static-components and refs have no remaining hits and stay errors.
+      // These two still flag existing code, mostly data fetching that sets
+      // state after an await (the rule can't tell that apart from a
+      // synchronous setState) - warnings so they stay visible without
+      // blocking CI. Don't add new ones; switch back to errors once cleared.
       'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/immutability': 'warn',
       'react-hooks/purity': 'warn',
-      'react-hooks/static-components': 'warn',
-      'react-hooks/refs': 'warn',
     },
   },
   {
