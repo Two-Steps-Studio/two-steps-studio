@@ -41,13 +41,13 @@ export async function sendEmail(
   html: string,
   text?: string,
   replyTo?: string
-): Promise<{ id: string; error?: Error }> {
+): Promise<{ id: string }> {
   if (!isResendConfigured) {
     throw new Error('Resend is not configured. Set RESEND_API_KEY in .env');
   }
 
   try {
-    const result = await getResendClient().emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: `Two Steps Studio <${FROM_EMAIL}>`,
       to,
       subject,
@@ -56,7 +56,15 @@ export async function sendEmail(
       ...(replyTo ? { replyTo } : {}),
     });
 
-    return result;
+    // resend v4 reports API failures (unverified domain, bad sender,
+    // rate limit...) as `{ data: null, error }` instead of throwing. The
+    // callers - registration and the contact form - rely on a throw to tell
+    // the user it failed; returning the raw result made every such failure
+    // look like a successful send.
+    if (error || !data) {
+      throw new Error(`Resend: ${error?.name ?? 'unknown_error'} - ${error?.message ?? 'no data returned'}`);
+    }
+    return { id: data.id };
   } catch (error) {
     console.error('[Resend] Email sending failed:', error);
     throw error;
