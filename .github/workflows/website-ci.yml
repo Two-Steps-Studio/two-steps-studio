@@ -1,0 +1,71 @@
+name: Website CI
+
+# Lint, unit tests, translation check and a production build for
+# tss-website on every PR and push to main that touches it. Nothing is
+# deployed from here - Vercel builds and deploys on its own.
+
+on:
+  pull_request:
+    paths:
+      - "tss-website/**"
+      - ".github/workflows/website-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tss-website/**"
+      - ".github/workflows/website-ci.yml"
+
+concurrency:
+  group: website-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: tss-website
+    env:
+      # Electron and Playwright binaries aren't needed to lint, test or build
+      # the web app - skipping them saves a few hundred MB per run.
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Same as sync-desktop-release.yml: supabase-js needs Node 22's
+          # native WebSocket.
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tss-website/package-lock.json
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      # next.config.ts has typescript.ignoreBuildErrors, so `next build`
+      # alone would ship type errors - this is the step that catches them.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Translations (pl/en/de keys match)
+        run: npm run i18n:check
+
+      # No Supabase secrets here on purpose: the build must not depend on
+      # them (pages that need data render dynamically at request time).
+      - name: Build
+        run: npm run build

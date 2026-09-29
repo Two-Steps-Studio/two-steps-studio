@@ -37,6 +37,7 @@ interface RankedUser {
 }
 
 const fetchRankingData = async () => {
+    if (!supabase) return { usersByLevel: [] as RankedUser[], usersByMoney: [] as RankedUser[] };
     // public_profiles (not profiles) - leaderboard shows other users' rows,
     // and profiles' RLS is now owner-only. See db/migrations/lock-down-profiles-rls.sql.
     const { data: levelUsers } = await supabase.from("public_profiles").select("id, discord_id, username, avatar_url, level, xp").order("level", { ascending: false }).limit(100);
@@ -77,6 +78,12 @@ export default function ProfilePage() {
     const [redeemingPromo, setRedeemingPromo] = useState(false);
 
     useEffect(() => {
+        const client = supabase;
+        if (!client) {
+            setAuthChecked(true);
+            setLoading(false);
+            return;
+        }
         let channel: any = null;
         // onAuthStateChange (INITIAL_SESSION) and the getSession() fallback
         // below can both observe an active session on mount and call
@@ -94,7 +101,7 @@ export default function ProfilePage() {
             const discordId = currentUser.user_metadata?.provider_id || currentUser.id;
 
             // Get profile with fallback
-            const { data: initialProfile } = await supabase
+            const { data: initialProfile } = await client
                 .from("profiles")
                 .select("*")
                 .eq("id", discordId)
@@ -124,7 +131,7 @@ export default function ProfilePage() {
             // and it's fine if it lands a moment after this render.
             const liveDiscordAvatar = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
             if (initialProfile && !initialProfile.avatar_url && liveDiscordAvatar) {
-                supabase.from("profiles").update({ avatar_url: liveDiscordAvatar }).eq("id", discordId).then(({ error }) => {
+                client.from("profiles").update({ avatar_url: liveDiscordAvatar }).eq("id", discordId).then(({ error }) => {
                     if (error) console.error("[Profile] avatar_url backfill failed:", error.message);
                 });
             }
@@ -139,7 +146,7 @@ export default function ProfilePage() {
             const isCurrentlyDiscordLinked = currentUser.app_metadata?.provider === 'discord'
                 || currentUser.identities?.some((id: any) => id.provider === 'discord');
             if (initialProfile?.referred_by && !initialProfile?.referral_reward_paid && isCurrentlyDiscordLinked) {
-                supabase.rpc('pay_referral_reward', { p_user_id: discordId }).then(({ error }) => {
+                client.rpc('pay_referral_reward', { p_user_id: discordId }).then(({ error }) => {
                     if (error) console.error("[Profile] referral payout failed:", error.message);
                 });
             }
@@ -166,7 +173,7 @@ export default function ProfilePage() {
             // reuse the same topic a moment later. A unique-per-mount
             // topic sidesteps the whole race: there is never a second
             // subscriber for the same topic to collide with.
-            const freshChannel = supabase.channel(`profile-${discordId}-${Math.random().toString(36).slice(2)}`);
+            const freshChannel = client.channel(`profile-${discordId}-${Math.random().toString(36).slice(2)}`);
             channel = freshChannel;
             freshChannel.on("postgres_changes", {
                 event: "UPDATE",  // Only UPDATE, not INSERT/DELETE for profile
@@ -175,7 +182,7 @@ export default function ProfilePage() {
                 filter: `id=eq.${discordId}`
             }, (payload) => {
                 // Update only if new profile has different data
-                setProfile(prev => {
+                setProfile((prev: any) => {
                     if (!prev) return payload.new;
                     return { ...prev, ...payload.new };
                 });
@@ -185,7 +192,7 @@ export default function ProfilePage() {
         // Set up realtime subscription FIRST, then check current session.
         // This handles BOTH cases: refresh (where onAuthStateChange may not
         // emit if session state hasn't changed) and initial load.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') { router.push('/login'); return; }
             if (session?.user) {
                 setUser(session.user);
@@ -216,7 +223,7 @@ export default function ProfilePage() {
         // This is the primary path for page refresh where no event is emitted.
         (async () => {
             try {
-                const { data: { session: currentSession } } = await supabase.auth.getSession();
+                const { data: { session: currentSession } } = await client.auth.getSession();
                 if (currentSession?.user) {
                     setUser(currentSession.user);
                     setAuthChecked(true);
@@ -229,7 +236,7 @@ export default function ProfilePage() {
 
         return () => {
             subscription.unsubscribe();
-            if (channel) supabase.removeChannel(channel);
+            if (channel) client.removeChannel(channel);
         };
     }, [router]);
 
@@ -238,7 +245,7 @@ export default function ProfilePage() {
         // the matching SVG design) - only nick_color still needs its raw
         // hex value resolved from shop_items.
         const nickColorId = profile?.equipped_nick_color;
-        if (!nickColorId) {
+        if (!nickColorId || !supabase) {
             setNickColorValue(null);
             return;
         }
@@ -254,6 +261,7 @@ export default function ProfilePage() {
     // "unlocked" is computed below from profile.level/total_messages/
     // total_voice_minutes rather than a separate user_achievements query.
     useEffect(() => {
+        if (!supabase) return;
         supabase
             .from("achievements")
             .select("id, name, description, icon, image_url, rarity, requirement_type, requirement_value")

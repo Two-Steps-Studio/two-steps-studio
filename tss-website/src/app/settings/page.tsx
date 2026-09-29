@@ -94,6 +94,7 @@ export default function SettingsPage() {
 
     // Load username from profile
     const loadUsername = async () => {
+      if (!supabase) return;
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -114,6 +115,7 @@ export default function SettingsPage() {
     };
 
     (async () => {
+      if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
       if (!user) {
         return;

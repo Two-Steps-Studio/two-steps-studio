@@ -63,6 +63,9 @@ function JsonTool() {
 function JwtTool() {
   const { t, locale } = useLanguage();
   const [token, setToken] = useState("");
+  // "Now" for the expiry check, taken when the token changes - reading the
+  // clock during render would make the output impure.
+  const [checkedAt, setCheckedAt] = useState(0);
 
   const decoded = useMemo(() => {
     const trimmed = token.trim();
@@ -87,7 +90,10 @@ function JwtTool() {
     <ToolCard title={t.devTools.jwtTitle} description={t.devTools.jwtDesc}>
       <div className="space-y-2">
         <Label htmlFor="dt-jwt">Token</Label>
-        <Textarea id="dt-jwt" value={token} onChange={(e) => setToken(e.target.value)} rows={3} spellCheck={false} className={cn(monoField, "break-all")} placeholder="eyJhbGciOi..." />
+        <Textarea id="dt-jwt" value={token} onChange={(e) => {
+            setToken(e.target.value);
+            setCheckedAt(Date.now());
+          }} rows={3} spellCheck={false} className={cn(monoField, "break-all")} placeholder="eyJhbGciOi..." />
       </div>
       {decoded && !decoded.ok && <ErrorText>{t.devTools.invalid}</ErrorText>}
       {decoded?.ok && (
@@ -105,7 +111,7 @@ function JwtTool() {
                   <dt className="text-[var(--text-muted)]">{t.devTools.jwtExpires}</dt>
                   <dd className="text-[var(--text)]">
                     {claimDate(decoded.payload.exp)}
-                    {(decoded.payload.exp as number) * 1000 < Date.now() && (
+                    {(decoded.payload.exp as number) * 1000 < checkedAt && (
                       <span className="ml-2 font-medium text-red-600 dark:text-red-400">{t.devTools.jwtExpired}</span>
                     )}
                   </dd>

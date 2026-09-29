@@ -85,6 +85,7 @@ export default function ProfileForm({
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
     setLoading(true);
     setSaveErrorMsg("");
 
@@ -148,6 +149,7 @@ export default function ProfileForm({
   };
 
   const uploadAvatarFile = async (file: File) => {
+    if (!supabase) return;
     setUploading(true);
     setErrorMsg("");
 

@@ -43,7 +43,8 @@ function render(tokens: Token[]): ReactNode[] {
 
 const Markdown = ({ text }: { text: string }) => <>{render(parseMarkdown(text))}</>;
 
-/* eslint-disable @next/next/no-img-element -- arbitrary user-supplied URLs, shown as-is like Discord would */
+// Plain <img> on purpose: arbitrary user-supplied URLs, shown as-is like
+// Discord would (next/image would need every host allow-listed).
 export function EmbedPreview({ draft, now }: { draft: EmbedDraft; now: string }) {
   const d = draft;
   // Discord lays inline fields out three per row; a non-inline field

@@ -51,6 +51,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
     
     // Load category visibility from profile
     const loadCategoryVisibility = async () => {
+      if (!supabase) return;
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -125,7 +126,7 @@ export function Sidebar({ isOpen: sidebarOpen }: { isOpen?: boolean }) {
       pathname === href || pathname.startsWith(`${href}/`), [pathname]);
 
   const getAriaCurrent = useCallback((href: string) => {
-    return isPathActive(href) ? "page" : undefined;
+    return isPathActive(href) ? ("page" as const) : undefined;
   }, [isPathActive, pathname]);
 
   // Definicja sekcji z fallback dla wszystkich tłumaczeń

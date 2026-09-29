@@ -35,6 +35,13 @@ export default async function registerUser(formData: { email: string; password: 
 
   const { email, password, fullName, language, ref } = validated.data;
 
+  // Without the service-role key there's no admin client; every call below
+  // would throw on null and surface as an unhandled server-action error.
+  if (!supabaseAdmin) {
+    console.error("[registration] Supabase admin client not configured");
+    return { error: "Rejestracja jest chwilowo niedostępna. Spróbuj ponownie później." };
+  }
+
   // Referral link is `?ref=<referrer's profiles.id>` - validate it points at
   // a real, existing profile before storing it, so a bad/tampered value
   // can't fail the whole signup via the FK constraint on referred_by, and

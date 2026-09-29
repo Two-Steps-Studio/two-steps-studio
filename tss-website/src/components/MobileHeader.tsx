@@ -36,6 +36,7 @@ export function MobileHeader() {
     if (!user) return;
 
     const loadProfile = async () => {
+      if (!supabase) return;
       const emailName = (user.email ?? "").split("@")[0] || "";
       setDisplayName(user.user_metadata?.full_name || emailName);
       // Auth metadata only ever holds an OAuth-provided picture. The app's
@@ -63,7 +64,9 @@ export function MobileHeader() {
   }, [user]);
 
   useEffect(() => {
-    if (!user) return;
+    // Local binding: the cleanup closure below needs the non-null client too.
+    const client = supabase;
+    if (!user || !client) return;
     const discordId = (user.user_metadata as any)?.provider_id || user.id;
 
     // Unique-per-mount topic: supabase.channel(topic) dedupes by topic
@@ -73,7 +76,7 @@ export function MobileHeader() {
     // channel from the previous mount and throwing on .on() after
     // .subscribe(). See src/app/profile/page.tsx for the same fix with the
     // full explanation.
-    const channel = supabase
+    const channel = client
       .channel(`profile_changes:${discordId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
@@ -86,7 +89,7 @@ export function MobileHeader() {
       )
       .subscribe();
     return () => {
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [user]);
 

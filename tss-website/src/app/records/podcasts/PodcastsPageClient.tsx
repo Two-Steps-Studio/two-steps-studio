@@ -29,7 +29,8 @@ export default function PodcastsPageClient({ initialPodcasts }: { initialPodcast
     return matchesSearch && matchesSeason;
   });
 
-  const seasons = Array.from(new Set(podcasts.map((p) => p.season))).sort((a, b) => a - b);
+  // Episodes without a season used to add an empty "undefined" season button.
+  const seasons = Array.from(new Set(podcasts.map((p) => p.season).filter((s): s is number => typeof s === "number"))).sort((a, b) => a - b);
 
   return (
       <div className="container mx-auto p-6 mt-20 max-w-7xl">

@@ -1,6 +1,6 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import { useLanguage } from "@/hooks/use-translation";
 
@@ -34,7 +34,7 @@ export default function Page() {
                     { name: t.gamesAbout.navGames, href: "/games" },
                     { name: t.gamesAbout.navShop, href: "/games/shop" },
                 ].map((item, i) => (
-                    <a
+                    <Link
                         key={i}
                         href={item.href}
                         className="rounded-3xl border border-[var(--color-games)]/20 bg-[var(--color-games)]/5 hover:bg-[var(--color-games)]/10 transition-all p-5 shadow-sm group"
@@ -42,7 +42,7 @@ export default function Page() {
                         <div className="text-lg font-bold text-black dark:text-white group-hover:text-[var(--color-games)] transition-colors">
                             {item.name}
                         </div>
-                    </a>
+                    </Link>
                 ))}
             </div>
 
@@ -104,12 +104,12 @@ export default function Page() {
 
                 {/* CTA */}
                 <div className="text-center pt-8">
-                    <a
+                    <Link
                         href="/games"
                         className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--color-games)] hover:bg-[var(--color-games)]/80 text-white font-bold rounded-2xl transition-all text-lg"
                     >
                         {t.gamesAbout.ctaButton}
-                    </a>
+                    </Link>
                     <p className="text-[var(--text-muted)] mt-4 font-[family-name:var(--font-outfit)]">
                         {t.gamesAbout.ctaDesc}
                     </p>

@@ -47,7 +47,9 @@ export async function GET() {
     // discord_stats) with the website's own accounts/sessions - see
     // db/migrations/add-unified-stats.sql. Falls back to Discord-only
     // numbers (the old behavior) if that migration isn't deployed yet.
-    const { data: unified, error: unifiedError } = await supabase.rpc('get_unified_stats').single();
+    const { data: unified, error: unifiedError } = await supabase
+      .rpc('get_unified_stats')
+      .single<{ total_members: number; total_online: number; total_voice_minutes: number }>();
 
     const totalMembers = unifiedError ? (discordStats?.member_count || 0) : (unified?.total_members ?? 0);
     const totalOnline = unifiedError ? (discordStats?.online_users || 0) : (unified?.total_online ?? 0);
