@@ -18,6 +18,8 @@
     "dev:electron": "next dev -p 6767",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
