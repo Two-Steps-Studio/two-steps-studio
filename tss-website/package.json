@@ -18,6 +18,7 @@
     "dev:electron": "next dev -p 6767",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",
     "lint:fix": "npm run lint -- --fix",

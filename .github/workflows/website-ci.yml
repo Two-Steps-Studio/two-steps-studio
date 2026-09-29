@@ -54,6 +54,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # next.config.ts has typescript.ignoreBuildErrors, so `next build`
+      # alone would ship type errors - this is the step that catches them.
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Unit tests
         run: npm test
 

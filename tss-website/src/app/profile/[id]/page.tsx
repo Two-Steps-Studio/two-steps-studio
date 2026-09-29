@@ -36,6 +36,11 @@ export default function PublicProfilePage() {
 
     useEffect(() => {
         (async () => {
+            if (!supabase) {
+                setNotFound(true);
+                setLoading(false);
+                return;
+            }
             const { data: { user } } = await supabase.auth.getUser();
             const myId = user?.user_metadata?.provider_id || user?.id || null;
             setViewerDiscordId(myId);
@@ -67,7 +72,7 @@ export default function PublicProfilePage() {
 
     useEffect(() => {
         const nickColorId = profile?.equipped_nick_color;
-        if (!nickColorId) {
+        if (!nickColorId || !supabase) {
             setNickColorValue(null);
             return;
         }
@@ -80,6 +85,7 @@ export default function PublicProfilePage() {
     }, [profile?.equipped_nick_color]);
 
     useEffect(() => {
+        if (!supabase) return;
         supabase
             .from("achievements")
             .select("id, name, description, icon, image_url, rarity, requirement_type, requirement_value")

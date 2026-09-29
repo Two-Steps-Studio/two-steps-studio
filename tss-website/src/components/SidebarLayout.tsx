@@ -27,7 +27,7 @@ export function SidebarLayout() {
         sidebarOpen ? "" : "pointer-events-none"
       }`}
     >
-      <Sidebar isOpen={sidebarOpen} suppressHydrationWarning={true} />
+      <Sidebar isOpen={sidebarOpen} />
     </div>
   );
 }

@@ -70,7 +70,7 @@ export function TopBar({ className }: { className?: string }) {
 
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user) return;
+      if (!user || !supabase) return;
       const emailName = (user.email ?? "").split("@")[0] || "";
       setDisplayName(user.user_metadata?.full_name || emailName);
       const metaAvatar = (user.user_metadata as any)?.avatar_url || (user.user_metadata as any)?.picture || null;

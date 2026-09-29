@@ -194,7 +194,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useDeepLinks(handleAuthDeepLink);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Still clear the local/Electron session below when there's no client.
+    if (supabase) await supabase.auth.signOut();
     
     // Clear Electron session
     if (isElectron && window.electron) {

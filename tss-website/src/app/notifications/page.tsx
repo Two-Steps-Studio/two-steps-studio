@@ -35,6 +35,10 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const load = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       // Same published_at gate as /api/news?id= - the news table's RLS
       // allows public read of every row, so an unfiltered query here
