@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     // not just staff, got the full title/content of drafts nobody had
     // approved yet, the moment they were created. Publish date can also be
     // in the future (scheduled posts), so gate on that too.
-    let query = supabase
+    const query = supabase
       .from('news')
       .select('*')
       .not('published_at', 'is', null)

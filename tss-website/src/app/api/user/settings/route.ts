@@ -26,11 +26,12 @@ export async function GET(request: Request) {
   // proxy.ts's category-visibility gate actually read.
   const discordId = (user.user_metadata as any)?.provider_id || user.id;
 
-  let { data: profile, error: profileError } = await supabase
+  const { data: existingProfile, error: profileError } = await supabase
     .from("profiles")
     .select("games_visible, records_visible, dev_visible")
     .eq("id", discordId)
     .maybeSingle();
+  let profile = existingProfile;
 
   if (profileError) {
     console.error("Profile error:", profileError);

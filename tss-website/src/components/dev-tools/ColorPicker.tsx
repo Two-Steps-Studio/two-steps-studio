@@ -53,6 +53,10 @@ export function ColorPicker({
         role="slider"
         tabIndex={0}
         aria-label={areaLabel}
+        // A 2D control: valuenow carries saturation, valuetext says both axes.
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(value.s * 100)}
         aria-valuetext={`${Math.round(value.s * 100)}%, ${Math.round(value.v * 100)}%`}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);

@@ -128,7 +128,7 @@ export function ImageTool() {
         )}
       >
         {source ? (
-          // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
+          // Plain <img>: a local object URL preview, nothing for next/image to optimize.
           <img src={source.url} alt="" className={cn("max-h-32 rounded-lg object-contain", pixelArt && "min-h-16 [image-rendering:pixelated]")} />
         ) : (
           <ImageUp className="size-8" />
