@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { contrastRatio, hslToRgb, luminance, mix, parseColor, rgbToHsl, toHex, type RGB } from "./color";
 import { AspectRatioTool, ColorTool } from "./DesignTools";
 import { ImageTool } from "./ImageTool";
+import { QrTool } from "./QrTool";
 import { CopyButton, Segmented, ToolCard, monoField } from "./shared";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
@@ -196,6 +197,7 @@ export function GraphicsTools() {
       <ContrastTool />
       <ImageTool />
       <AspectRatioTool />
+      <QrTool />
     </div>
   );
 }

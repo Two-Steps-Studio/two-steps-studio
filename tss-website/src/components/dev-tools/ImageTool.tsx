@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { ErrorText, Segmented, ToolCard, monoField } from "./shared";
@@ -20,6 +21,11 @@ type Format = (typeof FORMATS)[number]["value"];
 type Source = { url: string; name: string; size: number; width: number; height: number };
 type Result = { url: string; size: number; width: number; height: number };
 
+// Pixel-art upscales: whole multiples only, so every source pixel becomes
+// an exact k×k block. Capped below the browsers' canvas size limits.
+const PIXEL_SCALES = [2, 3, 4, 6, 8] as const;
+const MAX_SIDE = 8192;
+
 const formatBytes = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : bytes < 1024 ** 2 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 ** 2).toFixed(2)} MB`;
 
@@ -33,6 +39,7 @@ export function ImageTool() {
   const [format, setFormat] = useState<Format>("image/webp");
   const [quality, setQuality] = useState(85);
   const [width, setWidth] = useState(0);
+  const [pixelArt, setPixelArt] = useState(false);
   const [error, setError] = useState(false);
   const [dragging, setDragging] = useState(false);
 
@@ -52,7 +59,7 @@ export function ImageTool() {
     const img = new Image();
     img.onload = () => {
       setSource({ url, name: file.name, size: file.size, width: img.naturalWidth, height: img.naturalHeight });
-      setWidth(img.naturalWidth);
+      setWidth(pixelArt ? Math.min(img.naturalWidth * 4, MAX_SIDE) : img.naturalWidth);
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -77,6 +84,8 @@ export function ImageTool() {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, w, h);
       }
+      // Nearest-neighbor for pixel art: smoothing would blur every edge.
+      ctx.imageSmoothingEnabled = !pixelArt;
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, w, h);
       canvas.toBlob(
@@ -120,7 +129,7 @@ export function ImageTool() {
       >
         {source ? (
           // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
-          <img src={source.url} alt="" className="max-h-32 rounded-lg object-contain" />
+          <img src={source.url} alt="" className={cn("max-h-32 rounded-lg object-contain", pixelArt && "min-h-16 [image-rendering:pixelated]")} />
         ) : (
           <ImageUp className="size-8" />
         )}
@@ -130,6 +139,50 @@ export function ImageTool() {
 
       {source && (
         <>
+          <div className="flex items-start gap-3">
+            <Switch
+              id="dt-img-pixel"
+              checked={pixelArt}
+              onCheckedChange={(on) => {
+                setPixelArt(on);
+                setResult(null);
+                if (on) {
+                  // Lossy WebP/JPEG smear the hard pixel edges this mode is for.
+                  setFormat("image/png");
+                  setWidth(Math.min(source.width * 4, MAX_SIDE));
+                } else {
+                  setWidth(source.width);
+                }
+              }}
+              className="mt-0.5"
+            />
+            <div className="min-w-0">
+              <Label htmlFor="dt-img-pixel">{t.devTools.imagePixelArt}</Label>
+              <p className="text-xs text-[var(--text-muted)]">{t.devTools.imagePixelArtHint}</p>
+            </div>
+          </div>
+          {pixelArt && (
+            <div className="flex flex-wrap gap-2" role="group" aria-label={t.devTools.imagePixelArt}>
+              {PIXEL_SCALES.map((k) => {
+                const w = source.width * k;
+                const fits = w <= MAX_SIDE && source.height * k <= MAX_SIDE;
+                return (
+                  <Button
+                    key={k}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!fits}
+                    aria-pressed={width === w}
+                    onClick={() => setWidth(w)}
+                    className={cn("rounded-xl border-[var(--border-color)] font-mono", width === w && "border-[var(--color-dev)] bg-[var(--color-dev)]/15")}
+                  >
+                    ×{k}
+                  </Button>
+                );
+              })}
+            </div>
+          )}
           <Segmented options={FORMATS} value={format} onChange={setFormat} label={t.devTools.imageFormat} />
           {format !== "image/png" && (
             <div className="space-y-2">
@@ -141,7 +194,7 @@ export function ImageTool() {
             <Label htmlFor="dt-img-w">
               {t.devTools.aspectWidth} (px) → {width > 0 ? `${Math.round(width)}×${Math.max(1, Math.round((source.height * width) / source.width))}` : "—"}
             </Label>
-            <Input id="dt-img-w" type="number" min={1} max={source.width * 4} value={width || ""} onChange={(e) => setWidth(Math.max(0, Math.floor(Number(e.target.value))))} className={monoField} />
+            <Input id="dt-img-w" type="number" min={1} max={Math.min(source.width * (pixelArt ? 8 : 4), MAX_SIDE)} value={width || ""} onChange={(e) => setWidth(Math.max(0, Math.floor(Number(e.target.value))))} className={monoField} />
           </div>
           <Button type="button" variant="outline" className="rounded-xl border-[var(--border-color)]" onClick={convert} disabled={width <= 0}>
             {t.devTools.imageConvert}

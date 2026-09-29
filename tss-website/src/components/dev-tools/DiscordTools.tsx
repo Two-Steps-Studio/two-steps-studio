@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-translation";
 import { TextTool, TimeZoneTool } from "./CommunityTools";
+import { DiscordEmbedTool } from "./DiscordEmbedTool";
 import { CopyButton, ErrorText, ToolCard, monoField, useMounted } from "./shared";
 
 // Discord's own epoch (2015-01-01T00:00:00Z) - snowflake IDs store
@@ -160,6 +161,7 @@ function SnowflakeTool() {
 export function DiscordTools() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
+      <DiscordEmbedTool />
       <TimestampTool />
       <SnowflakeTool />
       <TimeZoneTool />

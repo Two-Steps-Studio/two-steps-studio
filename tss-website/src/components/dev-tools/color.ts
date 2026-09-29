@@ -4,7 +4,18 @@ export type RGB = { r: number; g: number; b: number };
 // back to red the moment a color passed through grey or black.
 export type HSV = { h: number; s: number; v: number };
 
-export const toHex = ({ r, g, b }: RGB) => `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+// The site's own section colors (globals.css / CLAUDE.md theme table).
+export const BRAND_SWATCHES = [
+  { name: "General", hex: "#1bbdbd" },
+  { name: "Games", hex: "#dc3545" },
+  { name: "Records", hex: "#ad83f8" },
+  { name: "Dev", hex: "#ffcb2f" },
+  { name: "E-Sport", hex: "#06e402" },
+  { name: "White", hex: "#ffffff" },
+  { name: "Black", hex: "#000000" },
+];
+
+export const toHex =({ r, g, b }: RGB) => `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 
 export function hslToRgb(h: number, s: number, l: number): RGB {
   const sat = s / 100;

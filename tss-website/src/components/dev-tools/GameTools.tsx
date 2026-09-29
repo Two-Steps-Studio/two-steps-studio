@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { createAudioContext, playTone } from "./audio";
+import { EasingTool } from "./EasingTool";
 import { EsportTools } from "./EsportTools";
 import { randomInt, shuffle } from "./random";
 import { CopyButton, Segmented, ToolCard, monoField } from "./shared";
@@ -316,6 +317,7 @@ export function GameTools() {
       <PickerTool />
       <TimerTool />
       <EsportTools />
+      <EasingTool />
     </div>
   );
 }

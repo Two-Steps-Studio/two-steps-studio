@@ -7,16 +7,20 @@ import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { ANALYSIS_RATE, detectBpm, detectKey, middleSegment, type BpmResult, type KeyGuess, type KeyResult } from "./audio-analysis";
+import { measureLoudness, waveformPeaks, type LoudnessResult } from "./loudness";
+import { LoudnessCard } from "./LoudnessCard";
+import { Waveform } from "./Waveform";
 import { ErrorText, ToolCard } from "./shared";
 
-type Stage = "idle" | "decoding" | "bpm" | "key" | "done";
+type Stage = "idle" | "decoding" | "bpm" | "key" | "loudness" | "done";
 // Seconds from the middle of the track used for analysis: enough for a
 // stable tempo/key, short enough to stay quick on a 10-minute mix.
 const SEGMENT_SECONDS = 90;
 
-// Decode + downmix to mono + resample in one pass. OfflineAudioContext
-// needs no user gesture and never plays anything.
-async function decodeToAnalysisRate(file: File) {
+// Decode, then downmix to mono + resample for BPM/key in one pass.
+// Loudness is measured on the decoded channels themselves (stereo, full
+// rate). OfflineAudioContext needs no user gesture and never plays anything.
+async function decode(file: File) {
   const data = await file.arrayBuffer();
   const decoded = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(data);
   const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * ANALYSIS_RATE), ANALYSIS_RATE);
@@ -25,8 +29,11 @@ async function decodeToAnalysisRate(file: File) {
   source.connect(offline.destination);
   source.start();
   const rendered = await offline.startRendering();
-  return { samples: rendered.getChannelData(0), duration: decoded.duration };
+  const channels = Array.from({ length: decoded.numberOfChannels }, (_, i) => decoded.getChannelData(i));
+  return { samples: rendered.getChannelData(0), channels, sampleRate: decoded.sampleRate, duration: decoded.duration };
 }
+
+const WAVEFORM_BUCKETS = 1200;
 
 const CHROMA_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -34,11 +41,12 @@ export function AudioAnalyzerTool({ onUseBpm }: { onUseBpm: (bpm: number) => voi
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const runRef = useRef(0);
-  const [file, setFile] = useState<{ name: string; url: string; duration: number } | null>(null);
+  const [file, setFile] = useState<{ name: string; url: string; duration: number; peaks: Float32Array; analyzed: { start: number; end: number } } | null>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
   const [bpm, setBpm] = useState<BpmResult | null>(null);
   const [key, setKey] = useState<KeyResult | null>(null);
+  const [loudness, setLoudness] = useState<LoudnessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -52,6 +60,7 @@ export function AudioAnalyzerTool({ onUseBpm }: { onUseBpm: (bpm: number) => voi
     setError(null);
     setBpm(null);
     setKey(null);
+    setLoudness(null);
     setProgress(0);
     if (!picked.type.startsWith("audio/") && !/\.(mp3|wav|ogg|oga|flac|m4a|aac|opus|webm)$/i.test(picked.name)) {
       setStage("idle");
@@ -60,20 +69,33 @@ export function AudioAnalyzerTool({ onUseBpm }: { onUseBpm: (bpm: number) => voi
     }
     setStage("decoding");
     try {
-      const { samples, duration } = await decodeToAnalysisRate(picked);
+      const { samples, channels, sampleRate, duration } = await decode(picked);
       if (!current()) return;
-      setFile({ name: picked.name, url: URL.createObjectURL(picked), duration });
       const segment = middleSegment(samples, ANALYSIS_RATE, SEGMENT_SECONDS);
+      const segmentStart = (samples.length - segment.length) / 2 / ANALYSIS_RATE;
+      setFile({
+        name: picked.name,
+        url: URL.createObjectURL(picked),
+        duration,
+        peaks: waveformPeaks(samples, WAVEFORM_BUCKETS),
+        analyzed: { start: segmentStart, end: segmentStart + segment.length / ANALYSIS_RATE },
+      });
 
       setStage("bpm");
-      const bpmResult = await detectBpm(segment, ANALYSIS_RATE, (p) => current() && setProgress(p * 50));
+      const bpmResult = await detectBpm(segment, ANALYSIS_RATE, (p) => current() && setProgress(p * 30));
       if (!current()) return;
       setBpm(bpmResult);
 
       setStage("key");
-      const keyResult = await detectKey(segment, ANALYSIS_RATE, (p) => current() && setProgress(50 + p * 50));
+      const keyResult = await detectKey(segment, ANALYSIS_RATE, (p) => current() && setProgress(30 + p * 20));
       if (!current()) return;
       setKey(keyResult);
+
+      // Whole track, all channels - streaming services normalize on that.
+      setStage("loudness");
+      const loudnessResult = await measureLoudness(channels, sampleRate, (p) => current() && setProgress(50 + p * 50));
+      if (!current()) return;
+      setLoudness(loudnessResult);
 
       setStage("done");
       if (!bpmResult && !keyResult) setError(t.devTools.analyzerTooShort);
@@ -90,10 +112,10 @@ export function AudioAnalyzerTool({ onUseBpm }: { onUseBpm: (bpm: number) => voi
     void analyze(e.dataTransfer.files[0]);
   };
 
-  const busy = stage === "decoding" || stage === "bpm" || stage === "key";
+  const busy = stage === "decoding" || stage === "bpm" || stage === "key" || stage === "loudness";
   const keyLabel = (g: KeyGuess) => `${g.name} ${g.mode === "major" ? t.devTools.keyMajor : t.devTools.keyMinor}`;
   const rounded = bpm ? Math.round(bpm.bpm) : 0;
-  const statusText = stage === "decoding" ? t.devTools.analyzerDecoding : stage === "bpm" ? "BPM…" : stage === "key" ? `${t.devTools.analyzerKey}…` : "";
+  const statusText = stage === "decoding" ? t.devTools.analyzerDecoding : stage === "bpm" ? "BPM…" : stage === "key" ? `${t.devTools.analyzerKey}…` : stage === "loudness" ? t.devTools.analyzerLoudnessStage : "";
 
   return (
     <ToolCard title={t.devTools.analyzerTitle} description={t.devTools.analyzerDesc} className="lg:col-span-2">
@@ -114,8 +136,10 @@ export function AudioAnalyzerTool({ onUseBpm }: { onUseBpm: (bpm: number) => voi
         )}
       >
         <AudioLines className="size-8" />
-        <span>{file ? `${file.name} · ${Math.floor(file.duration / 60)}:${String(Math.round(file.duration % 60)).padStart(2, "0")}` : t.devTools.analyzerDrop}</span>
+        <span>{file ? `${file.name} · ${Math.floor(file.duration / 60)}:${String(Math.floor(file.duration % 60)).padStart(2, "0")}` : t.devTools.analyzerDrop}</span>
       </button>
+
+      {file && <Waveform src={file.url} peaks={file.peaks} duration={file.duration} analyzed={file.analyzed} label={t.devTools.waveformLabel} />}
 
       {busy && (
         <div className="space-y-1" aria-live="polite">
@@ -180,7 +204,8 @@ export function AudioAnalyzerTool({ onUseBpm }: { onUseBpm: (bpm: number) => voi
         </div>
       )}
 
-      {file && <audio controls src={file.url} className="w-full" />}
+      {loudness && <LoudnessCard result={loudness} />}
+
       <p className="text-xs text-[var(--text-muted)]">{t.devTools.analyzerNote}</p>
     </ToolCard>
   );

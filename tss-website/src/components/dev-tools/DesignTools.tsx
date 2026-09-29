@@ -9,19 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { ColorPicker } from "./ColorPicker";
-import { contrastRatio, hsvToRgb, luminance, parseColor, rgbToHsl, rgbToHsv, toHex, type HSV } from "./color";
+import { BRAND_SWATCHES, contrastRatio, hsvToRgb, luminance, parseColor, rgbToHsl, rgbToHsv, toHex, type HSV } from "./color";
 import { CopyButton, ErrorText, ToolCard, monoField, useMounted } from "./shared";
-
-// The site's own section colors (globals.css / CLAUDE.md theme table).
-const BRAND_SWATCHES = [
-  { name: "General", hex: "#1bbdbd" },
-  { name: "Games", hex: "#dc3545" },
-  { name: "Records", hex: "#ad83f8" },
-  { name: "Dev", hex: "#ffcb2f" },
-  { name: "E-Sport", hex: "#06e402" },
-  { name: "White", hex: "#ffffff" },
-  { name: "Black", hex: "#000000" },
-];
 
 // Chromium-only EyeDropper API - not in TS's DOM lib yet.
 type EyeDropperCtor = new () => { open: () => Promise<{ sRGBHex: string }> };
