@@ -2,33 +2,9 @@
 
 import { useRef, type KeyboardEvent, type PointerEvent } from "react";
 
-export type RGB = { r: number; g: number; b: number };
-// h: 0-360, s/v: 0-1. The picker keeps HSV as its source of truth because
-// hue is undefined for greys - round-tripping through RGB would snap the
-// hue back to red the moment a drag touched the left or bottom edge.
-export type HSV = { h: number; s: number; v: number };
+import { hsvToRgb, type HSV } from "./color";
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-
-export function hsvToRgb({ h, s, v }: HSV): RGB {
-  const f = (n: number) => {
-    const k = (n + h / 60) % 6;
-    return v - v * s * Math.max(0, Math.min(k, 4 - k, 1));
-  };
-  return { r: Math.round(f(5) * 255), g: Math.round(f(3) * 255), b: Math.round(f(1) * 255) };
-}
-
-export function rgbToHsv({ r, g, b }: RGB, fallbackHue = 0): HSV {
-  const [rn, gn, bn] = [r / 255, g / 255, b / 255];
-  const max = Math.max(rn, gn, bn);
-  const d = max - Math.min(rn, gn, bn);
-  let h = fallbackHue;
-  if (d !== 0) {
-    h = max === rn ? ((gn - bn) / d) % 6 : max === gn ? (bn - rn) / d + 2 : (rn - gn) / d + 4;
-    h = (h * 60 + 360) % 360;
-  }
-  return { h, s: max === 0 ? 0 : d / max, v: max };
-}
 
 export function ColorPicker({
   value,

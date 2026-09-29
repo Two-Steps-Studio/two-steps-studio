@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeftRight, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
-import { CopyButton, Segmented, ToolCard, monoField, nativeSelect, useMounted } from "./shared";
+import { CopyButton, ToolCard, monoField, nativeSelect, useMounted } from "./shared";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
 
@@ -64,7 +64,7 @@ function nowInZone(zone: string) {
 
 const zoneLabel = (zone: string) => zone.split("/").pop()!.replace(/_/g, " ");
 
-function TimeZoneTool() {
+export function TimeZoneTool() {
   const { t, locale } = useLanguage();
   const mounted = useMounted();
   const zones = useMemo(() => (mounted ? allZones() : []), [mounted]);
@@ -153,7 +153,7 @@ const DISCORD_LIMIT = 2000;
 // literal under the ES2017 target even though every supported browser has it.
 const WORD = new RegExp("[\\p{L}\\p{N}]+", "gu");
 
-function TextTool() {
+export function TextTool() {
   const { t, locale } = useLanguage();
   const [text, setText] = useState("");
 
@@ -164,6 +164,8 @@ function TextTool() {
     { label: t.devTools.textWords, value: words.length },
     { label: t.devTools.textLines, value: text ? text.split("\n").length : 0 },
     { label: t.devTools.textReading, value: `${Math.max(words.length ? 1 : 0, Math.round(words.length / 200))} min` },
+    // ~130 wpm: typical podcast / voice-over pace, slower than silent reading.
+    { label: t.devTools.textSpeaking, value: `${Math.max(words.length ? 1 : 0, Math.round(words.length / 130))} min` },
   ];
 
   const lower = (s: string) => s.toLocaleLowerCase(locale);
@@ -185,7 +187,7 @@ function TextTool() {
   return (
     <ToolCard title={t.devTools.textTitle} description={t.devTools.textDesc}>
       <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={6} aria-label={t.devTools.input} placeholder={t.devTools.textPlaceholder} />
-      <dl className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {stats.map((s) => (
           <div key={s.label} className="rounded-xl bg-[var(--surface)] px-3 py-2">
             <dt className="text-xs text-[var(--text-muted)]">{s.label}</dt>
@@ -216,106 +218,5 @@ function TextTool() {
         <CopyButton value={text} className="ml-auto" />
       </div>
     </ToolCard>
-  );
-}
-
-/* ------------------------------------- Units ------------------------------------ */
-
-type UnitDef = { id: string; factor: number };
-const LINEAR_UNITS: Record<string, UnitDef[]> = {
-  length: [
-    { id: "mm", factor: 0.001 }, { id: "cm", factor: 0.01 }, { id: "m", factor: 1 }, { id: "km", factor: 1000 },
-    { id: "in", factor: 0.0254 }, { id: "ft", factor: 0.3048 }, { id: "yd", factor: 0.9144 }, { id: "mi", factor: 1609.344 },
-  ],
-  mass: [
-    { id: "g", factor: 0.001 }, { id: "kg", factor: 1 }, { id: "t", factor: 1000 }, { id: "oz", factor: 0.028349523125 }, { id: "lb", factor: 0.45359237 },
-  ],
-  data: [
-    { id: "B", factor: 1 }, { id: "KB", factor: 1e3 }, { id: "MB", factor: 1e6 }, { id: "GB", factor: 1e9 }, { id: "TB", factor: 1e12 },
-    { id: "KiB", factor: 1024 }, { id: "MiB", factor: 1024 ** 2 }, { id: "GiB", factor: 1024 ** 3 }, { id: "TiB", factor: 1024 ** 4 },
-  ],
-  speed: [
-    { id: "km/h", factor: 1 / 3.6 }, { id: "m/s", factor: 1 }, { id: "mph", factor: 0.44704 }, { id: "kn", factor: 0.514444 },
-  ],
-};
-const TEMPERATURE = ["°C", "°F", "K"];
-const toCelsius: Record<string, (v: number) => number> = { "°C": (v) => v, "°F": (v) => ((v - 32) * 5) / 9, K: (v) => v - 273.15 };
-const fromCelsius: Record<string, (v: number) => number> = { "°C": (v) => v, "°F": (v) => (v * 9) / 5 + 32, K: (v) => v + 273.15 };
-
-type Category = "length" | "mass" | "temperature" | "data" | "speed";
-const unitsOf = (c: Category) => (c === "temperature" ? TEMPERATURE : LINEAR_UNITS[c].map((u) => u.id));
-
-function convert(category: Category, value: number, from: string, to: string) {
-  if (category === "temperature") return fromCelsius[to](toCelsius[from](value));
-  const f = (id: string) => LINEAR_UNITS[category].find((u) => u.id === id)!.factor;
-  return (value * f(from)) / f(to);
-}
-
-function UnitTool() {
-  const { t, locale } = useLanguage();
-  const [category, setCategory] = useState<Category>("length");
-  const [from, setFrom] = useState("cm");
-  const [to, setTo] = useState("in");
-  const [value, setValue] = useState("100");
-
-  const categories: { value: Category; label: string }[] = [
-    { value: "length", label: t.devTools.unitLength },
-    { value: "mass", label: t.devTools.unitMass },
-    { value: "temperature", label: t.devTools.unitTemperature },
-    { value: "data", label: t.devTools.unitData },
-    { value: "speed", label: t.devTools.unitSpeed },
-  ];
-
-  const changeCategory = (c: Category) => {
-    const units = unitsOf(c);
-    setCategory(c);
-    setFrom(units[0]);
-    setTo(units[1]);
-  };
-
-  const num = Number(value.replace(",", "."));
-  const result = value.trim() !== "" && Number.isFinite(num) ? convert(category, num, from, to) : null;
-  const formatted = result === null ? "" : new Intl.NumberFormat(locale, { maximumFractionDigits: 6 }).format(result);
-  const units = unitsOf(category);
-
-  return (
-    <ToolCard title={t.devTools.unitTitle} description={t.devTools.unitDesc}>
-      <Segmented options={categories} value={category} onChange={changeCategory} label={t.devTools.unitTitle} />
-      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="dt-unit-value">{t.devTools.input}</Label>
-          <Input id="dt-unit-value" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} className={monoField} />
-          <select aria-label={t.devTools.unitFrom} className={nativeSelect} value={from} onChange={(e) => setFrom(e.target.value)}>
-            {units.map((u) => <option key={u} value={u}>{u}</option>)}
-          </select>
-        </div>
-        <Button type="button" variant="outline" size="icon" className={cn(actionButton, "mb-0.5")} aria-label={t.devTools.unitSwap} onClick={() => { setFrom(to); setTo(from); }}>
-          <ArrowLeftRight />
-        </Button>
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="dt-unit-result">{t.devTools.output}</Label>
-          <Input id="dt-unit-result" readOnly value={formatted} className={cn(monoField, "font-bold")} />
-          <select aria-label={t.devTools.unitTo} className={nativeSelect} value={to} onChange={(e) => setTo(e.target.value)}>
-            {units.map((u) => <option key={u} value={u}>{u}</option>)}
-          </select>
-        </div>
-      </div>
-      {formatted && (
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-color)] px-4 py-3">
-          <p className={cn(monoField, "min-w-0 truncate text-[var(--text)]")}>{value} {from} = {formatted} {to}</p>
-          <CopyButton value={`${formatted} ${to}`} />
-        </div>
-      )}
-    </ToolCard>
-  );
-}
-
-export function EverydayTools() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <TimeZoneTool />
-      <TextTool />
-      <UnitTool />
-    </div>
   );
 }

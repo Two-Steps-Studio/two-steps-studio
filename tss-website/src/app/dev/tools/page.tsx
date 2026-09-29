@@ -1,14 +1,14 @@
 "use client";
 
-import { Braces, Dices, Gamepad2, MessageSquare, Sparkles, Wrench } from "lucide-react";
+import { Code, Gamepad2, MessageSquare, Music, Palette } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/hooks/use-translation";
 import { DiscordTools } from "@/components/dev-tools/DiscordTools";
 import { DataTools } from "@/components/dev-tools/DataTools";
 import { GeneratorTools } from "@/components/dev-tools/GeneratorTools";
-import { DesignTools } from "@/components/dev-tools/DesignTools";
-import { EverydayTools } from "@/components/dev-tools/EverydayTools";
 import { GameTools } from "@/components/dev-tools/GameTools";
+import { GraphicsTools } from "@/components/dev-tools/GraphicsTools";
+import { MusicTools } from "@/components/dev-tools/MusicTools";
 
 // Explicit colors instead of the shadcn defaults (bg-muted / bg-background),
 // which aren't defined in this theme and compile to no CSS.
@@ -19,13 +19,24 @@ const triggerClass =
 export default function DevToolsPage() {
   const { t } = useLanguage();
 
+  // One tab per TSS section (Games, Records, Dev) plus graphics and the
+  // Discord community, rather than one per kind of tool.
   const tabs = [
-    { value: "everyday", label: t.devTools.tabEveryday, icon: Wrench, content: <EverydayTools /> },
-    { value: "games", label: t.devTools.tabGames, icon: Dices, content: <GameTools /> },
+    { value: "games", label: t.devTools.tabGames, icon: Gamepad2, content: <GameTools /> },
+    { value: "music", label: t.devTools.tabMusic, icon: Music, content: <MusicTools /> },
+    { value: "graphics", label: t.devTools.tabGraphics, icon: Palette, content: <GraphicsTools /> },
+    {
+      value: "dev",
+      label: t.devTools.tabDev,
+      icon: Code,
+      content: (
+        <div className="grid gap-6">
+          <DataTools />
+          <GeneratorTools />
+        </div>
+      ),
+    },
     { value: "discord", label: t.devTools.tabDiscord, icon: MessageSquare, content: <DiscordTools /> },
-    { value: "data", label: t.devTools.tabData, icon: Braces, content: <DataTools /> },
-    { value: "generators", label: t.devTools.tabGenerators, icon: Sparkles, content: <GeneratorTools /> },
-    { value: "design", label: t.devTools.tabDesign, icon: Gamepad2, content: <DesignTools /> },
   ];
 
   return (
@@ -40,7 +51,7 @@ export default function DevToolsPage() {
         <p className="max-w-3xl text-lg text-[var(--text-muted)] font-[family-name:var(--font-outfit)]">{t.devTools.subtitle}</p>
       </div>
 
-      <Tabs defaultValue="everyday" className="gap-6">
+      <Tabs defaultValue="games" className="gap-6">
         <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-2xl border border-[var(--border-color)] bg-[var(--surface)] p-1 sm:flex sm:w-fit sm:flex-wrap">
           {tabs.map(({ value, label, icon: Icon }) => (
             <TabsTrigger key={value} value={value} className={triggerClass}>

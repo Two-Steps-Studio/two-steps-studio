@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Dices, Flag, Pause, Play, RotateCcw, Shuffle, Trophy, Users } from "lucide-react";
+import { Dices, Flag, Pause, Play, RotateCcw, Trophy, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
+import { createAudioContext, playTone } from "./audio";
+import { EsportTools } from "./EsportTools";
 import { randomInt, shuffle } from "./random";
 import { CopyButton, Segmented, ToolCard, monoField } from "./shared";
 
@@ -78,53 +80,6 @@ function DiceTool() {
           <p key={`c${rollId}`} className="mt-3 animate-in fade-in-0 zoom-in-95 text-center text-2xl font-bold text-[var(--text)] duration-200">
             {coin === "heads" ? t.devTools.coinHeads : t.devTools.coinTails}
           </p>
-        )}
-      </div>
-    </ToolCard>
-  );
-}
-
-function NumberTool() {
-  const { t } = useLanguage();
-  const [min, setMin] = useState("1");
-  const [max, setMax] = useState("100");
-  const [result, setResult] = useState<number | null>(null);
-  const [rollId, setRollId] = useState(0);
-
-  const lo = Math.ceil(Number(min));
-  const hi = Math.floor(Number(max));
-  const valid = Number.isFinite(lo) && Number.isFinite(hi) && hi >= lo && hi - lo < 2 ** 32;
-
-  return (
-    <ToolCard title={t.devTools.numberTitle} description={t.devTools.numberDesc}>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="dt-num-min">Min</Label>
-          <Input id="dt-num-min" type="number" value={min} onChange={(e) => setMin(e.target.value)} className={monoField} />
-        </div>
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="dt-num-max">Max</Label>
-          <Input id="dt-num-max" type="number" value={max} onChange={(e) => setMax(e.target.value)} className={monoField} />
-        </div>
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        className={actionButton}
-        disabled={!valid}
-        onClick={() => {
-          setResult(lo + randomInt(hi - lo + 1));
-          setRollId((n) => n + 1);
-        }}
-      >
-        <Shuffle /> {t.devTools.generate}
-      </Button>
-      <div aria-live="polite">
-        {result !== null && (
-          <div key={rollId} className={cn(resultBox, "flex items-center justify-between gap-3 animate-in fade-in-0 zoom-in-95 duration-200")}>
-            <span className="font-mono text-4xl font-bold tabular-nums text-[var(--text)]">{result}</span>
-            <CopyButton value={String(result)} />
-          </div>
         )}
       </div>
     </ToolCard>
@@ -218,19 +173,8 @@ function formatDuration(ms: number) {
 
 function beep() {
   try {
-    const AC: typeof AudioContext =
-      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new AC();
-    [0, 0.25, 0.5].forEach((at) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.15, ctx.currentTime + at);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + at + 0.2);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(ctx.currentTime + at);
-      osc.stop(ctx.currentTime + at + 0.2);
-    });
+    const ctx = createAudioContext();
+    [0, 0.25, 0.5].forEach((at) => playTone(ctx, 880, ctx.currentTime + at, 0.2, 0.15));
     setTimeout(() => ctx.close(), 1000);
   } catch {
     // No audio (autoplay policy, no device) - the toast still shows.
@@ -370,8 +314,8 @@ export function GameTools() {
     <div className="grid gap-6 lg:grid-cols-2">
       <DiceTool />
       <PickerTool />
-      <NumberTool />
       <TimerTool />
+      <EsportTools />
     </div>
   );
 }

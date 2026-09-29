@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
-import { ColorPicker, hsvToRgb, rgbToHsv, type HSV, type RGB } from "./ColorPicker";
+import { ColorPicker } from "./ColorPicker";
+import { contrastRatio, hsvToRgb, luminance, parseColor, rgbToHsl, rgbToHsv, toHex, type HSV } from "./color";
 import { CopyButton, ErrorText, ToolCard, monoField, useMounted } from "./shared";
 
 // The site's own section colors (globals.css / CLAUDE.md theme table).
@@ -25,65 +26,9 @@ const BRAND_SWATCHES = [
 // Chromium-only EyeDropper API - not in TS's DOM lib yet.
 type EyeDropperCtor = new () => { open: () => Promise<{ sRGBHex: string }> };
 
-function hslToRgb(h: number, s: number, l: number): RGB {
-  const sat = s / 100;
-  const light = l / 100;
-  const k = (n: number) => (n + h / 30) % 12;
-  const a = sat * Math.min(light, 1 - light);
-  const f = (n: number) => light - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-  return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
-}
-
-function rgbToHsl({ r, g, b }: RGB) {
-  const [rn, gn, bn] = [r / 255, g / 255, b / 255];
-  const max = Math.max(rn, gn, bn);
-  const min = Math.min(rn, gn, bn);
-  const l = (max + min) / 2;
-  const d = max - min;
-  if (d === 0) return { h: 0, s: 0, l: Math.round(l * 100) };
-  const s = d / (1 - Math.abs(2 * l - 1));
-  let h = max === rn ? ((gn - bn) / d) % 6 : max === gn ? (bn - rn) / d + 2 : (rn - gn) / d + 4;
-  h = Math.round(h * 60);
-  return { h: h < 0 ? h + 360 : h, s: Math.round(s * 100), l: Math.round(l * 100) };
-}
-
-const toHex = ({ r, g, b }: RGB) => `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-
-// Accepts #rgb, #rrggbb, rgb()/rgba() and hsl()/hsla(), comma or space separated.
-function parseColor(raw: string): RGB | null {
-  const s = raw.trim().toLowerCase();
-  const hex = s.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/);
-  if (hex) {
-    const full = hex[1].length === 3 ? [...hex[1]].map((c) => c + c).join("") : hex[1];
-    return { r: parseInt(full.slice(0, 2), 16), g: parseInt(full.slice(2, 4), 16), b: parseInt(full.slice(4, 6), 16) };
-  }
-  const rgb = s.match(/^rgba?\(\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*[, ]\s*(\d{1,3})/);
-  if (rgb) {
-    const [r, g, b] = rgb.slice(1, 4).map(Number);
-    return [r, g, b].every((v) => v <= 255) ? { r, g, b } : null;
-  }
-  const hsl = s.match(/^hsla?\(\s*(\d{1,3}(?:\.\d+)?)(?:deg)?\s*[, ]\s*(\d{1,3}(?:\.\d+)?)%\s*[, ]\s*(\d{1,3}(?:\.\d+)?)%/);
-  if (hsl) {
-    const [h, sat, l] = hsl.slice(1, 4).map(Number);
-    return sat <= 100 && l <= 100 ? hslToRgb(h % 360, sat, l) : null;
-  }
-  return null;
-}
-
-// WCAG 2.x relative luminance and contrast ratio.
-function luminance({ r, g, b }: RGB) {
-  const [lr, lg, lb] = [r, g, b].map((v) => {
-    const c = v / 255;
-    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
-}
-
-const contrastRatio = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-
 const INITIAL_COLOR = "#ffcb2f";
 
-function ColorTool() {
+export function ColorTool() {
   const { t } = useLanguage();
   const mounted = useMounted();
   const [input, setInput] = useState(INITIAL_COLOR);
@@ -207,7 +152,22 @@ const PRESETS = [
   [9, 16],
 ] as const;
 
-function AspectRatioTool() {
+// Recommended upload sizes, px. Steam uses its 2024 doubled capsule sizes.
+const PLATFORM_SIZES = [
+  { name: "YouTube thumbnail", w: 1280, h: 720 },
+  { name: "YouTube banner", w: 2560, h: 1440 },
+  { name: "Twitch banner", w: 1200, h: 480 },
+  { name: "Twitch offline", w: 1920, h: 1080 },
+  { name: "Discord banner", w: 960, h: 540 },
+  { name: "Instagram post", w: 1080, h: 1350 },
+  { name: "Story / TikTok / Reels", w: 1080, h: 1920 },
+  { name: "X header", w: 1500, h: 500 },
+  { name: "Steam header capsule", w: 920, h: 430 },
+  { name: "Steam library capsule", w: 600, h: 900 },
+  { name: "Steam library hero", w: 3840, h: 1240 },
+] as const;
+
+export function AspectRatioTool() {
   const { t } = useLanguage();
   const [width, setWidth] = useState(1920);
   const [height, setHeight] = useState(1080);
@@ -252,6 +212,26 @@ function AspectRatioTool() {
           ))}
         </div>
       </div>
+      <div className="space-y-2">
+        <p className="text-sm text-[var(--text-muted)]">{t.devTools.aspectPlatforms}</p>
+        <div className="flex flex-wrap gap-2">
+          {PLATFORM_SIZES.map((p) => (
+            <Button
+              key={p.name}
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn("rounded-xl border-[var(--border-color)]", width === p.w && height === p.h && "border-[var(--color-dev)] bg-[var(--color-dev)]/15")}
+              onClick={() => {
+                setWidth(p.w);
+                setHeight(p.h);
+              }}
+            >
+              {p.name} <span className="font-mono text-[var(--text-muted)]">{p.w}×{p.h}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
       {valid && (
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-color)] p-4">
           <div className="flex-1">
@@ -264,14 +244,5 @@ function AspectRatioTool() {
         </div>
       )}
     </ToolCard>
-  );
-}
-
-export function DesignTools() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <ColorTool />
-      <AspectRatioTool />
-    </div>
   );
 }
