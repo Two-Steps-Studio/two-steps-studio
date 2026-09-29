@@ -1,15 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import { Pipette } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
-import { CopyButton, ErrorText, ToolCard, monoField } from "./shared";
+import { ColorPicker, hsvToRgb, rgbToHsv, type HSV, type RGB } from "./ColorPicker";
+import { CopyButton, ErrorText, ToolCard, monoField, useMounted } from "./shared";
 
-type RGB = { r: number; g: number; b: number };
+// The site's own section colors (globals.css / CLAUDE.md theme table).
+const BRAND_SWATCHES = [
+  { name: "General", hex: "#1bbdbd" },
+  { name: "Games", hex: "#dc3545" },
+  { name: "Records", hex: "#ad83f8" },
+  { name: "Dev", hex: "#ffcb2f" },
+  { name: "E-Sport", hex: "#06e402" },
+  { name: "White", hex: "#ffffff" },
+  { name: "Black", hex: "#000000" },
+];
+
+// Chromium-only EyeDropper API - not in TS's DOM lib yet.
+type EyeDropperCtor = new () => { open: () => Promise<{ sRGBHex: string }> };
 
 function hslToRgb(h: number, s: number, l: number): RGB {
   const sat = s / 100;
@@ -67,10 +81,37 @@ function luminance({ r, g, b }: RGB) {
 
 const contrastRatio = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
+const INITIAL_COLOR = "#ffcb2f";
+
 function ColorTool() {
   const { t } = useLanguage();
-  const [input, setInput] = useState("#ffcb2f");
+  const mounted = useMounted();
+  const [input, setInput] = useState(INITIAL_COLOR);
+  const [hsv, setHsv] = useState<HSV>(() => rgbToHsv(parseColor(INITIAL_COLOR)!));
   const color = parseColor(input);
+
+  // Text -> picker keeps the previous hue for greys; picker -> text always
+  // writes HEX. Both stay in sync without either one owning the other.
+  const setFromText = (text: string) => {
+    setInput(text);
+    const rgb = parseColor(text);
+    if (rgb) setHsv((prev) => rgbToHsv(rgb, prev.h));
+  };
+  const setFromPicker = (next: HSV) => {
+    setHsv(next);
+    setInput(toHex(hsvToRgb(next)));
+  };
+
+  const EyeDropper = mounted ? (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper : undefined;
+  const pickFromScreen = async () => {
+    if (!EyeDropper) return;
+    try {
+      const { sRGBHex } = await new EyeDropper().open();
+      setFromText(sRGBHex);
+    } catch {
+      // Escape / cancel rejects with AbortError - nothing to do.
+    }
+  };
 
   const rating = (ratio: number) =>
     ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : ratio >= 3 ? t.devTools.colorLarge : t.devTools.colorFail;
@@ -91,18 +132,34 @@ function ColorTool() {
 
   return (
     <ToolCard title={t.devTools.colorTitle} description={t.devTools.colorDesc}>
-      <div className="flex items-end gap-2">
-        <div className="min-w-0 flex-1 space-y-2">
-          <Label htmlFor="dt-color">{t.devTools.input}</Label>
-          <Input id="dt-color" value={input} onChange={(e) => setInput(e.target.value)} spellCheck={false} className={monoField} placeholder="#ffcb2f / rgb(…) / hsl(…)" />
-        </div>
-        <input
-          type="color"
-          aria-label={t.devTools.colorTitle}
-          value={color ? toHex(color) : "#000000"}
-          onChange={(e) => setInput(e.target.value)}
-          className="h-9 w-12 cursor-pointer rounded-md border border-[var(--border-color)] bg-transparent"
-        />
+      <ColorPicker value={hsv} onChange={setFromPicker} areaLabel={t.devTools.colorArea} hueLabel={t.devTools.colorHue} />
+
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.devTools.colorSwatches}>
+        {BRAND_SWATCHES.map((swatch) => (
+          <button
+            key={swatch.hex}
+            type="button"
+            title={swatch.name}
+            aria-label={`${swatch.name} ${swatch.hex}`}
+            onClick={() => setFromText(swatch.hex)}
+            className={cn(
+              "size-8 rounded-full border border-[var(--border-color)] transition-transform active:scale-90",
+              color && toHex(color) === swatch.hex && "ring-2 ring-[var(--text)] ring-offset-2 ring-offset-[var(--card-bg)]"
+            )}
+            // Swatch fill is data, not styling - see the contrast samples below.
+            style={{ backgroundColor: swatch.hex }}
+          />
+        ))}
+        {EyeDropper && (
+          <Button type="button" variant="outline" size="sm" className="ml-auto rounded-xl border-[var(--border-color)]" onClick={pickFromScreen}>
+            <Pipette /> {t.devTools.colorEyedropper}
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dt-color">{t.devTools.input}</Label>
+        <Input id="dt-color" value={input} onChange={(e) => setFromText(e.target.value)} spellCheck={false} className={monoField} placeholder="#ffcb2f / rgb(…) / hsl(…)" />
       </div>
 
       {!color && input.trim() && <ErrorText>{t.devTools.invalid}</ErrorText>}

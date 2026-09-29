@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { CopyButton, ToolCard, monoField } from "./shared";
+import { randomInt } from "./random";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
 
@@ -46,21 +47,8 @@ const CHARSETS = {
 } as const;
 type Charset = keyof typeof CHARSETS;
 
-// Rejection sampling: bytes >= `limit` are thrown away so every character
-// in the pool is exactly equally likely (a plain `byte % pool.length` would
-// favour the first 256 % length characters).
 function randomString(length: number, pool: string) {
-  const limit = 256 - (256 % pool.length);
-  const out: string[] = [];
-  const bytes = new Uint8Array(length * 2);
-  while (out.length < length) {
-    crypto.getRandomValues(bytes);
-    for (const byte of bytes) {
-      if (byte < limit) out.push(pool[byte % pool.length]);
-      if (out.length === length) break;
-    }
-  }
-  return out.join("");
+  return Array.from({ length }, () => pool[randomInt(pool.length)]).join("");
 }
 
 function generatePassword(length: number, sets: Charset[]) {

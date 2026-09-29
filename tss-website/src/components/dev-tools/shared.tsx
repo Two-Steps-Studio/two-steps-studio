@@ -19,6 +19,12 @@ export function useMounted() {
 
 export const monoField = "font-mono text-sm";
 
+// Native <select>, not the Radix one: the time-zone list has ~400 entries
+// and phones get their own scroll-wheel picker for free. Background is set
+// explicitly so Chromium's option list follows the dark theme too.
+export const nativeSelect =
+  "h-9 w-full min-w-0 rounded-md border border-[var(--border-color)] bg-[var(--card-bg)] px-3 text-sm text-[var(--text)]";
+
 export function ToolCard({
   title,
   description,
