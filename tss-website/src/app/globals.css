@@ -44,10 +44,34 @@
   --font-outfit: var(--font-metropolis), "Metropolis", sans-serif;
 }
 
-:root {
-  /* Default color scheme for Tailwind v4 */
-  --color-text-foreground: var(--text);
-  --color-muted-foreground: var(--text);
+/* shadcn/ui semantic tokens, mapped onto this project's own variables.
+   The ui/ primitives (and ~45 files using them) reference bg-popover,
+   bg-background, bg-accent, border-input, ring-ring, text-muted-foreground,
+   etc. None of these were defined, so Tailwind generated no CSS for them:
+   transparent menus and dialogs, no hover highlight, borderless inputs, no
+   keyboard focus ring. (--color-muted-foreground used to sit in a plain
+   :root block, which Tailwind v4 ignores for utility generation.)
+   `inline` makes each utility reference var(--card-bg) etc. directly, so it
+   resolves where it's used and follows .dark without extra work.
+   "background" maps to the card color, not the page color: in this theme
+   the page is tinted and components (dialogs, active tabs, outline buttons)
+   sit on it as raised white/black surfaces. */
+@theme inline {
+  --color-background: var(--card-bg);
+  --color-foreground: var(--text);
+  --color-card: var(--card-bg);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--card-bg);
+  --color-popover-foreground: var(--text);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--text);
+  --color-secondary: var(--surface-hover);
+  --color-secondary-foreground: var(--text);
+  --color-destructive: var(--destructive);
+  --color-input: var(--border-color);
+  --color-ring: var(--color-general);
 }
 
 .space-grotesk {
@@ -72,6 +96,8 @@
   /* Teal accent darkened for use as *text* on light backgrounds — the raw
      --color-general (#1bbdbd) only reaches ~2:1 against a light surface. */
   --color-general-accessible: #0a6a6a;
+  /* Same reds as the existing text-red-600 / dark:text-red-400 convention. */
+  --destructive: #dc2626;
   --selection-bg: var(--color-general);
   --selection-text: #ffffff;
   --transition-speed: 0.4s;
@@ -90,6 +116,7 @@
   --surface: rgba(255, 255, 255, 0.05);
   --surface-hover: rgba(255, 255, 255, 0.09);
   --color-general-accessible: #1bbdbd;
+  --destructive: #f87171;
   --selection-bg: var(--color-general);
 }
 
