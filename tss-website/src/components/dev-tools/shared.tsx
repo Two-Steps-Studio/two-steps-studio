@@ -33,7 +33,7 @@ export function ToolCard({
     <Card className={cn("min-w-0 gap-0 py-0 rounded-3xl border border-[var(--border-color)] bg-[var(--card-bg)]", className)}>
       <CardContent className="space-y-4 p-6">
         <div>
-          <h2 className="text-xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">{title}</h2>
+          <h3 className="text-xl font-bold text-[var(--text)] font-[family-name:var(--font-space)]">{title}</h3>
           <p className="mt-1 text-sm text-[var(--text-muted)]">{description}</p>
         </div>
         {children}
@@ -115,4 +115,79 @@ export function Segmented<T extends string>({
       ))}
     </div>
   );
+}
+
+// Click-or-drop file picker styled like the other drop zones on the page.
+export function FileDrop({
+  accept,
+  onFile,
+  children,
+  disabled,
+}: {
+  accept: string;
+  onFile: (file: File) => void;
+  children: ReactNode;
+  disabled?: boolean;
+}) {
+  const [dragging, setDragging] = useState(false);
+  return (
+    <label
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        const file = e.dataTransfer.files[0];
+        if (file) onFile(file);
+      }}
+      className={cn(
+        "flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--border-color)] p-6 text-center text-sm text-[var(--text-muted)] transition-colors focus-within:ring-2 focus-within:ring-[var(--color-dev)]",
+        dragging && "border-[var(--color-dev)] bg-[var(--color-dev)]/10",
+        disabled && "pointer-events-none opacity-60"
+      )}
+    >
+      <input
+        type="file"
+        accept={accept}
+        className="sr-only"
+        disabled={disabled}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file);
+          e.target.value = ""; // allow picking the same file again
+        }}
+      />
+      {children}
+    </label>
+  );
+}
+
+// Decodes an image file into an <img> ready for drawing on a canvas.
+export function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) return reject(new Error("not an image"));
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("decode failed"));
+    };
+    img.src = url;
+  });
+}
+
+export function downloadBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

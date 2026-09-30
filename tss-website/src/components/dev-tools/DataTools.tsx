@@ -23,7 +23,7 @@ function OutputBlock({ id, label, value }: { id: string; label: string; value: s
   );
 }
 
-function JsonTool() {
+export function JsonTool() {
   const { t } = useLanguage();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -60,7 +60,7 @@ function JsonTool() {
   );
 }
 
-function JwtTool() {
+export function JwtTool() {
   const { t, locale } = useLanguage();
   const [token, setToken] = useState("");
   // "Now" for the expiry check, taken when the token changes - reading the
@@ -127,7 +127,7 @@ function JwtTool() {
   );
 }
 
-function EncodeDecodeTool({
+export function EncodeDecodeTool({
   id,
   title,
   description,
@@ -178,7 +178,7 @@ const HASH_ALGORITHMS = [
 ] as const;
 type HashAlgorithm = (typeof HASH_ALGORITHMS)[number]["value"];
 
-function HashTool() {
+export function HashTool() {
   const { t } = useLanguage();
   const [input, setInput] = useState("");
   const [algorithm, setAlgorithm] = useState<HashAlgorithm>("SHA-256");
@@ -215,18 +215,5 @@ function HashTool() {
         </div>
       )}
     </ToolCard>
-  );
-}
-
-export function DataTools() {
-  const { t } = useLanguage();
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <JsonTool />
-      <JwtTool />
-      <EncodeDecodeTool id="dt-b64" title={t.devTools.base64Title} description={t.devTools.base64Desc} encode={encodeBase64} decode={decodeBase64} />
-      <EncodeDecodeTool id="dt-url" title={t.devTools.urlTitle} description={t.devTools.urlDesc} encode={encodeURIComponent} decode={decodeURIComponent} />
-      <HashTool />
-    </div>
   );
 }

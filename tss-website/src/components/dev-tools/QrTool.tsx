@@ -11,21 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/hooks/use-translation";
 import { contrastRatio, luminance, parseColor, toHex } from "./color";
 import { qrSvg, wifiPayload, type WifiSecurity } from "./qr";
-import { CopyButton, ErrorText, Segmented, ToolCard, monoField, nativeSelect } from "./shared";
+import { CopyButton, ErrorText, Segmented, ToolCard, downloadBlob, monoField, nativeSelect } from "./shared";
 
 type Mode = "text" | "wifi";
 type Ecc = "L" | "M" | "Q" | "H";
 
 const PNG_SIZES = [512, 1024, 2048] as const;
-
-function downloadBlob(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 // Posters, event slides, merch: QR codes rendered as SVG (sharp at any print
 // size) or PNG, in the site's colors if wanted. Encoding runs locally.

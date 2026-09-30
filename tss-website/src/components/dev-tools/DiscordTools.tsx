@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-translation";
 import { TextTool, TimeZoneTool } from "./CommunityTools";
 import { DiscordEmbedTool } from "./DiscordEmbedTool";
+import { DiscordPermissionsTool } from "./DiscordPermissionsTool";
+import { ToolGroups } from "./ToolGroups";
 import { CopyButton, ErrorText, ToolCard, monoField, useMounted } from "./shared";
 
 // Discord's own epoch (2015-01-01T00:00:00Z) - snowflake IDs store
@@ -159,13 +161,15 @@ function SnowflakeTool() {
 }
 
 export function DiscordTools() {
+  const { t } = useLanguage();
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <DiscordEmbedTool />
-      <TimestampTool />
-      <SnowflakeTool />
-      <TimeZoneTool />
-      <TextTool />
-    </div>
+    <ToolGroups
+      tab="discord"
+      groups={[
+        { id: "messages", title: t.devTools.catDiscordMessages, content: <><DiscordEmbedTool /><TextTool /></> },
+        { id: "events", title: t.devTools.catDiscordEvents, content: <><TimestampTool /><TimeZoneTool /></> },
+        { id: "bots", title: t.devTools.catDiscordBots, content: <><DiscordPermissionsTool /><SnowflakeTool /></> },
+      ]}
+    />
   );
 }
