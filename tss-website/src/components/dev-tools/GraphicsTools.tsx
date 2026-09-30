@@ -12,6 +12,8 @@ import { contrastRatio, hslToRgb, luminance, mix, parseColor, rgbToHsl, toHex, t
 import { AspectRatioTool, ColorTool } from "./DesignTools";
 import { ImageTool } from "./ImageTool";
 import { QrTool } from "./QrTool";
+import { FaviconTool, ImagePaletteTool } from "./ImageExtrasTools";
+import { ToolGroups } from "./ToolGroups";
 import { CopyButton, Segmented, ToolCard, monoField } from "./shared";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
@@ -190,14 +192,14 @@ function ContrastTool() {
 }
 
 export function GraphicsTools() {
+  const { t } = useLanguage();
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <ColorTool />
-      <PaletteTool />
-      <ContrastTool />
-      <ImageTool />
-      <AspectRatioTool />
-      <QrTool />
-    </div>
+    <ToolGroups
+      tab="graphics"
+      groups={[
+        { id: "color", title: t.devTools.catGraphicsColor, content: <><ColorTool /><PaletteTool /><ContrastTool /><ImagePaletteTool /></> },
+        { id: "image", title: t.devTools.catGraphicsImage, content: <><ImageTool /><AspectRatioTool /><FaviconTool /><QrTool /></> },
+      ]}
+    />
   );
 }

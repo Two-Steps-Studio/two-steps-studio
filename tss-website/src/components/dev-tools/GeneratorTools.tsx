@@ -14,7 +14,7 @@ import { randomInt } from "./random";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
 
-function UuidTool() {
+export function UuidTool() {
   const { t } = useLanguage();
   const [count, setCount] = useState(5);
   // Starts empty rather than pre-filled: random values generated during
@@ -62,7 +62,7 @@ function generatePassword(length: number, sets: Charset[]) {
   return randomString(length, pool);
 }
 
-function PasswordTool() {
+export function PasswordTool() {
   const { t } = useLanguage();
   const [length, setLength] = useState(20);
   const [sets, setSets] = useState<Charset[]>(["upper", "lower", "digits", "symbols"]);
@@ -122,7 +122,7 @@ const LOREM = [
   "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
 ];
 
-function LoremTool() {
+export function LoremTool() {
   const { t } = useLanguage();
   const [paragraphs, setParagraphs] = useState(3);
   const text = Array.from({ length: paragraphs }, (_, i) => LOREM[i % LOREM.length]).join("\n\n");
@@ -138,15 +138,5 @@ function LoremTool() {
       </div>
       <Textarea readOnly value={text} rows={8} aria-label={t.devTools.output} />
     </ToolCard>
-  );
-}
-
-export function GeneratorTools() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <UuidTool />
-      <PasswordTool />
-      <LoremTool />
-    </div>
   );
 }

@@ -12,6 +12,8 @@ import { createAudioContext, midiToFreq, playTone } from "./audio";
 import { CopyButton, Segmented, ToolCard, monoField, nativeSelect } from "./shared";
 import { AudioAnalyzerTool } from "./AudioAnalyzerTool";
 import { TunerTool } from "./TunerTool";
+import { BarsTool, NoteFrequencyTool } from "./MusicMathTools";
+import { ToolGroups } from "./ToolGroups";
 
 const actionButton = "rounded-xl border-[var(--border-color)]";
 const MIN_BPM = 20;
@@ -331,14 +333,26 @@ export function MusicTools() {
   // Shared across the analyzer, tap tempo, delay table and metronome, so a
   // detected or tapped tempo immediately drives the others.
   const [bpm, setBpm] = useState(120);
+  const { t } = useLanguage();
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <AudioAnalyzerTool onUseBpm={(n) => setBpm(clampBpm(n))} />
-      <TapTempoTool bpm={bpm} setBpm={setBpm} />
-      <MetronomeTool bpm={bpm} setBpm={setBpm} />
-      <DelayTool bpm={bpm} />
-      <TunerTool />
-      <ScaleTool />
-    </div>
+    <ToolGroups
+      tab="music"
+      groups={[
+        { id: "analysis", title: t.devTools.catMusicAnalysis, content: <AudioAnalyzerTool onUseBpm={(n) => setBpm(clampBpm(n))} /> },
+        {
+          id: "rhythm",
+          title: t.devTools.catMusicRhythm,
+          content: (
+            <>
+              <TapTempoTool bpm={bpm} setBpm={setBpm} />
+              <MetronomeTool bpm={bpm} setBpm={setBpm} />
+              <DelayTool bpm={bpm} />
+              <BarsTool bpm={bpm} />
+            </>
+          ),
+        },
+        { id: "pitch", title: t.devTools.catMusicPitch, content: <><TunerTool /><ScaleTool /><NoteFrequencyTool /></> },
+      ]}
+    />
   );
 }
