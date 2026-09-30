@@ -12,7 +12,7 @@ import { useLanguage } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { createAudioContext, playTone } from "./audio";
 import { EasingTool } from "./EasingTool";
-import { DropChanceTool, XpCurveTool } from "./GameDesignTools";
+import { DropChanceTool } from "./GameDesignTools";
 import { ToolGroups } from "./ToolGroups";
 import { EsportTools } from "./EsportTools";
 import { randomInt, shuffle } from "./random";
@@ -320,7 +320,7 @@ export function GameTools() {
       groups={[
         { id: "party", title: t.devTools.catGamesParty, content: <><DiceTool /><PickerTool /><TimerTool /></> },
         { id: "esport", title: t.devTools.catGamesEsport, content: <EsportTools /> },
-        { id: "gamedev", title: t.devTools.catGamesDesign, content: <><XpCurveTool /><DropChanceTool /><EasingTool /></> },
+        { id: "gamedev", title: t.devTools.catGamesDesign, content: <><DropChanceTool /><EasingTool /></> },
       ]}
     />
   );
