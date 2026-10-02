@@ -97,6 +97,7 @@
     "dotted-map": "^2.2.3",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.44.7",
+    "electron-icon-builder": "^2.0.1",
     "electron-updater": "^6.3.0",
     "embla-carousel-auto-scroll": "^8.6.0",
     "embla-carousel-autoplay": "^8.6.0",
